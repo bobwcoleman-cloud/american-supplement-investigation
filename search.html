@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Search | The American Supplement Investigation</title>
+<meta name="description" content="Search across every book, research guide, FAQ answer, and bibliography source in The American Supplement Investigation.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <div class="links">
+      <a href="index.html#home">Home</a>
+      <a href="index.html#books">Books</a>
+      <a href="index.html#research-library">Research</a>
+      <a href="top-25-supplements.html">Top 25</a>
+      <a href="faq.html">FAQ</a>
+      <a href="search.html">Search</a>
+      <a href="product-lookup.html">Product Lookup</a>
+      <a href="appendix-what-should-change.html">What Should Change</a>
+      <a href="index.html#about">About</a>
+      <a href="index.html#contact">Contact</a>
+      <a class="back" href="https://brokenpromiseshealthcare.org">← Broken Promises Healthcare</a>
+    </div>
+  </div>
+</nav>
+
+<section class="guide-hero" style="text-align:center;">
+  <div class="wrap">
+    <div class="eyebrow">Search This Investigation</div>
+    <h1>Look Up a Supplement or Topic</h1>
+    <p>Search across all three books, every research guide, the FAQ, and the full bibliography — 90 indexed entries and growing. Try a supplement name like "melatonin," "iron," or "St. John's Wort," or a topic like "interactions" or "FDA."</p>
+    <input type="text" id="search-hero-input" class="search-hero-input" placeholder="Search for a supplement or topic..." autofocus>
+    <div class="search-category-pills" id="search-pills">
+      <button class="topic-pill active" data-cat="all">All</button>
+      <button class="topic-pill" data-cat="Top 25 Ranking">Top 25</button>
+      <button class="topic-pill" data-cat="FAQ">FAQ</button>
+      <button class="topic-pill" data-cat="Research Guide">Guides</button>
+      <button class="topic-pill" data-cat="Bibliography">Bibliography</button>
+      <button class="topic-pill" data-cat="Book">Books</button>
+    </div>
+  </div>
+</section>
+
+<div class="guide-body" style="max-width:900px;">
+  <p class="search-results-count" id="results-count"></p>
+  <div id="search-results"></div>
+  <div class="search-empty-state" id="empty-state">
+    <p>Start typing above to search across the entire investigation.</p>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">
+    © 2026 The American Supplement Investigation — Coleman Publishing. Part of Broken Promises Healthcare.
+    <div class="links">
+      <a href="https://brokenpromiseshealthcare.org">Broken Promises Healthcare</a>
+      <a href="index.html#about">How We Source Claims</a>
+      <a href="index.html#contact">Contact</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+const SEARCH_INDEX = [
+  {
+    "title": "Multivitamin/Multimineral",
+    "snippet": "Ranked #1 by sales (Very High). Evidence tier: Weak Evidence.",
+    "category": "Top 25 Ranking",
+    "url": "top-25-supplements.html#s1"
+  },
+  {
+    "title": "Vitamin D",
+    "snippet": "Ranked #2 by sales (Very High). Evidence tier: Strong \u2014 Only If Deficient.",
+    "category": "Top 25 Ranking",
+    "url": "top-25-supplements.html#s2"
+  },
+  {
+    "title": "Omega-3 / Fish Oil",
+    "snippet": "Ranked #3 by sales (Very High). Evidence tier: Moderate Evidence.",
+    "category": "Top 25 Ranking",
+    "url": "top-25-supplements.html#s3"
+  },
+  {
+    "title": "Vitamin C",
+    "snippet": "Ranked #4 by sales (Very High). Evidence tier: Weak Evidence.",
+    "category": "Top 25 Ranking",
+    "url": "top-25-supplements.html#s4"
+  },
+  {
+    "title": "Protein Powder (Whey/Plant)",
+    "snippet": "Ranked #5 by sales (High). Evidence tier: Strong Evidence.",
+    "category": "Top 25 Ranking",
+    "url": "top-25-supplements.html#s5"
+  },
+  {
+    "title": "Probiotics",
+    "snippet": "Ranked #6 by sales (High). Evidence tier: Moderate Evidence.",
+    "category": "Top 25 Ranking",
+    "url": "top-25-supplements.html#s6"
+  },
+  {
+    "title": "Calcium",
+    "snippet": "Ranked #7 by sales (High). Evidence tier: Strong \u2014 Only If Deficient.",
+    "category": "Top 25 Ranking",
+    "url": "top-25-supplements.html#s7"
+  },
+  {
+    "title": "B-Complex / B12",
+    "snippet": "Ranked #8 by sales (High). Evidence tier: Strong \u2014 Only If Deficient.",
+    "category": "Top 25 Ranking",
+    "url": "top-25-supplements.html#s8"
+  },
+  {
+    "title": "Magnesium",
+    "snippet": "Ranked #9 by sales (High). Evidence tier: Moderate Evidence.",
+    "category": "Top 25 Ranking",
+    "url": "top-25-supplements.html#s9"
+  },
+  {
+    "title": "Collagen Peptides",
+    "snippet": "Ranked #10 by sales (High). Evidence tier: Moderate Evidence.",
+    "category": "Top 25 Ranking",
+    "url": "top-25-supplements.html#s10"
+  },
+  {
+    "title": "Creatine Monohydrate",
+    "snippet": "Ranked #11 by sales (High). Evidence tier: Strong Evidence.",
+    "category": "Top 25 Ranking",
+    "url": "top-25-supplements.html#s11"
+  },
+  {
+    "title": "Melatonin",
+    "snippet": "Ranked #12 by sales (High). Evidence tier: Moderate Evidence.",
+    "category": "Top 25 Ranking",
+    "url": "top-25-supplements.html#s12"
+  },
+  {
+    "title": "Turmeric/Curcumin",
+    "snippet": "Ranked #13 by sales (High). Evidence tier: Moderate Evidence.",
+    "category": "Top 25 Ranking",
+    "url": "top-25-supplements.html#s13"
+  },
+  {
+    "title": "CoQ10",
+    "snippet": "Ranked #14 by sales (Moderate-High). Evidence tier: Moderate Evidence.",
+    "category": "Top 25 Ranking",
+    "url": "top-25-supplements.html#s14"
+  },
+  {
+    "title": "Glucosamine/Chondroitin",
+    "snippet": "Ranked #15 by sales (Moderate-High). Evidence tier: Weak Evidence.",
+    "category": "Top 25 Ranking",
+    "url": "top-25-supplements.html#s15"
+  },
+  {
+    "title": "Zinc",
+    "snippet": "Ranked #16 by sales (Moderate). Evidence tier: Moderate Evidence.",
+    "category": "Top 25 Ranking",
+    "url": "top-25-supplements.html#s16"
+  },
+  {
+    "title": "Ashwagandha",
+    "snippet": "Ranked #17 by sales (Moderate). Evidence tier: Moderate Evidence.",
+    "category": "Top 25 Ranking",
+    "url": "top-25-supplements.html#s17"
+  },
+  {
+    "title": "Biotin",
+    "snippet": "Ranked #18 by sales (Moderate). Evidence tier: Weak Evidence.",
+    "category": "Top 25 Ranking",
+    "url": "top-25-supplements.html#s18"
+  },
+  {
+    "title": "Elderberry",
+    "snippet": "Ranked #19 by sales (Moderate). Evidence tier: Moderate Evidence.",
+    "category": "Top 25 Ranking",
+    "url": "top-25-supplements.html#s19"
+  },
+  {
+    "title": "Iron",
+    "snippet": "Ranked #20 by sales (Moderate). Evidence tier: Strong \u2014 Only If Deficient.",
+    "category": "Top 25 Ranking",
+    "url": "top-25-supplements.html#s20"
+  },
+  {
+    "title": "Green Tea Extract",
+    "snippet": "Ranked #21 by sales (Moderate). Evidence tier: Moderate Evidence.",
+    "category": "Top 25 Ranking",
+    "url": "top-25-supplements.html#s21"
+  },
+  {
+    "title": "Echinacea",
+    "snippet": "Ranked #22 by sales (Moderate). Evidence tier: Weak Evidence.",
+    "category": "Top 25 Ranking",
+    "url": "top-25-supplements.html#s22"
+  },
+  {
+    "title": "Garlic Extract",
+    "snippet": "Ranked #23 by sales (Moderate). Evidence tier: Moderate Evidence.",
+    "category": "Top 25 Ranking",
+    "url": "top-25-supplements.html#s23"
+  },
+  {
+    "title": "Saw Palmetto",
+    "snippet": "Ranked #24 by sales (Moderate). Evidence tier: Weak Evidence.",
+    "category": "Top 25 Ranking",
+    "url": "top-25-supplements.html#s24"
+  },
+  {
+    "title": "Milk Thistle (Silymarin)",
+    "snippet": "Ranked #25 by sales (Lower-Moderate). Evidence tier: Weak Evidence.",
+    "category": "Top 25 Ranking",
+    "url": "top-25-supplements.html#s25"
+  },
+  {
+    "title": "Will this supplement interact with my prescription medications?",
+    "snippet": "Possibly, and it's one of the most under-checked risks in medicine today. Documented interactions include St. John's Wort reducing the effectiveness of\u2026",
+    "category": "FAQ",
+    "url": "faq.html#q-will-this-supplement-interact-with-my-prescription-medicatio"
+  },
+  {
+    "title": "Is it safe to take supplements during pregnancy?",
+    "snippet": "This varies enormously by supplement and deserves a direct conversation with an OB-GYN or pharmacist rather than a general answer \u2014 some, like folate, are\u2026",
+    "category": "FAQ",
+    "url": "faq.html#q-is-it-safe-to-take-supplements-during-pregnancy"
+  },
+  {
+    "title": "Does \"natural\" mean it's safe?",
+    "snippet": "No. Foxglove is entirely natural and is also the source of a compound powerful enough to stop a heart at the wrong dose. Ephedra was natural and linked to over\u2026",
+    "category": "FAQ",
+    "url": "faq.html#q-does-natural-mean-its-safe"
+  },
+  {
+    "title": "What happens if I take too much of a vitamin or mineral?",
+    "snippet": "It depends on the nutrient. Water-soluble vitamins (C, the B-complex) are mostly excreted and rarely reach dangerous levels. Fat-soluble vitamins (A, D, E, K)\u2026",
+    "category": "FAQ",
+    "url": "faq.html#q-what-happens-if-i-take-too-much-of-a-vitamin-or-mineral"
+  },
+  {
+    "title": "Can a supplement be contaminated or not contain what the label says?",
+    "snippet": "Yes, and it's documented more often than most people assume. A national liver injury registry found 40% of green tea extract products implicated in liver\u2026",
+    "category": "FAQ",
+    "url": "faq.html#q-can-a-supplement-be-contaminated-or-not-contain-what-the-lab"
+  },
+  {
+    "title": "Does this supplement actually work?",
+    "snippet": "The honest answer requires asking a follow-up question: works for what, and compared to what evidence? A product can have a genuine, narrow effect while the\u2026",
+    "category": "FAQ",
+    "url": "faq.html#q-does-this-supplement-actually-work"
+  },
+  {
+    "title": "What does \"clinically studied\" or \"clinically proven\" actually mean?",
+    "snippet": "Nothing specific and legally enforceable. The phrase can describe a single small, unpublished, industry-funded study on a dozen people, or a large independent\u2026",
+    "category": "FAQ",
+    "url": "faq.html#q-what-does-clinically-studied-or-clinically-proven-actually-m"
+  },
+  {
+    "title": "If a friend/family member says it worked for them, isn't that good evidence?",
+    "snippet": "It's a real experience, but not proof the supplement caused it. Four ordinary explanations can produce the same story: confirmation bias, the placebo effect,\u2026",
+    "category": "FAQ",
+    "url": "faq.html#q-if-a-friendfamily-member-says-it-worked-for-them-isnt-that-g"
+  },
+  {
+    "title": "Can a supplement have a scientific-sounding mechanism and still not work?",
+    "snippet": "Yes \u2014 this is one of the best-documented patterns in supplement research. Beta-carotene's antioxidant mechanism was biologically sound and its\u2026",
+    "category": "FAQ",
+    "url": "faq.html#q-can-a-supplement-have-a-scientific-sounding-mechanism-and-st"
+  },
+  {
+    "title": "Why do some supplements only work for certain people?",
+    "snippet": "Because the underlying evidence is often conditional on a real deficiency. Vitamin D, B12, calcium, and iron are the clearest examples: genuinely effective if\u2026",
+    "category": "FAQ",
+    "url": "faq.html#q-why-do-some-supplements-only-work-for-certain-people"
+  },
+  {
+    "title": "Are supplements approved by the FDA?",
+    "snippet": "No \u2014 and this surprises most people. A dietary supplement can reach a U.S. shelf with no premarket review of its safety or effectiveness. The FDA's role is\u2026",
+    "category": "FAQ",
+    "url": "faq.html#q-are-supplements-approved-by-the-fda"
+  },
+  {
+    "title": "What does \"third-party tested\" mean, and can I trust it?",
+    "snippet": "It depends entirely on who did the testing. A named, independent certifier (NSF International, USP, ConsumerLab) applies real, disclosed standards. An unnamed\u2026",
+    "category": "FAQ",
+    "url": "faq.html#q-what-does-third-party-tested-mean-and-can-i-trust-it"
+  },
+  {
+    "title": "Why is a supplement allowed to say \"supports heart health\" without proving it treats heart disease?",
+    "snippet": "Because U.S. law draws a sharp line between a \"structure/function claim\" (requires no clinical evidence, only a disclaimer) and a \"disease claim\" (would make\u2026",
+    "category": "FAQ",
+    "url": "faq.html#q-why-is-a-supplement-allowed-to-say-supports-heart-health-wit"
+  },
+  {
+    "title": "Do other countries regulate supplements more strictly?",
+    "snippet": "Yes. Canada requires a product license before sale. Australia sorts products into three risk tiers with evidence requirements scaled to the claim. The EU only\u2026",
+    "category": "FAQ",
+    "url": "faq.html#q-do-other-countries-regulate-supplements-more-strictly"
+  },
+  {
+    "title": "Who actually profits when I buy a supplement, and does it depend on whether it works?",
+    "snippet": "Subscription models, affiliate commissions (typically 10\u201350% of a sale), and multi-level marketing structures all generate revenue independent of whether the\u2026",
+    "category": "FAQ",
+    "url": "faq.html#q-who-actually-profits-when-i-buy-a-supplement-and-does-it-dep"
+  },
+  {
+    "title": "How much of a vitamin or mineral do I actually need?",
+    "snippet": "Almost always less than what high-dose products market. Recommended intakes are set to prevent deficiency, not to maximize a benefit that increases\u2026",
+    "category": "FAQ",
+    "url": "faq.html#q-how-much-of-a-vitamin-or-mineral-do-i-actually-need"
+  },
+  {
+    "title": "Can I take multiple supplements that contain the same ingredient without realizing it?",
+    "snippet": "Very easily, and it's one of the most common ways someone unintentionally reaches an excessive dose \u2014 a multivitamin, a separate vitamin D pill, and a\u2026",
+    "category": "FAQ",
+    "url": "faq.html#q-can-i-take-multiple-supplements-that-contain-the-same-ingred"
+  },
+  {
+    "title": "Is the dose on the label the dose actually in the product?",
+    "snippet": "Not reliably for every category. Independent testing of melatonin products, for example, has repeatedly found actual content varying from the labeled dose by\u2026",
+    "category": "FAQ",
+    "url": "faq.html#q-is-the-dose-on-the-label-the-dose-actually-in-the-product"
+  },
+  {
+    "title": "Should I tell my doctor about every supplement I take, even \"harmless\" ones like vitamins?",
+    "snippet": "Yes, specifically because most people don't. Physicians are inconsistently trained to ask about supplements, and patients rarely volunteer them unprompted\u2026",
+    "category": "FAQ",
+    "url": "faq.html#q-should-i-tell-my-doctor-about-every-supplement-i-take-even-h"
+  },
+  {
+    "title": "Do I need a multivitamin if I already eat a reasonably varied diet?",
+    "snippet": "The trial evidence is weaker than the \"insurance policy\" framing suggests. Large studies (COSMOS-Mind, Physicians' Health Study II) have found null-to-modest\u2026",
+    "category": "FAQ",
+    "url": "faq.html#q-do-i-need-a-multivitamin-if-i-already-eat-a-reasonably-varie"
+  },
+  {
+    "title": "Is the expensive brand actually better than the cheap one?",
+    "snippet": "Not necessarily, and price alone tells you nothing about evidence quality, purity, or dose accuracy. A genuine third-party certification (see above) is a\u2026",
+    "category": "FAQ",
+    "url": "faq.html#q-is-the-expensive-brand-actually-better-than-the-cheap-one"
+  },
+  {
+    "title": "Which supplements have the strongest evidence behind them?",
+    "snippet": "The best-evidenced entries share a common trait: they make a narrow, specific, testable claim rather than a broad promise. Creatine for short-duration athletic\u2026",
+    "category": "FAQ",
+    "url": "faq.html#q-which-supplements-have-the-strongest-evidence-behind-them"
+  },
+  {
+    "title": "If the evidence is this mixed, should I stop taking supplements altogether?",
+    "snippet": "Not necessarily \u2014 that's not this investigation's argument. Several products on this site's own ranking have genuine, replicated benefit for specific people.\u2026",
+    "category": "FAQ",
+    "url": "faq.html#q-if-the-evidence-is-this-mixed-should-i-stop-taking-supplemen"
+  },
+  {
+    "title": "The Effect of Vitamin E and Beta Carotene on the Incidence of Lung Cancer and Other Cancers in Male Smokers",
+    "snippet": "The Alpha-Tocopherol, Beta Carotene Cancer Prevention Study Group \u00b7 New England Journal of Medicine \u00b7 1994 \u2014 The central case study of Book One. Found an 18% increase in lung cancer diagnoses and an 8% increase in deaths among smokers given beta-carotene \u2014\u2026",
+    "category": "Bibliography (Peer-Reviewed Study)",
+    "url": "annotated-bibliography.html#bib-the-effect-of-vitamin-e-and-beta-carotene-on-the-i"
+  },
+  {
+    "title": "Effects of a Combination of Beta Carotene and Vitamin A on Lung Cancer and Cardiovascular Disease",
+    "snippet": "Omenn, Gilbert S., et al. (CARET) \u00b7 New England Journal of Medicine \u00b7 1996 \u2014 Run independently of ATBC on a comparable population of smokers and asbestos-exposed workers, CARET reached the same negative conclusion \u2014 both\u2026",
+    "category": "Bibliography (Peer-Reviewed Study)",
+    "url": "annotated-bibliography.html#bib-effects-of-a-combination-of-beta-carotene-and-vita"
+  },
+  {
+    "title": "Beta-Carotene in Multivitamins and the Possible Risk of Lung Cancer Among Smokers Versus Former Smokers",
+    "snippet": "Tanvetyanon, Tawee, and Gerold Bepler \u00b7 Cancer \u00b7 2008 \u2014 A pooled analysis across multiple trials and national brands, confirming the beta-carotene risk signal held up beyond any single study.",
+    "category": "Bibliography (Peer-Reviewed Study)",
+    "url": "annotated-bibliography.html#bib-beta-carotene-in-multivitamins-and-the-possible-ri"
+  },
+  {
+    "title": "Vitamin, Mineral, and Multivitamin Supplementation to Prevent Cancer and Cardiovascular Disease: Recommendation Statement",
+    "snippet": "U.S. Preventive Services Task Force \u2014 The federal task force's review found an overall 20% increased lung cancer risk associated with beta-carotene supplementation, concentrated among\u2026",
+    "category": "Bibliography (Government Report)",
+    "url": "annotated-bibliography.html#bib-vitamin-mineral-and-multivitamin-supplementation-t"
+  },
+  {
+    "title": "Vitamin E Supplementation and Cardiovascular Events in High-Risk Patients",
+    "snippet": "Yusuf, Salim, et al. (HOPE Study Investigators) \u00b7 New England Journal of Medicine \u00b7 2000 \u2014 Book One's second confirming example: early observational enthusiasm for a supplement reversing under a large, rigorous trial.",
+    "category": "Bibliography (Peer-Reviewed Study)",
+    "url": "annotated-bibliography.html#bib-vitamin-e-supplementation-and-cardiovascular-event"
+  },
+  {
+    "title": "Information for Consumers on Using Dietary Supplements",
+    "snippet": "U.S. Food and Drug Administration \u00b7 FDA.gov \u2014 The agency's own consumer-facing guidance, used to confirm exactly what the FDA does and does not claim to verify before a supplement reaches a shelf.",
+    "category": "Bibliography (Federal Guidance)",
+    "url": "annotated-bibliography.html#bib-information-for-consumers-on-using-dietary-supplem"
+  },
+  {
+    "title": "Dietary Supplement Health and Education Act of 1994",
+    "snippet": "Public Law 103-417, 103rd Congress \u2014 The foundational statute of this investigation \u2014 the law that classifies supplements as a food category and removed premarket safety and efficacy\u2026",
+    "category": "Bibliography (Federal Law)",
+    "url": "annotated-bibliography.html#bib-dietary-supplement-health-and-education-act-of-199"
+  },
+  {
+    "title": "Structure/Function Claims",
+    "snippet": "U.S. Food and Drug Administration \u00b7 FDA.gov \u2014 The regulatory definition distinguishing a structure/function claim from a disease claim \u2014 the line nearly all supplement marketing copy is written\u2026",
+    "category": "Bibliography (Federal Guidance)",
+    "url": "annotated-bibliography.html#bib-structurefunction-claims"
+  },
+  {
+    "title": "CFSAN Adverse Event Reporting System (CAERS)",
+    "snippet": "U.S. Food and Drug Administration \u00b7 2004\u20132021 \u2014 The federal post-market surveillance data behind the 79,000+ adverse event figure cited throughout Book Two.",
+    "category": "Bibliography (Government Data)",
+    "url": "annotated-bibliography.html#bib-cfsan-adverse-event-reporting-system-caers"
+  },
+  {
+    "title": "Final Rule Declaring Dietary Supplements Containing Ephedrine Alkaloids Adulterated",
+    "snippet": "U.S. Food and Drug Administration \u00b7 2004 \u2014 The FDA's only use of its DSHEA authority to remove an entire ingredient category from the market \u2014 the regulatory record behind Case One in Book\u2026",
+    "category": "Bibliography (Federal Rule)",
+    "url": "annotated-bibliography.html#bib-final-rule-declaring-dietary-supplements-containin"
+  },
+  {
+    "title": "Pharmanex, Inc. v. Shalala",
+    "snippet": "35 F. Supp. 2d 1341 (D. Utah 1999), rev'd, 221 F.3d 1151 (10th Cir. 2000) \u2014 The federal court case over whether red yeast rice containing concentrated lovastatin should be regulated as a drug \u2014 reversed on appeal, then won by\u2026",
+    "category": "Bibliography (Court Record)",
+    "url": "annotated-bibliography.html#bib-pharmanex-inc-v-shalala"
+  },
+  {
+    "title": "Final Decision on Cholestin",
+    "snippet": "U.S. Food and Drug Administration \u00b7 Docket No. 97P-0441 \u00b7 1998 \u2014 The FDA's original administrative determination that Cholestin's concentrated drug compound disqualified it from supplement status.",
+    "category": "Bibliography (Government Report)",
+    "url": "annotated-bibliography.html#bib-final-decision-on-cholestin"
+  },
+  {
+    "title": "Tainted Products Marketed as Dietary Supplements",
+    "snippet": "U.S. Food and Drug Administration \u00b7 Public Warning Database \u2014 The ongoing federal registry of products found spiked with undisclosed pharmaceutical ingredients \u2014 the evidentiary basis for Case Three in Book\u2026",
+    "category": "Bibliography (Government Data)",
+    "url": "annotated-bibliography.html#bib-tainted-products-marketed-as-dietary-supplements"
+  },
+  {
+    "title": "New Dietary Ingredient Notification Correspondence Regarding NMN",
+    "snippet": "U.S. Food and Drug Administration \u00b7 November 2022 and December 2025 \u2014 The FDA's original 2022 exclusion determination for NMN and its 2025 reversal \u2014 the timeline behind Case Four in Book Three.",
+    "category": "Bibliography (Federal Guidance)",
+    "url": "annotated-bibliography.html#bib-new-dietary-ingredient-notification-correspondence"
+  },
+  {
+    "title": "Liver Injury From Herbals and Dietary Supplements in the U.S. Drug-Induced Liver Injury Network",
+    "snippet": "Navarro, Victor J., et al. \u00b7 Hepatology \u00b7 2014 \u2014 The DILIN registry study behind Book Two's central risk finding \u2014 the rise from 7% to 20% of documented liver injury cases attributed to supplements,\u2026",
+    "category": "Bibliography (Peer-Reviewed Study)",
+    "url": "annotated-bibliography.html#bib-liver-injury-from-herbals-and-dietary-supplements"
+  },
+  {
+    "title": "Acute Heart Transplant Rejection Due to Saint John's Wort",
+    "snippet": "Ruschitzka, Frank, et al. \u00b7 The Lancet \u00b7 2000 \u2014 The documented case of heart transplant rejection linked to a St. John's Wort\u2013cyclosporine interaction \u2014 the clearest single interaction case in the\u2026",
+    "category": "Bibliography (Peer-Reviewed Study)",
+    "url": "annotated-bibliography.html#bib-acute-heart-transplant-rejection-due-to-saint-john"
+  },
+  {
+    "title": "Calcium Supplements With or Without Vitamin D and Risk of Cardiovascular Events",
+    "snippet": "Bolland, Mark J., et al. \u00b7 BMJ \u00b7 2010 \u2014 The widely discussed meta-analysis behind the cardiovascular risk caveat attached to calcium supplementation, even where fracture-risk benefit is\u2026",
+    "category": "Bibliography (Peer-Reviewed Study)",
+    "url": "annotated-bibliography.html#bib-calcium-supplements-with-or-without-vitamin-d-and"
+  },
+  {
+    "title": "Staff Report on Multi-Level Marketing Income Disclosure Statements",
+    "snippet": "U.S. Federal Trade Commission \u00b7 2024 \u2014 A review of dozens of MLM companies' own income disclosures, finding most participants earned $1,000 or less annually \u2014 and that most participants\u2026",
+    "category": "Bibliography (Government Report)",
+    "url": "annotated-bibliography.html#bib-staff-report-on-multi-level-marketing-income-discl"
+  },
+  {
+    "title": "AARP Foundation Study of Multilevel Marketing: Profiling Participants and Their Experiences in Direct Sales",
+    "snippet": "DeLiema, Marguerite, et al. \u00b7 AARP Foundation \u00b7 2018 \u2014 Survey data corroborating the FTC findings \u2014 nearly half of MLM participants reported losing money once expenses were accounted for.",
+    "category": "Bibliography (Research Report)",
+    "url": "annotated-bibliography.html#bib-aarp-foundation-study-of-multilevel-marketing-prof"
+  },
+  {
+    "title": "Nutrition Education in U.S. Medical Schools",
+    "snippet": "National Academy of Sciences, Committee on Nutrition in Medical Education \u00b7 National Academies Press \u00b7 1985 \u2014 The original source of the 25-hour minimum nutrition education recommendation that U.S. medical schools have fallen short of for four decades.",
+    "category": "Bibliography (Government Report)",
+    "url": "annotated-bibliography.html#bib-nutrition-education-in-us-medical-schools"
+  },
+  {
+    "title": "Status of Nutrition Education in Medical Schools",
+    "snippet": "Adams, Kelly M., et al. \u00b7 American Journal of Clinical Nutrition \u00b7 2006 \u2014 Survey data showing U.S. medical schools averaging 19\u201324 hours of nutrition education against the 25-hour recommended minimum.",
+    "category": "Bibliography (Peer-Reviewed Study)",
+    "url": "annotated-bibliography.html#bib-status-of-nutrition-education-in-medical-schools"
+  },
+  {
+    "title": "Medical Schools Agree to Expand Their Nutrition Curriculum",
+    "snippet": "National Public Radio \u00b7 2025 \u2014 Reporting on the 2025 agreement by more than fifty U.S. medical schools to expand nutrition curricula to roughly 40 hours, confirming the training\u2026",
+    "category": "Bibliography (News Report)",
+    "url": "annotated-bibliography.html#bib-medical-schools-agree-to-expand-their-nutrition-cu"
+  },
+  {
+    "title": "Vitamin D Supplements and Prevention of Cancer and Cardiovascular Disease",
+    "snippet": "Manson, JoAnn E., et al. (VITAL) \u00b7 New England Journal of Medicine \u00b7 2019 \u2014 One half of the VITAL trial (25,871 participants) \u2014 found no significant reduction in cancer incidence from vitamin D supplementation.",
+    "category": "Bibliography (Peer-Reviewed Study)",
+    "url": "annotated-bibliography.html#bib-vitamin-d-supplements-and-prevention-of-cancer-and"
+  },
+  {
+    "title": "Marine n-3 Fatty Acids and Prevention of Cardiovascular Disease and Cancer",
+    "snippet": "Manson, JoAnn E., et al. (VITAL) \u00b7 New England Journal of Medicine \u00b7 2019 \u2014 The companion VITAL result for omega-3 supplementation \u2014 no significant reduction in the composite cardiovascular endpoint, but a real 28% reduction\u2026",
+    "category": "Bibliography (Peer-Reviewed Study)",
+    "url": "annotated-bibliography.html#bib-marine-n-3-fatty-acids-and-prevention-of-cardiovas"
+  },
+  {
+    "title": "Ginkgo biloba for Prevention of Dementia: A Randomized Controlled Trial",
+    "snippet": "DeKosky, Steven T., et al. (GEM) \u00b7 JAMA \u00b7 2008 \u2014 The largest trial ever run on ginkgo biloba for dementia prevention (3,069 participants) \u2014 found no protective effect.",
+    "category": "Bibliography (Peer-Reviewed Study)",
+    "url": "annotated-bibliography.html#bib-ginkgo-biloba-for-prevention-of-dementia-a-randomi"
+  },
+  {
+    "title": "Saw Palmetto for Benign Prostatic Hyperplasia",
+    "snippet": "Bent, Stephen, et al. \u00b7 New England Journal of Medicine \u00b7 2006 \u2014 A 225-patient randomized trial finding saw palmetto did not improve BPH symptoms compared with placebo.",
+    "category": "Bibliography (Peer-Reviewed Study)",
+    "url": "annotated-bibliography.html#bib-saw-palmetto-for-benign-prostatic-hyperplasia"
+  },
+  {
+    "title": "Effect of Increasing Doses of Saw Palmetto Extract on Lower Urinary Tract Symptoms",
+    "snippet": "Barry, Michael J., et al. (CAMUS) \u00b7 JAMA \u00b7 2011 \u2014 A follow-up 369-patient trial testing escalating doses up to three times standard \u2014 reached the same negative conclusion at every dose.",
+    "category": "Bibliography (Peer-Reviewed Study)",
+    "url": "annotated-bibliography.html#bib-effect-of-increasing-doses-of-saw-palmetto-extract"
+  },
+  {
+    "title": "What Intelligence Tests Miss: The Psychology of Rational Thought",
+    "snippet": "Stanovich, Keith E. \u00b7 Yale University Press \u00b7 2009 \u2014 The source of \"dysrationalia\" \u2014 research finding that general intelligence correlates only weakly with resistance to cognitive bias, central to Book\u2026",
+    "category": "Bibliography (Book / Research)",
+    "url": "annotated-bibliography.html#bib-what-intelligence-tests-miss-the-psychology-of-rat"
+  },
+  {
+    "title": "Ephedra and Ephedrine for Weight Loss and Athletic Performance Enhancement: Clinical Efficacy and Side Effects",
+    "snippet": "RAND Corporation \u00b7 2003 \u2014 The independent scientific review commissioned ahead of the FDA's 2004 ephedra ban, cited in Case One of Book Three.",
+    "category": "Bibliography (Research Report)",
+    "url": "annotated-bibliography.html#bib-ephedra-and-ephedrine-for-weight-loss-and-athletic"
+  },
+  {
+    "title": "Natural Health Products Regulations",
+    "snippet": "Health Canada \u2014 The regulatory basis for Canada's premarket licensing system (Natural Product Number), evidence-scaled through a monograph model \u2014 one of two working\u2026",
+    "category": "Bibliography (Government Report)",
+    "url": "annotated-bibliography.html#bib-natural-health-products-regulations"
+  },
+  {
+    "title": "Listed, Assessed Listed, and Registered Medicines Framework",
+    "snippet": "Australian Therapeutic Goods Administration \u2014 The regulatory basis for Australia's three-tier, risk-based classification system \u2014 the second working alternative behind the appendix's recommended\u2026",
+    "category": "Bibliography (Government Report)",
+    "url": "annotated-bibliography.html#bib-listed-assessed-listed-and-registered-medicines-fr"
+  },
+  {
+    "title": "Directive 2002/46/EC on Food Supplements",
+    "snippet": "European Parliament and Council \u2014 The EU's positive-list framework \u2014 only listed vitamins, minerals, and forms may be used in a supplement, prohibited otherwise since August 2005.",
+    "category": "Bibliography (Legislation)",
+    "url": "annotated-bibliography.html#bib-directive-200246ec-on-food-supplements"
+  },
+  {
+    "title": "Novel Foods Regulation (EC) No. 2015/2283",
+    "snippet": "European Food Safety Authority \u2014 The EU's premarket safety evaluation requirement for any ingredient without a documented history of use before 1997.",
+    "category": "Bibliography (Government Report)",
+    "url": "annotated-bibliography.html#bib-novel-foods-regulation-ec-no-20152283"
+  },
+  {
+    "title": "How to Read a Health Claim",
+    "snippet": "The Evidence Pyramid, the difference between a mechanism and a result, and why 'clinically studied' can mean almost anything.",
+    "category": "Research Guide",
+    "url": "how-to-read-a-health-claim.html"
+  },
+  {
+    "title": "The Regulatory Gap",
+    "snippet": "Why a supplement can reach a shelf with no premarket proof of safety or effectiveness \u2014 and what the label is and isn't required to say.",
+    "category": "Research Guide",
+    "url": "the-regulatory-gap.html"
+  },
+  {
+    "title": "When Natural Isn't Safe",
+    "snippet": "Documented liver injury, drug interactions, and dose toxicity \u2014 the evidence on real, measurable supplement harm.",
+    "category": "Research Guide",
+    "url": "when-natural-isnt-safe.html"
+  },
+  {
+    "title": "Who Profits From Belief",
+    "snippet": "Subscription models, affiliate commissions, multi-level marketing, and the vocabulary built to sell science it doesn't have.",
+    "category": "Research Guide",
+    "url": "who-profits-from-supplements.html"
+  },
+  {
+    "title": "What Other Countries Do",
+    "snippet": "Canada's licensing model, Australia's tiered evidence system \u2014 the working alternatives to the U.S. approach.",
+    "category": "Research Guide",
+    "url": "what-other-countries-do.html"
+  },
+  {
+    "title": "What Should Change",
+    "snippet": "The trilogy's closing appendix \u2014 a tiered evidence framework for U.S. supplement regulation, applied to the Top 25 best-sellers.",
+    "category": "Appendix",
+    "url": "appendix-what-should-change.html"
+  },
+  {
+    "title": "What the Label Doesn't Tell You (Book One)",
+    "snippet": "Evidence, anecdote, and the beta-carotene lung cancer trials \u2014 the toolkit for reading any health claim.",
+    "category": "Book",
+    "url": "what-the-label-doesnt-tell-you.html"
+  },
+  {
+    "title": "The Hollow Aisle (Book Two)",
+    "snippet": "The regulatory gap, documented risk, drug interactions, and the business of belief \u2014 what the law never required anyone to prove.",
+    "category": "Book",
+    "url": "the-hollow-aisle.html"
+  },
+  {
+    "title": "Prove It (Book Three)",
+    "snippet": "Chronic disease claims, the misinformation business, real case files, and a recommendation for what should change.",
+    "category": "Book",
+    "url": "prove-it.html"
+  }
+];
+
+(function(){
+  const input = document.getElementById('search-hero-input');
+  const pills = document.querySelectorAll('#search-pills .topic-pill');
+  const resultsEl = document.getElementById('search-results');
+  const emptyEl = document.getElementById('empty-state');
+  const countEl = document.getElementById('results-count');
+  let activeCat = 'all';
+
+  // Prefill from ?q= URL param
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('q')) {
+    input.value = params.get('q');
+  }
+
+  function renderResults(){
+    const query = input.value.trim().toLowerCase();
+    let matches = SEARCH_INDEX.filter(function(item){
+      const catMatch = (activeCat === 'all' || item.category === activeCat || (activeCat === 'Bibliography' && item.category.indexOf('Bibliography') === 0));
+      if (!catMatch) return false;
+      if (query === '') return true;
+      const haystack = (item.title + ' ' + item.snippet + ' ' + item.category).toLowerCase();
+      return haystack.indexOf(query) !== -1;
+    });
+
+    if (query === '' && activeCat === 'all') {
+      resultsEl.innerHTML = '';
+      emptyEl.classList.remove('hidden');
+      emptyEl.querySelector('p').textContent = 'Start typing above to search across the entire investigation.';
+      countEl.textContent = '';
+      return;
+    }
+
+    emptyEl.classList.add('hidden');
+    countEl.textContent = matches.length + (matches.length === 1 ? ' result' : ' results');
+
+    if (matches.length === 0) {
+      resultsEl.innerHTML = '';
+      emptyEl.classList.remove('hidden');
+      emptyEl.querySelector('p').textContent = 'No matches. Try a different term, or browse the Research Library directly.';
+      return;
+    }
+
+    resultsEl.innerHTML = matches.map(function(item){
+      return '<div class="search-result">' +
+        '<div class="cat-badge">' + item.category + '</div>' +
+        '<h3><a href="' + item.url + '">' + item.title + '</a></h3>' +
+        '<p>' + item.snippet + '</p>' +
+        '</div>';
+    }).join('');
+  }
+
+  input.addEventListener('input', renderResults);
+
+  pills.forEach(function(pill){
+    pill.addEventListener('click', function(){
+      pills.forEach(function(p){ p.classList.remove('active'); });
+      pill.classList.add('active');
+      activeCat = pill.getAttribute('data-cat');
+      renderResults();
+    });
+  });
+
+  renderResults();
+})();
+</script>
+
+</body>
+</html>
