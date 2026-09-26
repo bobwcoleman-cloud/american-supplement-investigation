@@ -3,90 +3,227 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>The American Supplement Investigation | Broken Promises Healthcare</title>
-<meta name="description" content="An evidence-based investigation into the dietary supplement industry — the claims, the regulatory gap, the risks, and the business of belief. By Joy Meier, Pharm.D. and Robert Coleman.">
+<title>The American Supplement Investigation | Follow the Evidence</title>
+<meta name="description" content="Before you take that supplement, check the evidence. Look up any real product's NIH-verified label, see what the clinical evidence shows, and read the free investigative trilogy behind the site — by Joy Meier, Pharm.D. and Robert Coleman.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="home-v2">
 
-<div class="hero-band">
-  <div class="cover-fan">
-    <img src="book-one-cover-header.jpg" alt="What the Label Doesn't Tell You" class="fan-1">
-    <img src="book-two-cover-header.jpg" alt="The Hollow Aisle" class="fan-2">
-    <img src="book-three-cover-header.jpg" alt="Prove It" class="fan-3">
-  </div>
-  <div class="tagline">FOLLOW THE MONEY. FOLLOW THE <span class="accent">SCIENCE</span>. FOLLOW THE EVIDENCE.</div>
-  <div class="tagline-sub">A free, independent, evidence-based reference for dietary supplements.</div>
-  <div class="hero-icons">
-    <span>📖 Investigative Books</span>
-    <span>🏆 Top 25: Sales vs. Evidence</span>
-    <span>🔬 Live Product Lookup</span>
-    <span>🔎 Search Everything</span>
-  </div>
-  <div class="imprint">COLEMAN PUBLISHING &nbsp;•&nbsp; PART OF BROKEN PROMISES HEALTHCARE</div>
+<div class="util-bar">
+  COLEMAN PUBLISHING <span class="sep">•</span> PART OF BROKEN PROMISES HEALTHCARE <span class="sep">•</span> <a href="https://brokenpromiseshealthcare.org">← Broken Promises Healthcare</a>
 </div>
 
 <nav>
-  <div class="wrap">
-    <div class="links">
-      <a href="#home">Home</a>
-      <a href="#books">Books</a>
-      <a href="#research-library">Research</a>
+  <div class="home-nav-wrap">
+    <a href="index.html#home" class="home-logo" style="text-decoration:none;">
+      <span class="name-line">The American <span class="accent">Supplement</span> Investigation</span>
+      <span class="tag-line">Follow the Money. Follow the Science. Follow the Evidence.</span>
+    </a>
+    <div class="home-nav-links" id="homeNavLinks">
+      <a href="product-lookup.html" class="current">Product Lookup</a>
       <a href="top-25-supplements.html">Top 25</a>
+      <a href="index.html#books">The Books</a>
+      <a href="annotated-bibliography.html">Evidence Library</a>
       <a href="faq.html">FAQ</a>
-      <a href="search.html">Search</a>
-      <a href="product-lookup.html">Product Lookup</a>
-      <a href="#appendix">What Should Change</a>
-      <a href="#about">About</a>
-      <a href="#contact">Contact</a>
-      <a class="back" href="https://brokenpromiseshealthcare.org">← Broken Promises Healthcare</a>
+      <a href="index.html#about">About</a>
+      <a href="search.html" class="nav-search-icon" title="Search the whole site" aria-label="Search the whole site">🔎</a>
     </div>
+    <button type="button" class="nav-hamburger" id="navHamburger" aria-label="Open menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
   </div>
 </nav>
 
-<section class="intro" id="home">
-  <div class="wrap grid">
+<section class="hero-v2" id="home">
+  <div class="wrap hero-grid-v2">
     <div>
-      <div class="site-title">The American Supplement Investigation</div>
-      <h1>What does the evidence actually say?</h1>
-      <p>A free, independent, evidence-based reference resource for dietary supplements. Investigate ingredients, doses, clinical evidence, safety, drug interactions, regulatory status, and marketing claims — using peer-reviewed research and authoritative government sources, not marketing copy.</p>
-      <div class="cta-row">
-        <a class="btn btn-primary" href="product-lookup.html">Look Up a Product</a>
-        <a class="btn btn-secondary" href="#research-library">Browse the Research Library</a>
+      <h1>Before You Take That Supplement,<br>Check the <span class="accent">Evidence.</span></h1>
+      <p class="hero-copy">Search thousands of real supplement labels and find out what's actually in the product you're considering. Then explore the clinical evidence, studied doses, safety concerns, and drug interactions — using peer-reviewed research and authoritative government sources, not marketing copy.</p>
+
+      <div class="hero-search-row">
+        <input type="text" id="lookup-input" class="search-hero-input" placeholder="Search by product name or brand (e.g. turmeric, CoQ10, Nutricost, etc.)">
+        <button type="button" id="lookup-search-btn" class="btn btn-primary hero-search-btn">Search →</button>
+      </div>
+      <p class="hero-search-note">Powered by supplement-label data from the NIH Dietary Supplement Label Database. <a href="about-product-lookup.html">How this works →</a></p>
+
+      <div class="hero-chip-row">
+        <span class="chip-label">Try a search:</span>
+        <button type="button" class="quick-chip" data-q="Magnesium">Magnesium</button>
+        <button type="button" class="quick-chip" data-q="Turmeric">Turmeric</button>
+        <button type="button" class="quick-chip" data-q="CoQ10">CoQ10</button>
+        <button type="button" class="quick-chip" data-q="Melatonin">Melatonin</button>
+        <button type="button" class="quick-chip" data-q="5-HTP">5-HTP</button>
+        <button type="button" class="quick-chip" data-q="Multivitamin">Multivitamin</button>
       </div>
     </div>
-    <div class="pathway-grid">
-      <a class="pathway-card" href="product-lookup.html">
-        <div class="pathway-icon">🔬</div>
-        <h3>Look Up a Product</h3>
-        <p>Search any real supplement by name and see its actual NIH-verified label — ingredients, doses, and claims.</p>
-      </a>
-      <a class="pathway-card" href="top-25-supplements.html">
-        <div class="pathway-icon">📊</div>
-        <h3>Check the Evidence</h3>
-        <p>See how America's best-selling supplements actually rate against the clinical trial evidence behind them.</p>
-      </a>
-      <a class="pathway-card" href="when-natural-isnt-safe.html">
-        <div class="pathway-icon">⚠️</div>
-        <h3>Check Safety</h3>
-        <p>Documented liver injury, drug interactions, and dose toxicity — where real, measurable harm has occurred.</p>
-      </a>
-      <a class="pathway-card" href="who-profits-from-supplements.html">
-        <div class="pathway-icon">💰</div>
-        <h3>Understand the Industry</h3>
-        <p>Regulation, marketing, affiliate incentives, and the business models built to sell belief rather than results.</p>
-      </a>
+
+    <div class="hero-visual" aria-hidden="true">
+      <div class="label-card">
+        <h4>Supplement Facts</h4>
+        <div class="serving">Serving Size 1 Capsule</div>
+        <table>
+          <tr><td>Amount Per Serving</td><td>%DV</td></tr>
+          <tr><td>Turmeric Extract</td><td>500 mg</td></tr>
+          <tr><td>Black Pepper Extract</td><td>5 mg</td></tr>
+        </table>
+        <div class="dv-note">† Daily Value not established.</div>
+        <div class="magnifier">🔍</div>
+      </div>
     </div>
-  </div>
-  <div class="wrap">
-    <p class="trilogy-nudge">Want the whole story? <a href="#books">Read the complete American Supplement Investigation trilogy — free →</a></p>
   </div>
 </section>
 
-<section class="section" id="research-library">
+<div class="guide-body" style="max-width:820px;padding-top:0;">
+  <div id="lookup-status" class="lookup-status" style="display:none;">
+    <p>Type a product name above and press Enter, or wait a moment after typing.</p>
+  </div>
+  <div id="lookup-results"></div>
+  <div id="lookup-detail"></div>
+</div>
+
+<section class="journey-row">
+  <div class="wrap journey-grid">
+    <a class="journey-card" href="product-lookup.html">
+      <div class="thumb c1">🔍</div>
+      <h3>Look Up Your Supplement</h3>
+      <p>Search real products and see their NIH-verified ingredients, doses, and label information.</p>
+      <span class="journey-link">Look Up a Product →</span>
+    </a>
+    <a class="journey-card" href="top-25-supplements.html">
+      <div class="thumb c2">📊</div>
+      <h3>See What the Evidence Shows</h3>
+      <p>Find out what clinical trials and systematic reviews actually show — not just marketing claims.</p>
+      <span class="journey-link">Explore the Top 25 →</span>
+    </a>
+    <a class="journey-card" href="index.html#books">
+      <div class="thumb c3">📖</div>
+      <h3>Read the Investigation</h3>
+      <p>Explore the free illustrated books that examine the science, regulation, marketing, and economics of the supplement industry.</p>
+      <span class="journey-link">View the Books →</span>
+    </a>
+    <a class="journey-card" href="faq.html">
+      <div class="thumb c4">❓</div>
+      <h3>Get Straight Answers</h3>
+      <p>Our FAQ explains what supplement labels mean, what FDA oversight involves, and how to judge claims.</p>
+      <span class="journey-link">Visit the FAQ →</span>
+    </a>
+  </div>
+</section>
+
+<section class="top25-preview">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="copy">
+        <div class="eyebrow">America's 25 Most Popular Supplements</div>
+        <h2 style="margin:6px 0 8px;">How Good Is the Evidence?</h2>
+        <p style="margin:0;color:var(--gray-body);">Explore summaries of the evidence, typical doses used in studies, and key safety considerations.</p>
+      </div>
+      <a class="btn btn-secondary" href="top-25-supplements.html">Explore All 25 →</a>
+    </div>
+    <div class="top25-tiles">
+      <a class="top25-tile" href="top-25-supplements.html#s9">
+        <div class="tile-icon" style="background:#EAF2EE;">🤍</div>
+        <span class="tile-name">Magnesium</span>
+      </a>
+      <a class="top25-tile" href="top-25-supplements.html#s13">
+        <div class="tile-icon" style="background:#FBF0DC;">🟠</div>
+        <span class="tile-name">Turmeric</span>
+      </a>
+      <a class="top25-tile" href="top-25-supplements.html#s2">
+        <div class="tile-icon" style="background:#FFF6DC;">☀️</div>
+        <span class="tile-name">Vitamin D</span>
+      </a>
+      <a class="top25-tile" href="top-25-supplements.html#s3">
+        <div class="tile-icon" style="background:#FFF3D6;">🐟</div>
+        <span class="tile-name">Fish Oil (Omega-3)</span>
+      </a>
+      <a class="top25-tile" href="top-25-supplements.html#s14">
+        <div class="tile-icon" style="background:#F6E6E6;">🔴</div>
+        <span class="tile-name">CoQ10</span>
+      </a>
+      <a class="top25-tile" href="top-25-supplements.html#s12">
+        <div class="tile-icon" style="background:#EFEAF5;">🌙</div>
+        <span class="tile-name">Melatonin</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<section class="books-teaser" id="books-teaser">
+  <div class="wrap teaser-grid">
+    <div class="fan-covers">
+      <img src="book-one-cover.jpg" alt="Cover of What the Label Doesn't Tell You — Book One">
+      <img src="book-two-cover.jpg" alt="Cover of The Hollow Aisle — Book Two">
+      <img src="book-three-cover.jpg" alt="Cover of Prove It — Book Three">
+    </div>
+    <div>
+      <div class="eyebrow">The Trilogy</div>
+      <h2>The Investigation Behind the Website</h2>
+      <p class="kicker">Follow the Money. Follow the Science. Follow the Evidence.</p>
+      <p style="color:var(--gray-body);max-width:56ch;">The American Supplement Investigation examines how a $60+ billion industry grew, what the clinical evidence actually shows, how products are regulated, and what could change.</p>
+      <a class="btn btn-primary" href="index.html#books">Read the Books — Free →</a>
+    </div>
+  </div>
+</section>
+
+<section class="evidence-teaser">
+  <div class="wrap teaser-grid">
+    <div class="stack-icon">
+      <span style="background:var(--teal);">Systematic Reviews</span>
+      <span style="background:var(--navy);">Clinical Trials</span>
+      <span style="background:var(--gold);color:var(--navy);">Regulatory Reports</span>
+      <span style="background:var(--teal-dark);">Safety Studies</span>
+      <span style="background:var(--navy-dark);">Industry Documents</span>
+    </div>
+    <div>
+      <div class="eyebrow">Explore the Research Library</div>
+      <h2 style="margin:6px 0 14px;">Want to See the Evidence Yourself?</h2>
+      <p style="color:var(--gray-body);max-width:56ch;">Hundreds of systematic reviews, randomized clinical trials, government reports, regulatory documents, and other primary sources — organized and annotated so you can examine the evidence yourself.</p>
+      <a class="btn btn-primary" href="annotated-bibliography.html">Browse the Evidence Library →</a>
+    </div>
+    <div class="includes">
+      <h4>Includes:</h4>
+      <ul>
+        <li>Systematic reviews &amp; meta-analyses</li>
+        <li>Randomized clinical trials</li>
+        <li>Government &amp; regulatory reports</li>
+        <li>Industry documents</li>
+        <li>Annotated summaries</li>
+        <li>Links to original sources</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="trust-row">
+  <div class="wrap trust-grid">
+    <div class="trust-item">
+      <div class="trust-icon">🛡️</div>
+      <h4>Independent and Unbiased</h4>
+      <p>No paid sponsorships or industry advertising on this site.</p>
+    </div>
+    <div class="trust-item">
+      <div class="trust-icon">🔬</div>
+      <h4>Evidence-Based</h4>
+      <p>Focus on high-quality research and authoritative sources.</p>
+    </div>
+    <div class="trust-item">
+      <div class="trust-icon">🌿</div>
+      <h4>Consumer Focused</h4>
+      <p>Clear, practical information to help you make informed decisions.</p>
+    </div>
+    <div class="trust-item">
+      <div class="trust-icon">📄</div>
+      <h4>Free and Accessible</h4>
+      <p>All resources are free for patients, clinicians, and the public.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section alt" id="research-library">
   <div class="wrap">
     <div class="section-head">
       <div class="eyebrow">Browse by Subject</div>
@@ -164,7 +301,7 @@
   </div>
 </section>
 
-<section class="section alt" id="books">
+<section class="section" id="books">
   <div class="wrap">
     <div class="section-head">
       <div class="eyebrow">The Trilogy</div>
@@ -213,7 +350,7 @@
   </div>
 </section>
 
-<section class="section" id="appendix">
+<section class="section alt" id="appendix">
   <div class="wrap">
     <div class="section-head">
       <div class="eyebrow">Book Three · Closing Appendix</div>
@@ -224,7 +361,7 @@
   </div>
 </section>
 
-<section class="why alt" style="background:var(--bg-pale);">
+<section class="why" style="background:var(--bg-pale);">
   <div class="wrap">
     <div class="eyebrow">Why This Investigation</div>
     <h2>Why "The American Supplement Investigation"?</h2>
@@ -285,6 +422,32 @@
     </div>
   </div>
 </footer>
+
+<script src="product-lookup.js"></script>
+<script>
+(function(){
+  var body = document.body;
+  var btn = document.getElementById('navHamburger');
+  if (!btn) return;
+  function closeMenu(){
+    body.classList.remove('nav-open');
+    btn.setAttribute('aria-expanded','false');
+  }
+  btn.addEventListener('click', function(){
+    var open = body.classList.toggle('nav-open');
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'Escape') closeMenu();
+  });
+  document.querySelectorAll('#homeNavLinks a').forEach(function(a){
+    a.addEventListener('click', closeMenu);
+  });
+  body.addEventListener('click', function(e){
+    if (body.classList.contains('nav-open') && e.target === body) closeMenu();
+  });
+})();
+</script>
 
 </body>
 </html>

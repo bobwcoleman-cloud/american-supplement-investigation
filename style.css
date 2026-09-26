@@ -1239,3 +1239,206 @@ footer .links{margin-top:10px;display:flex;justify-content:center;gap:18px;flex-
   nav .links{display:none;}
   .book-hero h1{font-size:2rem;}
 }
+
+/* ============================================================
+   HOMEPAGE REDESIGN (2026) — consumer-facing, search-first homepage.
+   Everything below is additive/new; it does not modify existing
+   rules used by other pages (product-lookup.html, top-25, FAQ,
+   book pages, etc.), which keep working exactly as before.
+   Scoped to body.home-v2 wherever a rule could otherwise leak
+   onto shared classnames like .btn or nav .links.
+   ============================================================ */
+
+/* ---- Slim utility bar (imprint + parent-site link) ---- */
+.util-bar{
+  background:var(--navy-dark);
+  color:#C9D2DE;
+  font-size:0.78rem;
+  font-weight:600;
+  letter-spacing:0.03em;
+  text-align:center;
+  padding:7px 16px;
+}
+.util-bar a{color:#F4F1EA;}
+.util-bar .sep{margin:0 8px;opacity:0.5;}
+
+/* ---- Homepage nav (logo lockup + links + search icon) ---- */
+body.home-v2 nav{position:sticky;top:0;z-index:60;}
+.home-nav-wrap{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:20px;
+  padding:14px 24px;
+  flex-wrap:nowrap;
+}
+.home-logo{display:flex;flex-direction:column;line-height:1.2;}
+.home-logo .name-line{font-family:'Lora',serif;font-weight:800;font-size:1.15rem;color:var(--navy);}
+.home-logo .name-line .accent{color:var(--gold);}
+.home-logo .tag-line{font-size:0.62rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--teal);margin-top:2px;}
+.home-nav-links{display:flex;align-items:center;gap:26px;font-size:0.92rem;font-weight:600;}
+.home-nav-links a{color:var(--navy);white-space:nowrap;}
+.home-nav-links a:hover{color:var(--teal);text-decoration:none;}
+.home-nav-links a.current{color:var(--teal);border-bottom:2px solid var(--teal);padding-bottom:2px;}
+.nav-search-icon{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:34px;height:34px;border-radius:50%;
+  border:1.5px solid var(--border-light);color:var(--navy);
+  font-size:1rem;flex:none;
+}
+.nav-search-icon:hover{border-color:var(--teal);color:var(--teal);text-decoration:none;}
+.nav-hamburger{
+  display:none;
+  flex-direction:column;justify-content:center;gap:4px;
+  width:34px;height:34px;border-radius:6px;border:1.5px solid var(--border-light);
+  background:#fff;cursor:pointer;flex:none;
+}
+.nav-hamburger span{display:block;width:16px;height:2px;background:var(--navy);margin:0 auto;}
+
+/* ---- Hero: search-first ---- */
+.hero-v2{background:linear-gradient(180deg,var(--bg-pale) 0%, #fff 100%);padding:52px 0 56px;}
+.hero-v2 .hero-grid-v2{display:grid;grid-template-columns:1.1fr 0.9fr;gap:48px;align-items:center;}
+.hero-v2 h1{font-size:2.5rem;line-height:1.16;margin:0 0 18px;color:var(--navy);}
+.hero-v2 h1 .accent{color:var(--gold);}
+.hero-v2 .hero-copy{color:var(--gray-body);font-size:1.05rem;max-width:56ch;margin:0 0 26px;}
+.hero-search-row{display:flex;gap:10px;max-width:640px;margin:0;}
+.hero-search-row .search-hero-input{margin:0;flex:1 1 auto;max-width:none;}
+.hero-search-btn{flex:none;white-space:nowrap;}
+.hero-search-note{font-size:0.82rem;color:var(--gray-body);margin:10px 0 0;}
+.hero-chip-row{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:18px;}
+.hero-chip-row .chip-label{font-size:0.82rem;font-weight:700;color:var(--navy);margin-right:4px;}
+.quick-chip{
+  background:#fff;border:1.5px solid var(--border-light);color:var(--navy);
+  font-weight:700;font-size:0.82rem;padding:8px 16px;border-radius:20px;
+  cursor:pointer;font-family:'Inter',sans-serif;
+}
+.quick-chip:hover{border-color:var(--teal);color:var(--teal);}
+
+/* Illustrative "label under a magnifying glass" graphic — an original
+   generic illustration built in CSS, not a photo of any real product. */
+.hero-visual{display:flex;justify-content:center;align-items:center;position:relative;}
+.label-card{
+  background:#fff;border:1.5px solid var(--border-light);border-radius:10px;
+  box-shadow:0 18px 40px rgba(20,30,45,0.16);
+  width:100%;max-width:300px;padding:22px 24px;position:relative;
+  transform:rotate(-2deg);
+}
+.label-card h4{margin:0 0 2px;font-size:1.05rem;font-family:'Lora',serif;color:var(--navy);}
+.label-card .serving{font-size:0.78rem;color:var(--gray-body);margin:0 0 10px;padding-bottom:10px;border-bottom:6px solid var(--navy);}
+.label-card table{width:100%;border-collapse:collapse;font-size:0.82rem;}
+.label-card table td{padding:5px 0;border-bottom:1px solid var(--border-light);color:var(--gray-body);}
+.label-card table td:last-child{text-align:right;color:var(--navy);font-weight:700;}
+.label-card .dv-note{font-size:0.68rem;color:var(--gray-body);margin-top:8px;}
+.magnifier{
+  position:absolute;bottom:-26px;right:-18px;font-size:3.2rem;
+  filter:drop-shadow(0 8px 14px rgba(20,30,45,0.25));
+  transform:rotate(8deg);
+}
+
+/* ---- Four-step visitor journey cards ---- */
+.journey-row{padding:44px 0;}
+.journey-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;}
+.journey-card{
+  background:#fff;border:1px solid var(--border-light);border-radius:8px;
+  padding:22px 20px;text-align:left;box-shadow:0 1px 3px rgba(20,30,45,0.06);
+  transition:transform 0.15s, box-shadow 0.15s;display:block;
+}
+.journey-card:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(20,30,45,0.12);text-decoration:none;}
+.journey-card .thumb{width:100%;height:96px;border-radius:6px;margin-bottom:14px;display:flex;align-items:center;justify-content:center;font-size:2rem;}
+.journey-card .thumb.c1{background:#E7F1EE;}
+.journey-card .thumb.c2{background:#F3EFE0;}
+.journey-card .thumb.c3{background:#EAEFF5;}
+.journey-card .thumb.c4{background:#F6E9E9;}
+.journey-card h3{font-size:1.05rem;margin:0 0 8px;color:var(--navy);font-family:'Lora',serif;}
+.journey-card p{font-size:0.86rem;color:var(--gray-body);margin:0 0 14px;line-height:1.45;}
+.journey-card .journey-link{font-weight:700;font-size:0.82rem;text-transform:uppercase;letter-spacing:0.04em;color:var(--teal);}
+
+/* ---- Top 25 preview strip ---- */
+.top25-preview{background:var(--bg-pale);padding:52px 0;}
+.top25-preview .section-head{text-align:left;max-width:none;display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:28px;}
+.top25-preview .section-head .copy{max-width:640px;}
+.top25-tiles{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;}
+.top25-tile{
+  background:#fff;border-radius:8px;overflow:hidden;border:1px solid var(--border-light);
+  display:block;text-align:center;box-shadow:0 1px 3px rgba(20,30,45,0.06);
+}
+.top25-tile:hover{border-color:var(--teal);text-decoration:none;box-shadow:0 6px 16px rgba(20,30,45,0.1);}
+.top25-tile .tile-icon{height:88px;display:flex;align-items:center;justify-content:center;font-size:2.1rem;}
+.top25-tile .tile-name{display:block;padding:10px 6px 14px;font-weight:700;font-size:0.86rem;color:var(--navy);font-family:'Inter',sans-serif;}
+
+/* ---- Books-behind-the-site teaser ---- */
+.books-teaser{padding:56px 0;}
+.books-teaser .teaser-grid{display:grid;grid-template-columns:0.9fr 1.1fr;gap:48px;align-items:center;}
+.books-teaser .fan-covers{display:flex;justify-content:center;}
+.books-teaser .fan-covers img{
+  width:150px;box-shadow:0 12px 30px rgba(13,22,32,0.35);border-radius:3px;
+  margin-left:-38px;transition:transform 0.15s;
+}
+.books-teaser .fan-covers img:first-child{margin-left:0;transform:rotate(-6deg);}
+.books-teaser .fan-covers img:nth-child(2){transform:translateY(-10px);z-index:2;position:relative;}
+.books-teaser .fan-covers img:last-child{transform:rotate(6deg);}
+.books-teaser h2{margin:0 0 6px;}
+.books-teaser .kicker{color:var(--gold);font-weight:700;font-size:0.95rem;margin:0 0 14px;}
+
+/* ---- Evidence library teaser ---- */
+.evidence-teaser{background:var(--bg-pale);padding:56px 0;}
+.evidence-teaser .teaser-grid{display:grid;grid-template-columns:1fr 1.2fr 0.8fr;gap:40px;align-items:center;}
+.evidence-teaser .stack-icon{display:flex;flex-direction:column;gap:6px;align-items:flex-start;}
+.evidence-teaser .stack-icon span{
+  display:block;padding:8px 16px;border-radius:4px;font-size:0.78rem;font-weight:700;color:#fff;
+  box-shadow:0 3px 6px rgba(20,30,45,0.15);
+}
+.evidence-teaser .includes{background:#fff;border-radius:8px;padding:22px 24px;border:1px solid var(--border-light);}
+.evidence-teaser .includes h4{margin:0 0 12px;font-size:0.95rem;}
+.evidence-teaser .includes ul{margin:0;padding-left:18px;color:var(--gray-body);font-size:0.9rem;line-height:1.9;}
+
+/* ---- Trust badges ---- */
+.trust-row{padding:40px 0 56px;}
+.trust-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;text-align:center;}
+.trust-item .trust-icon{
+  width:52px;height:52px;border-radius:50%;background:var(--navy);color:#fff;
+  display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:1.3rem;
+}
+.trust-item h4{margin:0 0 6px;font-size:0.98rem;color:var(--navy);}
+.trust-item p{margin:0;font-size:0.82rem;color:var(--gray-body);}
+
+/* ---- Responsive: tablet ---- */
+@media (max-width:980px){
+  .hero-v2 .hero-grid-v2{grid-template-columns:1fr;}
+  .hero-visual{order:-1;margin-bottom:8px;}
+  .label-card{max-width:260px;}
+  .journey-grid{grid-template-columns:1fr 1fr;}
+  .top25-tiles{grid-template-columns:repeat(3,1fr);}
+  .books-teaser .teaser-grid{grid-template-columns:1fr;}
+  .evidence-teaser .teaser-grid{grid-template-columns:1fr;text-align:center;}
+  .evidence-teaser .stack-icon{align-items:center;}
+  .trust-grid{grid-template-columns:1fr 1fr;}
+  .home-nav-links{display:none;}
+  .nav-hamburger{display:flex;}
+}
+
+/* ---- Responsive: phone ---- */
+@media (max-width:600px){
+  .hero-v2 h1{font-size:1.9rem;}
+  .hero-search-row{flex-direction:column;}
+  .hero-search-btn{width:100%;}
+  .journey-grid{grid-template-columns:1fr;}
+  .top25-tiles{grid-template-columns:repeat(2,1fr);}
+  .trust-grid{grid-template-columns:1fr;}
+  .util-bar{font-size:0.7rem;}
+  .util-bar .sep{display:none;}
+  .util-bar br{display:block;}
+}
+
+/* ---- Mobile nav drawer (home-v2 only) ---- */
+body.home-v2.nav-open .home-nav-links{
+  display:flex;position:fixed;top:0;right:0;bottom:0;
+  width:78%;max-width:320px;background:#fff;flex-direction:column;
+  align-items:flex-start;padding:80px 28px 28px;gap:22px;
+  box-shadow:-8px 0 24px rgba(20,30,45,0.18);z-index:70;
+}
+body.home-v2.nav-open::after{
+  /* Sits below nav's own stacking context (nav has z-index:60) so the open
+     drawer and its links stay clickable above this dimmed backdrop. */
+  content:"";position:fixed;inset:0;background:rgba(13,22,32,0.4);z-index:55;
+}
