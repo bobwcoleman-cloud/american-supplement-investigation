@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Listen to Prove It (Audiobook) | The American Supplement Investigation</title>
+<meta name="description" content="Listen to the full audiobook of Prove It, Book Three of The American Supplement Investigation, chapter by chapter, free in your browser. Picks up where you left off.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+  body{padding-bottom:96px;}
+  .pi-hero{background:linear-gradient(180deg,var(--bg-pale) 0%,#fff 100%);padding:40px 0 36px;}
+  .pi-hero .wrap{display:grid;grid-template-columns:1fr auto;gap:32px;align-items:center;}
+  .pi-hero img{width:130px;border-radius:6px;box-shadow:0 10px 24px rgba(20,30,45,0.18);}
+  .pi-hero h1{margin:6px 0 10px;}
+  .pi-hero p{color:var(--gray-body);margin:0 0 16px;max-width:640px;}
+  .pi-resume{display:none;background:var(--bg-pale);border:1.5px solid var(--border-light);border-radius:10px;padding:14px 18px;margin:0 0 28px;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;}
+  .pi-resume.show{display:flex;}
+  .pi-resume-text{font-size:0.92rem;color:var(--navy);}
+  .pi-resume-text b{color:var(--teal);}
+  .pi-list-wrap{padding:8px 0 40px;}
+  .pi-part-divider{margin:34px 0 14px;padding-top:18px;border-top:1.5px solid var(--border-light);}
+  .pi-part-divider .pi-track{padding:0;justify-content:center;}
+  .pi-part-divider .pi-track-title{color:var(--gold);font-family:'Lora',serif;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;font-size:0.82rem;}
+  .pi-part-divider .pi-track:hover{background:none;}
+  .pi-part-divider .pi-track:hover .pi-track-title{text-decoration:underline;}
+  .pi-chapter{border:1.5px solid var(--border-light);border-radius:10px;margin-bottom:14px;overflow:hidden;background:#fff;}
+  .pi-track{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:none;border:none;cursor:pointer;padding:14px 18px;font-family:'Inter',sans-serif;color:var(--navy);}
+  .pi-track:hover{background:var(--bg-pale);}
+  .pi-track-main{font-weight:700;font-family:'Lora',serif;font-size:1.02rem;}
+  .pi-subtracks{border-top:1px solid var(--border-light);}
+  .pi-track-sub{padding-left:40px;font-size:0.92rem;border-top:1px solid #EEF2F6;}
+  .pi-track-sub:first-child{border-top:none;}
+  .pi-track-play{flex:none;width:22px;height:22px;border-radius:50%;border:1.5px solid var(--border-light);display:inline-flex;align-items:center;justify-content:center;font-size:0.6rem;color:var(--teal);}
+  .pi-track.playing{color:var(--teal);}
+  .pi-track.playing .pi-track-play{background:var(--teal);border-color:var(--teal);color:#fff;}
+  .pi-player{position:fixed;left:0;right:0;bottom:0;background:var(--navy);color:#fff;z-index:90;padding:10px 18px;box-shadow:0 -6px 20px rgba(13,22,32,0.25);}
+  .pi-player-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;gap:14px;}
+  .pi-btn{background:none;border:none;color:#fff;cursor:pointer;flex:none;display:flex;align-items:center;justify-content:center;}
+  .pi-btn-play{width:38px;height:38px;border-radius:50%;background:var(--teal);font-size:1rem;}
+  .pi-btn-step{width:30px;height:30px;font-size:1.1rem;opacity:0.85;}
+  .pi-btn-step:hover{opacity:1;}
+  .pi-now{flex:1;min-width:0;}
+  .pi-now-title{font-size:0.88rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .pi-now-row{display:flex;align-items:center;gap:10px;margin-top:4px;}
+  .pi-time{font-size:0.72rem;color:#B9C4CF;flex:none;width:38px;}
+  .pi-seek{flex:1;height:4px;-webkit-appearance:none;appearance:none;background:rgba(255,255,255,0.25);border-radius:2px;outline:none;}
+  .pi-seek::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;background:var(--gold);}
+  .pi-seek::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:var(--gold);border:none;}
+  @media (max-width:700px){
+    .pi-hero .wrap{grid-template-columns:1fr;}
+    .pi-hero img{width:96px;}
+    .pi-now-title{max-width:150px;}
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <div class="links">
+      <a href="index.html#home">Home</a>
+      <a href="index.html#books">Books</a>
+      <a href="index.html#research-library">Research</a>
+      <a href="top-25-supplements.html">Top 25</a>
+      <a href="faq.html">FAQ</a>
+      <a href="search.html">Search</a>
+      <a href="product-lookup.html">Product Lookup</a>
+      <a href="index.html#appendix">What Should Change</a>
+      <a href="index.html#about">About</a>
+      <a href="index.html#contact">Contact</a>
+      <a class="back" href="https://brokenpromiseshealthcare.org">&larr; Broken Promises Healthcare</a>
+    </div>
+  </div>
+</nav>
+
+<div class="breadcrumb">
+  <div class="wrap">
+    <a href="prove-it.html">&larr; Book Three &middot; Prove It</a>
+  </div>
+</div>
+
+<section class="pi-hero">
+  <div class="wrap">
+    <div>
+      <div class="eyebrow">Audiobook &middot; Free</div>
+      <h1>Listen to Prove It</h1>
+      <p>The full audiobook of Book Three &mdash; chronic disease claims, the misinformation business, real case files, and the trilogy's recommended framework &mdash; read chapter by chapter. Pick any chapter below, or resume right where you left off. Your place is saved automatically on this browser.</p>
+      <div class="cta-row">
+        <a class="btn btn-secondary" href="prove-it.html">About This Book</a>
+        <a class="btn btn-text" href="read-book-three.html">Read It Instead &rarr;</a>
+      </div>
+    </div>
+    <img src="book-three-cover.jpg" alt="Cover of Prove It">
+  </div>
+</section>
+
+<div class="wrap pi-list-wrap">
+
+  <div class="pi-resume" id="pi-resume">
+    <div class="pi-resume-text">Pick up where you left off &mdash; <b id="pi-resume-title"></b> at <span id="pi-resume-time"></span></div>
+    <button type="button" class="btn btn-primary" id="pi-resume-btn" style="padding:8px 18px;">Resume &rarr;</button>
+  </div>
+
+  <div class="pi-chapter">
+  <button type="button" class="pi-track pi-track-main" data-index="0">
+    <span class="pi-track-play">&#9654;</span>
+    <span class="pi-track-title">The American Supplement Investigation Book Three</span>
+  </button>
+</div>
+<div class="pi-chapter">
+  <button type="button" class="pi-track pi-track-main" data-index="1">
+    <span class="pi-track-play">&#9654;</span>
+    <span class="pi-track-title">Preface</span>
+  </button>
+</div>
+<div class="pi-part-divider">
+  <button type="button" class="pi-track pi-track-part" data-index="2">
+    <span class="pi-track-play">&#9654;</span>
+    <span class="pi-track-title">Part VII: The Great Supplement Questions</span>
+  </button>
+</div>
+<div class="pi-chapter">
+  <button type="button" class="pi-track pi-track-main" data-index="3">
+    <span class="pi-track-play">&#9654;</span>
+    <span class="pi-track-title">Chapter 1: Supplements and Chronic Disease</span>
+  </button>
+  <div class="pi-subtracks">
+    <button type="button" class="pi-track pi-track-sub" data-index="4">
+      <span class="pi-track-play">&#9654;</span>
+      <span class="pi-track-title">The framework, stated once, used throughout</span>
+    </button>
+    <button type="button" class="pi-track pi-track-sub" data-index="5">
+      <span class="pi-track-play">&#9654;</span>
+      <span class="pi-track-title">Cardiovascular disease fish oil</span>
+    </button>
+    <button type="button" class="pi-track pi-track-sub" data-index="6">
+      <span class="pi-track-play">&#9654;</span>
+      <span class="pi-track-title">Cancer the beta-carotene lesson, applied again</span>
+    </button>
+    <button type="button" class="pi-track pi-track-sub" data-index="7">
+      <span class="pi-track-play">&#9654;</span>
+      <span class="pi-track-title">Diabetes chromium and cinnamon</span>
+    </button>
+    <button type="button" class="pi-track pi-track-sub" data-index="8">
+      <span class="pi-track-play">&#9654;</span>
+      <span class="pi-track-title">Dementia ginkgo biloba</span>
+    </button>
+    <button type="button" class="pi-track pi-track-sub" data-index="9">
+      <span class="pi-track-play">&#9654;</span>
+      <span class="pi-track-title">Osteoporosis calcium and vitamin D</span>
+    </button>
+    <button type="button" class="pi-track pi-track-sub" data-index="10">
+      <span class="pi-track-play">&#9654;</span>
+      <span class="pi-track-title">The pattern, named</span>
+    </button>
+  </div>
+</div>
+<div class="pi-chapter">
+  <button type="button" class="pi-track pi-track-main" data-index="11">
+    <span class="pi-track-play">&#9654;</span>
+    <span class="pi-track-title">Chapter 2: Vitamins Necessary Does Not Mean More Is Better</span>
+  </button>
+  <div class="pi-subtracks">
+    <button type="button" class="pi-track pi-track-sub" data-index="12">
+      <span class="pi-track-play">&#9654;</span>
+      <span class="pi-track-title">Three zones, not two</span>
+    </button>
+    <button type="button" class="pi-track pi-track-sub" data-index="13">
+      <span class="pi-track-play">&#9654;</span>
+      <span class="pi-track-title">Vitamin C hard to overdose, easy to overpromise</span>
+    </button>
+    <button type="button" class="pi-track pi-track-sub" data-index="14">
+      <span class="pi-track-play">&#9654;</span>
+      <span class="pi-track-title">Vitamin D the popularity surge, and what the trials actually found</span>
+    </button>
+    <button type="button" class="pi-track pi-track-sub" data-index="15">
+      <span class="pi-track-play">&#9654;</span>
+      <span class="pi-track-title">B12 and the B-complex treating a deficiency, not a baseline</span>
+    </button>
+    <button type="button" class="pi-track pi-track-sub" data-index="16">
+      <span class="pi-track-play">&#9654;</span>
+      <span class="pi-track-title">The core reframe</span>
+    </button>
+  </div>
+</div>
+<div class="pi-chapter">
+  <button type="button" class="pi-track pi-track-main" data-index="17">
+    <span class="pi-track-play">&#9654;</span>
+    <span class="pi-track-title">Chapter 3: Minerals Essential and Potentially Dangerous</span>
+  </button>
+  <div class="pi-subtracks">
+    <button type="button" class="pi-track pi-track-sub" data-index="18">
+      <span class="pi-track-play">&#9654;</span>
+      <span class="pi-track-title">Calcium the exception’s own caveat</span>
+    </button>
+    <button type="button" class="pi-track pi-track-sub" data-index="19">
+      <span class="pi-track-play">&#9654;</span>
+      <span class="pi-track-title">Iron deficiency, overdose, and overload</span>
+    </button>
+    <button type="button" class="pi-track pi-track-sub" data-index="20">
+      <span class="pi-track-play">&#9654;</span>
+      <span class="pi-track-title">Magnesium a popular claim, a modest evidence base</span>
+    </button>
+    <button type="button" class="pi-track pi-track-sub" data-index="21">
+      <span class="pi-track-play">&#9654;</span>
+      <span class="pi-track-title">Zinc and selenium real deficiency correction, real toxicity syndromes</span>
+    </button>
+    <button type="button" class="pi-track pi-track-sub" data-index="22">
+      <span class="pi-track-play">&#9654;</span>
+      <span class="pi-track-title">Potassium the mineral regulation actually restricts</span>
+    </button>
+    <button type="button" class="pi-track pi-track-sub" data-index="23">
+      <span class="pi-track-play">&#9654;</span>
+      <span class="pi-track-title">The Essential Nutrient Paradox</span>
+    </button>
+  </div>
+</div>
+<div class="pi-chapter">
+  <button type="button" class="pi-track pi-track-main" data-index="24">
+    <span class="pi-track-play">&#9654;</span>
+    <span class="pi-track-title">Chapter 4: Herbal Remedies</span>
+  </button>
+  <div class="pi-subtracks">
+    <button type="button" class="pi-track pi-track-sub" data-index="25">
+      <span class="pi-track-play">&#9654;</span>
+      <span class="pi-track-title">Standardization the word that’s supposed to fix this</span>
+    </button>
+    <button type="button" class="pi-track pi-track-sub" data-index="26">
+      <span class="pi-track-play">&#9654;</span>
+      <span class="pi-track-title">Traditional use as a hypothesis, not a conclusion</span>
+    </button>
+    <button type="button" class="pi-track pi-track-sub" data-index="27">
+      <span class="pi-track-play">&#9654;</span>
+      <span class="pi-track-title">St John’s Wort a genuine partial success, with a serious caveat already on record</span>
+    </button>
+    <button type="button" class="pi-track pi-track-sub" data-index="28">
+      <span class="pi-track-play">&#9654;</span>
+      <span class="pi-track-title">Echinacea popular, and mostly unconvincing</span>
+    </button>
+    <button type="button" class="pi-track pi-track-sub" data-index="29">
+      <span class="pi-track-play">&#9654;</span>
+      <span class="pi-track-title">Saw palmetto two large trials, one clear answer</span>
+    </button>
+    <button type="button" class="pi-track pi-track-sub" data-index="30">
+      <span class="pi-track-play">&#9654;</span>
+      <span class="pi-track-title">Product variability and contamination</span>
+    </button>
+  </div>
+</div>
+<div class="pi-chapter">
+  <button type="button" class="pi-track pi-track-main" data-index="31">
+    <span class="pi-track-play">&#9654;</span>
+    <span class="pi-track-title">Chapter 5: The Supplement for Everything</span>
+  </button>
+  <div class="pi-subtracks">
+    <button type="button" class="pi-track pi-track-sub" data-index="32">
+      <span class="pi-track-play">&#9654;</span>
+      <span class="pi-track-title">What all ten have in common</span>
+    </button>
+    <button type="button" class="pi-track pi-track-sub" data-index="33">
+      <span class="pi-track-play">&#9654;</span>
+      <span class="pi-track-title">The American Supplement Promise Map</span>
+    </button>
+  </div>
+</div>
+<div class="pi-part-divider">
+  <button type="button" class="pi-track pi-track-part" data-index="34">
+    <span class="pi-track-play">&#9654;</span>
+    <span class="pi-track-title">Part VIII: The Information Problem</span>
+  </button>
+</div>
+<div class="pi-chapter">
+  <button type="button" class="pi-track pi-track-main" data-index="35">
+    <span class="pi-track-play">&#9654;</span>
+    <span class="pi-track-title">Chapter 6: When Science Becomes Content</span>
+  </button>
+  <div class="pi-subtracks">
+    <button type="button" class="pi-track pi-track-sub" data-index="36">
+      <span class="pi-track-play">&#9654;</span>
+      <span class="pi-track-title">The algorithm, widened</span>
+    </button>
+    <button type="button" class="pi-track pi-track-sub" data-index="37">
+      <span class="pi-track-play">&#9654;</span>
+      <span class="pi-track-title">The asymmetry of effort</span>
+    </button>
+    <button type="button" class="pi-track pi-track-sub" data-index="38">
+      <span class="pi-track-play">&#9654;</span>
+      <span class="pi-track-title">AI-generated health content a genuinely new wrinkle</span>
+    </button>
+  </div>
+</div>
+<div class="pi-chapter">
+  <button type="button" class="pi-track pi-track-main" data-index="39">
+    <span class="pi-track-play">&#9654;</span>
+    <span class="pi-track-title">Chapter 7: The Misinformation Business</span>
+  </button>
+  <div class="pi-subtracks">
+    <button type="button" class="pi-track pi-track-sub" data-index="40">
+      <span class="pi-track-play">&#9654;</span>
+      <span class="pi-track-title">A business model, not a byproduct</span>
+    </button>
+    <button type="button" class="pi-track pi-track-sub" data-index="41">
+      <span class="pi-track-play">&#9654;</span>
+      <span class="pi-track-title">The incentive structures, named plainly</span>
+    </button>
+    <button type="button" class="pi-track pi-track-sub" data-index="42">
+      <span class="pi-track-play">&#9654;</span>
+      <span class="pi-track-title">The consequence gap</span>
+    </button>
+    <button type="button" class="pi-track pi-track-sub" data-index="43">
+      <span class="pi-track-play">&#9654;</span>
+      <span class="pi-track-title">Evidence Spotlight — Following One Claim’s Money</span>
+    </button>
+  </div>
+</div>
+<div class="pi-chapter">
+  <button type="button" class="pi-track pi-track-main" data-index="44">
+    <span class="pi-track-play">&#9654;</span>
+    <span class="pi-track-title">Chapter 8: Why Smart People Believe</span>
+  </button>
+  <div class="pi-subtracks">
+    <button type="button" class="pi-track pi-track-sub" data-index="45">
+      <span class="pi-track-play">&#9654;</span>
+      <span class="pi-track-title">Intelligence and bias are mostly separate systems</span>
+    </button>
+    <button type="button" class="pi-track pi-track-sub" data-index="46">
+      <span class="pi-track-play">&#9654;</span>
+      <span class="pi-track-title">Six distinct mechanisms, not one</span>
+    </button>
+    <button type="button" class="pi-track pi-track-sub" data-index="47">
+      <span class="pi-track-play">&#9654;</span>
+      <span class="pi-track-title">Identity the mechanism that resists correction</span>
+    </button>
+    <button type="button" class="pi-track pi-track-sub" data-index="48">
+      <span class="pi-track-play">&#9654;</span>
+      <span class="pi-track-title">The Belief Cycle</span>
+    </button>
+  </div>
+</div>
+<div class="pi-part-divider">
+  <button type="button" class="pi-track pi-track-part" data-index="49">
+    <span class="pi-track-play">&#9654;</span>
+    <span class="pi-track-title">Part IX: The International Perspective</span>
+  </button>
+</div>
+<div class="pi-chapter">
+  <button type="button" class="pi-track pi-track-main" data-index="50">
+    <span class="pi-track-play">&#9654;</span>
+    <span class="pi-track-title">Chapter 9: What Other Countries Do Differently</span>
+  </button>
+  <div class="pi-subtracks">
+    <button type="button" class="pi-track pi-track-sub" data-index="51">
+      <span class="pi-track-play">&#9654;</span>
+      <span class="pi-track-title">Canada a license before a sale</span>
+    </button>
+    <button type="button" class="pi-track pi-track-sub" data-index="52">
+      <span class="pi-track-play">&#9654;</span>
+      <span class="pi-track-title">Australia sorting by risk, not treating everything alike</span>
+    </button>
+    <button type="button" class="pi-track pi-track-sub" data-index="53">
+      <span class="pi-track-play">&#9654;</span>
+      <span class="pi-track-title">The European Union and United Kingdom a positive list, not a presumption</span>
+    </button>
+    <button type="button" class="pi-track pi-track-sub" data-index="54">
+      <span class="pi-track-play">&#9654;</span>
+      <span class="pi-track-title">International Supplement Regulation</span>
+    </button>
+    <button type="button" class="pi-track pi-track-sub" data-index="55">
+      <span class="pi-track-play">&#9654;</span>
+      <span class="pi-track-title">An accident of politics, not a reflection of unique values</span>
+    </button>
+  </div>
+</div>
+<div class="pi-part-divider">
+  <button type="button" class="pi-track pi-track-part" data-index="56">
+    <span class="pi-track-play">&#9654;</span>
+    <span class="pi-track-title">Part X: The Investigation</span>
+  </button>
+</div>
+<div class="pi-chapter">
+  <button type="button" class="pi-track pi-track-main" data-index="57">
+    <span class="pi-track-play">&#9654;</span>
+    <span class="pi-track-title">Chapter 10: Case Files</span>
+  </button>
+  <div class="pi-subtracks">
+    <button type="button" class="pi-track pi-track-sub" data-index="58">
+      <span class="pi-track-play">&#9654;</span>
+      <span class="pi-track-title">Case One Ephedra and the Death of Steve Bechler</span>
+    </button>
+    <button type="button" class="pi-track pi-track-sub" data-index="59">
+      <span class="pi-track-play">&#9654;</span>
+      <span class="pi-track-title">Case Two Red Yeast Rice and the Pharmanex Litigation</span>
+    </button>
+    <button type="button" class="pi-track pi-track-sub" data-index="60">
+      <span class="pi-track-play">&#9654;</span>
+      <span class="pi-track-title">Case Three The Tainted Product Pattern</span>
+    </button>
+    <button type="button" class="pi-track pi-track-sub" data-index="61">
+      <span class="pi-track-play">&#9654;</span>
+      <span class="pi-track-title">Case Four NMN and the Cost of Regulatory Ambiguity</span>
+    </button>
+  </div>
+</div>
+<div class="pi-chapter">
+  <button type="button" class="pi-track pi-track-main" data-index="62">
+    <span class="pi-track-play">&#9654;</span>
+    <span class="pi-track-title">Chapter 11: Following the Evidence</span>
+  </button>
+  <div class="pi-subtracks">
+    <button type="button" class="pi-track pi-track-sub" data-index="63">
+      <span class="pi-track-play">&#9654;</span>
+      <span class="pi-track-title">A systematic review of the investigation</span>
+    </button>
+    <button type="button" class="pi-track pi-track-sub" data-index="64">
+      <span class="pi-track-play">&#9654;</span>
+      <span class="pi-track-title">What this investigation is not</span>
+    </button>
+    <button type="button" class="pi-track pi-track-sub" data-index="65">
+      <span class="pi-track-play">&#9654;</span>
+      <span class="pi-track-title">What comes next</span>
+    </button>
+  </div>
+</div>
+<div class="pi-chapter">
+  <button type="button" class="pi-track pi-track-main" data-index="66">
+    <span class="pi-track-play">&#9654;</span>
+    <span class="pi-track-title">Appendix: What Should Change</span>
+  </button>
+  <div class="pi-subtracks">
+    <button type="button" class="pi-track pi-track-sub" data-index="67">
+      <span class="pi-track-play">&#9654;</span>
+      <span class="pi-track-title">Toward a Recommended Framework After Following the Evidence on What Has Actually Worked</span>
+    </button>
+    <button type="button" class="pi-track pi-track-sub" data-index="68">
+      <span class="pi-track-play">&#9654;</span>
+      <span class="pi-track-title">What the evidence actually shows</span>
+    </button>
+    <button type="button" class="pi-track pi-track-sub" data-index="69">
+      <span class="pi-track-play">&#9654;</span>
+      <span class="pi-track-title">The design principles this model is built on</span>
+    </button>
+    <button type="button" class="pi-track pi-track-sub" data-index="70">
+      <span class="pi-track-play">&#9654;</span>
+      <span class="pi-track-title">The Recommended Model A Tiered Evidence Framework</span>
+    </button>
+    <button type="button" class="pi-track pi-track-sub" data-index="71">
+      <span class="pi-track-play">&#9654;</span>
+      <span class="pi-track-title">What changes for you</span>
+    </button>
+    <button type="button" class="pi-track pi-track-sub" data-index="72">
+      <span class="pi-track-play">&#9654;</span>
+      <span class="pi-track-title">Why not go straight to full drug-style premarket approval</span>
+    </button>
+    <button type="button" class="pi-track pi-track-sub" data-index="73">
+      <span class="pi-track-play">&#9654;</span>
+      <span class="pi-track-title">What this model does not solve</span>
+    </button>
+  </div>
+</div>
+<div class="pi-chapter">
+  <button type="button" class="pi-track pi-track-main" data-index="74">
+    <span class="pi-track-play">&#9654;</span>
+    <span class="pi-track-title">About the Authors: Robert Coleman, MS Pharm.</span>
+  </button>
+  <div class="pi-subtracks">
+    <button type="button" class="pi-track pi-track-sub" data-index="75">
+      <span class="pi-track-play">&#9654;</span>
+      <span class="pi-track-title">Robert Coleman, MS Pharm.</span>
+    </button>
+  </div>
+</div>
+
+</div>
+
+<audio id="pi-audio" preload="none"></audio>
+
+<div class="pi-player">
+  <div class="pi-player-inner">
+    <button type="button" class="pi-btn pi-btn-step" id="pi-prev" title="Previous chapter" aria-label="Previous chapter">&#9198;</button>
+    <button type="button" class="pi-btn pi-btn-play" id="pi-play" title="Play" aria-label="Play">&#9658;</button>
+    <button type="button" class="pi-btn pi-btn-step" id="pi-next" title="Next chapter" aria-label="Next chapter">&#9197;</button>
+    <div class="pi-now">
+      <div class="pi-now-title" id="pi-now-title">Select a chapter to begin listening</div>
+      <div class="pi-now-row">
+        <span class="pi-time" id="pi-time-cur">0:00</span>
+        <input type="range" class="pi-seek" id="pi-seek" min="0" max="1000" value="0">
+        <span class="pi-time" id="pi-time-dur">0:00</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">
+    &copy; 2026 The American Supplement Investigation &mdash; Coleman Publishing. Part of Broken Promises Healthcare.
+    <div class="links">
+      <a href="https://brokenpromiseshealthcare.org">Broken Promises Healthcare</a>
+      <a href="index.html#about">How We Source Claims</a>
+      <a href="index.html#contact">Contact</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var TRACKS = [{"file": "audio/prove-it/00_The_American_Supplement_Investigation_Book_Three.mp3", "title": "The American Supplement Investigation Book Three"}, {"file": "audio/prove-it/01_Preface.mp3", "title": "Preface"}, {"file": "audio/prove-it/02_PART_VII_THE_GREAT_SUPPLEMENT_QUESTIONS.mp3", "title": "Part VII: The Great Supplement Questions"}, {"file": "audio/prove-it/03_Chapter_1_Supplements_and_Chronic_Disease.mp3", "title": "Chapter 1: Supplements and Chronic Disease"}, {"file": "audio/prove-it/04_The_framework,_stated_once,_used_throughout.mp3", "title": "The framework, stated once, used throughout"}, {"file": "audio/prove-it/05_Cardiovascular_disease_fish_oil.mp3", "title": "Cardiovascular disease fish oil"}, {"file": "audio/prove-it/06_Cancer_the_beta-carotene_lesson,_applied_again.mp3", "title": "Cancer the beta-carotene lesson, applied again"}, {"file": "audio/prove-it/07_Diabetes_chromium_and_cinnamon.mp3", "title": "Diabetes chromium and cinnamon"}, {"file": "audio/prove-it/08_Dementia_ginkgo_biloba.mp3", "title": "Dementia ginkgo biloba"}, {"file": "audio/prove-it/09_Osteoporosis_calcium_and_vitamin_D.mp3", "title": "Osteoporosis calcium and vitamin D"}, {"file": "audio/prove-it/10_The_pattern,_named.mp3", "title": "The pattern, named"}, {"file": "audio/prove-it/11_Chapter_2_Vitamins_Necessary_Does_Not_Mean_More_Is_Better.mp3", "title": "Chapter 2: Vitamins Necessary Does Not Mean More Is Better"}, {"file": "audio/prove-it/12_Three_zones,_not_two.mp3", "title": "Three zones, not two"}, {"file": "audio/prove-it/13_Vitamin_C_hard_to_overdose,_easy_to_overpromise.mp3", "title": "Vitamin C hard to overdose, easy to overpromise"}, {"file": "audio/prove-it/14_Vitamin_D_the_popularity_surge,_and_what_the_trials_actually_found.mp3", "title": "Vitamin D the popularity surge, and what the trials actually found"}, {"file": "audio/prove-it/15_B12_and_the_B-complex_treating_a_deficiency,_not_a_baseline.mp3", "title": "B12 and the B-complex treating a deficiency, not a baseline"}, {"file": "audio/prove-it/16_The_core_reframe.mp3", "title": "The core reframe"}, {"file": "audio/prove-it/17_Chapter_3_Minerals_Essential_and_Potentially_Dangerous.mp3", "title": "Chapter 3: Minerals Essential and Potentially Dangerous"}, {"file": "audio/prove-it/18_Calcium_the_exception%23U2019s_own_caveat.mp3", "title": "Calcium the exception\u2019s own caveat"}, {"file": "audio/prove-it/19_Iron_deficiency,_overdose,_and_overload.mp3", "title": "Iron deficiency, overdose, and overload"}, {"file": "audio/prove-it/20_Magnesium_a_popular_claim,_a_modest_evidence_base.mp3", "title": "Magnesium a popular claim, a modest evidence base"}, {"file": "audio/prove-it/21_Zinc_and_selenium_real_deficiency_correction,_real_toxicity_syndromes.mp3", "title": "Zinc and selenium real deficiency correction, real toxicity syndromes"}, {"file": "audio/prove-it/22_Potassium_the_mineral_regulation_actually_restricts.mp3", "title": "Potassium the mineral regulation actually restricts"}, {"file": "audio/prove-it/23_The_Essential_Nutrient_Paradox.mp3", "title": "The Essential Nutrient Paradox"}, {"file": "audio/prove-it/24_Chapter_4_Herbal_Remedies.mp3", "title": "Chapter 4: Herbal Remedies"}, {"file": "audio/prove-it/25_Standardization_the_word_that%23U2019s_supposed_to_fix_this.mp3", "title": "Standardization the word that\u2019s supposed to fix this"}, {"file": "audio/prove-it/26_Traditional_use_as_a_hypothesis,_not_a_conclusion.mp3", "title": "Traditional use as a hypothesis, not a conclusion"}, {"file": "audio/prove-it/27_St_John%23U2019s_Wort_a_genuine_partial_success,_with_a_serious_caveat_already_on_record.mp3", "title": "St John\u2019s Wort a genuine partial success, with a serious caveat already on record"}, {"file": "audio/prove-it/28_Echinacea_popular,_and_mostly_unconvincing.mp3", "title": "Echinacea popular, and mostly unconvincing"}, {"file": "audio/prove-it/29_Saw_palmetto_two_large_trials,_one_clear_answer.mp3", "title": "Saw palmetto two large trials, one clear answer"}, {"file": "audio/prove-it/30_Product_variability_and_contamination.mp3", "title": "Product variability and contamination"}, {"file": "audio/prove-it/31_Chapter_5_The_Supplement_for_Everything.mp3", "title": "Chapter 5: The Supplement for Everything"}, {"file": "audio/prove-it/32_What_all_ten_have_in_common.mp3", "title": "What all ten have in common"}, {"file": "audio/prove-it/33_The_American_Supplement_Promise_Map.mp3", "title": "The American Supplement Promise Map"}, {"file": "audio/prove-it/34_PART_VIII_THE_INFORMATION_PROBLEM.mp3", "title": "Part VIII: The Information Problem"}, {"file": "audio/prove-it/35_Chapter_6_When_Science_Becomes_Content.mp3", "title": "Chapter 6: When Science Becomes Content"}, {"file": "audio/prove-it/36_The_algorithm,_widened.mp3", "title": "The algorithm, widened"}, {"file": "audio/prove-it/37_The_asymmetry_of_effort.mp3", "title": "The asymmetry of effort"}, {"file": "audio/prove-it/38_AI-generated_health_content_a_genuinely_new_wrinkle.mp3", "title": "AI-generated health content a genuinely new wrinkle"}, {"file": "audio/prove-it/39_Chapter_7_The_Misinformation_Business.mp3", "title": "Chapter 7: The Misinformation Business"}, {"file": "audio/prove-it/40_A_business_model,_not_a_byproduct.mp3", "title": "A business model, not a byproduct"}, {"file": "audio/prove-it/41_The_incentive_structures,_named_plainly.mp3", "title": "The incentive structures, named plainly"}, {"file": "audio/prove-it/42_The_consequence_gap.mp3", "title": "The consequence gap"}, {"file": "audio/prove-it/43_Evidence_Spotlight_%23U2014_Following_One_Claim%23U2019s_Money.mp3", "title": "Evidence Spotlight \u2014 Following One Claim\u2019s Money"}, {"file": "audio/prove-it/44_Chapter_8_Why_Smart_People_Believe.mp3", "title": "Chapter 8: Why Smart People Believe"}, {"file": "audio/prove-it/45_Intelligence_and_bias_are_mostly_separate_systems.mp3", "title": "Intelligence and bias are mostly separate systems"}, {"file": "audio/prove-it/46_Six_distinct_mechanisms,_not_one.mp3", "title": "Six distinct mechanisms, not one"}, {"file": "audio/prove-it/47_Identity_the_mechanism_that_resists_correction.mp3", "title": "Identity the mechanism that resists correction"}, {"file": "audio/prove-it/48_The_Belief_Cycle.mp3", "title": "The Belief Cycle"}, {"file": "audio/prove-it/49_PART_IX_THE_INTERNATIONAL_PERSPECTIVE.mp3", "title": "Part IX: The International Perspective"}, {"file": "audio/prove-it/50_Chapter_9_What_Other_Countries_Do_Differently.mp3", "title": "Chapter 9: What Other Countries Do Differently"}, {"file": "audio/prove-it/51_Canada_a_license_before_a_sale.mp3", "title": "Canada a license before a sale"}, {"file": "audio/prove-it/52_Australia_sorting_by_risk,_not_treating_everything_alike.mp3", "title": "Australia sorting by risk, not treating everything alike"}, {"file": "audio/prove-it/53_The_European_Union_and_United_Kingdom_a_positive_list,_not_a_presumption.mp3", "title": "The European Union and United Kingdom a positive list, not a presumption"}, {"file": "audio/prove-it/54_International_Supplement_Regulation.mp3", "title": "International Supplement Regulation"}, {"file": "audio/prove-it/55_An_accident_of_politics,_not_a_reflection_of_unique_values.mp3", "title": "An accident of politics, not a reflection of unique values"}, {"file": "audio/prove-it/56_PART_X_THE_INVESTIGATION.mp3", "title": "Part X: The Investigation"}, {"file": "audio/prove-it/57_Chapter_10_Case_Files.mp3", "title": "Chapter 10: Case Files"}, {"file": "audio/prove-it/58_Case_One_Ephedra_and_the_Death_of_Steve_Bechler.mp3", "title": "Case One Ephedra and the Death of Steve Bechler"}, {"file": "audio/prove-it/59_Case_Two_Red_Yeast_Rice_and_the_Pharmanex_Litigation.mp3", "title": "Case Two Red Yeast Rice and the Pharmanex Litigation"}, {"file": "audio/prove-it/60_Case_Three_The_Tainted_Product_Pattern.mp3", "title": "Case Three The Tainted Product Pattern"}, {"file": "audio/prove-it/61_Case_Four_NMN_and_the_Cost_of_Regulatory_Ambiguity.mp3", "title": "Case Four NMN and the Cost of Regulatory Ambiguity"}, {"file": "audio/prove-it/62_Chapter_11_Following_the_Evidence.mp3", "title": "Chapter 11: Following the Evidence"}, {"file": "audio/prove-it/63_A_systematic_review_of_the_investigation.mp3", "title": "A systematic review of the investigation"}, {"file": "audio/prove-it/64_What_this_investigation_is_not.mp3", "title": "What this investigation is not"}, {"file": "audio/prove-it/65_What_comes_next.mp3", "title": "What comes next"}, {"file": "audio/prove-it/66_Appendix_What_Should_Change.mp3", "title": "Appendix: What Should Change"}, {"file": "audio/prove-it/67_Toward_a_Recommended_Framework_After_Following_the_Evidence_on_What_Has_Actually_Worked.mp3", "title": "Toward a Recommended Framework After Following the Evidence on What Has Actually Worked"}, {"file": "audio/prove-it/68_What_the_evidence_actually_shows.mp3", "title": "What the evidence actually shows"}, {"file": "audio/prove-it/69_The_design_principles_this_model_is_built_on.mp3", "title": "The design principles this model is built on"}, {"file": "audio/prove-it/70_The_Recommended_Model_A_Tiered_Evidence_Framework.mp3", "title": "The Recommended Model A Tiered Evidence Framework"}, {"file": "audio/prove-it/71_What_changes_for_you.mp3", "title": "What changes for you"}, {"file": "audio/prove-it/72_Why_not_go_straight_to_full_drug-style_premarket_approval.mp3", "title": "Why not go straight to full drug-style premarket approval"}, {"file": "audio/prove-it/73_What_this_model_does_not_solve.mp3", "title": "What this model does not solve"}, {"file": "audio/prove-it/74_About_the_Authors_Robert_Coleman,_MS_Pharm_.mp3", "title": "About the Authors: Robert Coleman, MS Pharm."}, {"file": "audio/prove-it/75_Robert_Coleman,_MS_Pharm_.mp3", "title": "Robert Coleman, MS Pharm."}];
+  var STORAGE_KEY = "proveItAudioProgress";
+  var audio = document.getElementById("pi-audio");
+  var playBtn = document.getElementById("pi-play");
+  var prevBtn = document.getElementById("pi-prev");
+  var nextBtn = document.getElementById("pi-next");
+  var seek = document.getElementById("pi-seek");
+  var timeCur = document.getElementById("pi-time-cur");
+  var timeDur = document.getElementById("pi-time-dur");
+  var nowTitle = document.getElementById("pi-now-title");
+  var tracks = Array.prototype.slice.call(document.querySelectorAll(".pi-track"));
+  var currentIndex = -1;
+  var isSeeking = false;
+  var lastSaved = 0;
+
+  function fmt(sec){
+    if(!isFinite(sec) || sec < 0) sec = 0;
+    var m = Math.floor(sec/60), s = Math.floor(sec%60);
+    return m + ":" + (s<10?"0":"") + s;
+  }
+
+  function setPlayingUI(playing){
+    playBtn.innerHTML = playing ? "&#10074;&#10074;" : "&#9658;";
+    playBtn.setAttribute("aria-label", playing ? "Pause" : "Play");
+  }
+
+  function highlight(idx){
+    tracks.forEach(function(el){
+      el.classList.toggle("playing", parseInt(el.getAttribute("data-index"),10) === idx);
+    });
+  }
+
+  function loadTrack(idx, autoplay, startAt){
+    if(idx < 0 || idx >= TRACKS.length) return;
+    currentIndex = idx;
+    var t = TRACKS[idx];
+    audio.src = t.file;
+    nowTitle.textContent = t.title;
+    highlight(idx);
+    if(startAt){
+      audio.addEventListener("loadedmetadata", function once(){
+        audio.currentTime = startAt;
+        audio.removeEventListener("loadedmetadata", once);
+      });
+    }
+    if(autoplay){
+      audio.play().catch(function(){});
+    }
+  }
+
+  tracks.forEach(function(el){
+    el.addEventListener("click", function(){
+      var idx = parseInt(el.getAttribute("data-index"), 10);
+      loadTrack(idx, true, 0);
+    });
+  });
+
+  playBtn.addEventListener("click", function(){
+    if(currentIndex === -1){ loadTrack(0, true, 0); return; }
+    if(audio.paused){ audio.play().catch(function(){}); } else { audio.pause(); }
+  });
+  prevBtn.addEventListener("click", function(){
+    if(currentIndex > 0) loadTrack(currentIndex - 1, true, 0);
+  });
+  nextBtn.addEventListener("click", function(){
+    if(currentIndex > -1 && currentIndex < TRACKS.length - 1) loadTrack(currentIndex + 1, true, 0);
+  });
+
+  audio.addEventListener("play", function(){ setPlayingUI(true); });
+  audio.addEventListener("pause", function(){ setPlayingUI(false); });
+  audio.addEventListener("ended", function(){
+    if(currentIndex < TRACKS.length - 1){ loadTrack(currentIndex + 1, true, 0); }
+    else { setPlayingUI(false); }
+  });
+  audio.addEventListener("loadedmetadata", function(){
+    timeDur.textContent = fmt(audio.duration);
+  });
+  audio.addEventListener("timeupdate", function(){
+    if(!isSeeking && audio.duration){
+      seek.value = Math.floor((audio.currentTime / audio.duration) * 1000);
+    }
+    timeCur.textContent = fmt(audio.currentTime);
+    var now = Date.now();
+    if(now - lastSaved > 4000 && currentIndex > -1){
+      lastSaved = now;
+      try{
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({index: currentIndex, time: audio.currentTime}));
+      }catch(e){}
+    }
+  });
+  seek.addEventListener("input", function(){ isSeeking = true; });
+  seek.addEventListener("change", function(){
+    if(audio.duration){
+      audio.currentTime = (seek.value/1000) * audio.duration;
+    }
+    isSeeking = false;
+  });
+
+  // resume banner
+  try{
+    var saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+    if(saved && typeof saved.index === "number" && TRACKS[saved.index]){
+      var t = TRACKS[saved.index];
+      document.getElementById("pi-resume-title").textContent = t.title;
+      document.getElementById("pi-resume-time").textContent = fmt(saved.time || 0);
+      document.getElementById("pi-resume").classList.add("show");
+      document.getElementById("pi-resume-btn").addEventListener("click", function(){
+        loadTrack(saved.index, true, saved.time || 0);
+        document.getElementById("pi-resume").classList.remove("show");
+      });
+    }
+  }catch(e){}
+})();
+</script>
+
+</body>
+</html>
