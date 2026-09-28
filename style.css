@@ -1455,3 +1455,11 @@ body.home-v2.nav-open::after{
 .watch-flag p:last-child{margin-bottom:0;}
 .lookup-label-note{font-size:0.85rem;color:var(--gray-body);background:var(--bg-pale);border-radius:6px;padding:10px 14px;margin:14px 0 4px;line-height:1.5;}
 .legend-item .idx-watch{color:#B7791F;display:inline-block;}
+
+.table-note{
+  font-size:0.82rem;
+  color:var(--gray-body);
+  font-style:italic;
+  margin-top:-18px;
+  margin-bottom:24px;
+}
