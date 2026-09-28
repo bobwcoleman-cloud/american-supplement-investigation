@@ -155,8 +155,9 @@
         '6. Distinguish the type of evidence explicitly: biological plausibility, animal/mechanistic evidence, observational evidence, and randomized clinical evidence. Do not treat anecdotes or testimonials as evidence of efficacy.\n' +
         '7. Rate the strength of evidence for each major use as one of: Strong, Moderate, Limited/Insufficient, Evidence of No Benefit, or Evidence of Harm — and explain WHY it earns that rating rather than just stating the label.\n' +
         '8. Note any conflicting evidence or important uncertainty.\n' +
-        '9. Cite the principal sources with publication dates. Prefer primary, peer-reviewed, and authoritative government sources.\n\n' +
-        'Throughout, keep these distinctions clear: ingredient evidence vs. product evidence; the dose in this product vs. the dose actually studied; biological plausibility vs. demonstrated clinical outcome; and label information vs. proof of efficacy.\n\n---\n\n';
+        '9. Check product quality, not just ingredient science: say whether the brand publishes third-party contaminant testing (for example, heavy metals such as lead, cadmium, and arsenic) or a certificate of analysis, and note any recalls, warnings, or regulatory actions involving this product or brand. If you find no public information, say so plainly rather than guessing.\n' +
+        '10. Cite the principal sources with publication dates. Prefer primary, peer-reviewed, and authoritative government sources.\n\n' +
+        'Throughout, keep these distinctions clear: ingredient evidence vs. product evidence; the dose in this product vs. the dose actually studied; biological plausibility vs. demonstrated clinical outcome; and label information vs. proof of efficacy or purity.\n\n---\n\n';
 
       const promptText = methodology + productBlock;
 
@@ -166,7 +167,7 @@
       // copies the prompt manually.
       const compactMethodology =
         'Evaluate this exact supplement product and dose — not just the ingredient category in the abstract. ' +
-        'For each ingredient: prioritize systematic reviews and RCTs over observational data or anecdote; compare this product\'s dose to the doses actually used in trials (matches / below / exceeds / not comparable); note key safety risks, drug interactions, and contraindications; rate evidence strength (Strong / Moderate / Limited / No Benefit / Harm) with a brief reason; cite sources with dates. Start with your Overall Verdict on the product as a whole, then support it.\n\n---\n\n';
+        'For each ingredient: prioritize systematic reviews and RCTs over observational data or anecdote; compare this product\'s dose to the doses actually used in trials (matches / below / exceeds / not comparable); note key safety risks, drug interactions, and contraindications; rate evidence strength (Strong / Moderate / Limited / No Benefit / Harm) with a brief reason; cite sources with dates; check whether the brand publishes third-party contaminant (heavy-metal) test results and note any recalls or warnings, saying so plainly if none are public. Start with your Overall Verdict on the product as a whole, then support it.\n\n---\n\n';
       const compactPromptText = compactMethodology + productBlock;
 
       // Providers with a currently-working (though unofficial) one-click prefill.
@@ -213,8 +214,9 @@
         '<div class="brand-line">' + (label.brandName || '') + (label.upcSku ? ' · UPC ' + label.upcSku : '') + '</div>' +
         (ingredients ? '<h5>Ingredients (as declared on label)</h5><table class="lookup-ing-table">' + ingredients + '</table>' : '<p>No itemized ingredient data available for this product.</p>') +
         (statements ? '<h5>Label Statements</h5><ul>' + statements + '</ul>' : '') +
+        '<p class="lookup-label-note"><strong>Note:</strong> The NIH label lists only what the manufacturer declares. It does not include contaminant testing (such as heavy metals), and it cannot show whether a given bottle matches its label.</p>' +
         '<h5>Investigate the Evidence</h5>' +
-        '<p class="lookup-methodology-note">Compares this exact formulation and dose with published clinical evidence — trial size, dose match, safety, and interactions — using an AI research assistant of your choice and your own account. This site pays nothing for your analysis, and you should verify important conclusions using the cited sources.</p>' +
+        '<p class="lookup-methodology-note">Compares this exact formulation and dose with published clinical evidence — trial size, dose match, safety, interactions, and published contaminant testing — using an AI research assistant of your choice and your own account. This site pays nothing for your analysis, and you should verify important conclusions using the cited sources.</p>' +
         '<div class="cta-row" style="margin-top:0;">' +
         '<button type="button" class="btn btn-primary" id="btn-claude">Analyze with Claude</button>' +
         '<button type="button" class="btn btn-primary" id="btn-chatgpt">Analyze with ChatGPT</button>' +

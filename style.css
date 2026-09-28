@@ -1442,3 +1442,16 @@ body.home-v2.nav-open::after{
      drawer and its links stay clickable above this dimmed backdrop. */
   content:"";position:fixed;inset:0;background:rgba(13,22,32,0.4);z-index:55;
 }
+
+/* ---- Contamination watch flag (separate from the evidence tier) ---- */
+.legend-note{grid-column:1 / -1;}
+.idx-watch{color:#B7791F;font-size:0.85rem;margin-left:8px;font-weight:700;}
+.legend-note .idx-watch{margin:2px 4px 0 0;font-size:1.05rem;flex-shrink:0;}
+.watch-flag{background:#FBF6E6;border-left:4px solid var(--gold);border-radius:4px;padding:14px 18px;margin:14px 0 6px;}
+.watch-flag .wf-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:12px;margin-bottom:6px;}
+.watch-flag .wf-title{font-size:0.78rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#7A5C00;}
+.watch-flag .wf-date{font-size:0.75rem;color:var(--gray-body);}
+.watch-flag p{font-size:0.9rem;margin:0 0 8px;}
+.watch-flag p:last-child{margin-bottom:0;}
+.lookup-label-note{font-size:0.85rem;color:var(--gray-body);background:var(--bg-pale);border-radius:6px;padding:10px 14px;margin:14px 0 4px;line-height:1.5;}
+.legend-item .idx-watch{color:#B7791F;display:inline-block;}
