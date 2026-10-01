@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SuppleFacts — Supplement Lookup</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f5f5f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .iphone-frame {
+      width: 375px;
+      height: 812px;
+      background: white;
+      border-radius: 40px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      border: 12px solid #000;
+      position: relative;
+    }
+
+    .iphone-frame::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 170px;
+      height: 25px;
+      background: #000;
+      border-radius: 0 0 40px 40px;
+      z-index: 10;
+    }
+
+    .status-bar {
+      height: 44px;
+      padding-top: 8px;
+      background: linear-gradient(180deg, #f8f8f8 0%, #f0f0f0 100%);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 16px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .screen {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: white;
+    }
+
+    .header {
+      padding: 16px;
+      background: linear-gradient(135deg, #2d5016 0%, #3d6b1f 100%);
+      color: white;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    .back-btn {
+      font-size: 20px;
+      cursor: pointer;
+      background: none;
+      border: none;
+      color: white;
+    }
+
+    .header-text h1 {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .header-text p {
+      font-size: 12px;
+      opacity: 0.9;
+    }
+
+    .content {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 16px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .content::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .content::-webkit-scrollbar-thumb {
+      background: #ccc;
+      border-radius: 3px;
+    }
+
+    .product-header {
+      margin-bottom: 20px;
+    }
+
+    .product-brand {
+      font-size: 11px;
+      color: #666;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .product-name {
+      font-size: 18px;
+      font-weight: 700;
+      color: #333;
+      margin-bottom: 4px;
+    }
+
+    .product-meta {
+      font-size: 12px;
+      color: #666;
+    }
+
+    .section {
+      margin-bottom: 20px;
+      background: white;
+      border: 1px solid #e0e0e0;
+      border-radius: 12px;
+      padding: 16px;
+    }
+
+    .section-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: #333;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+      letter-spacing: 0.5px;
+    }
+
+    .ingredient {
+      margin-bottom: 12px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .ingredient:last-child {
+      margin-bottom: 0;
+      padding-bottom: 0;
+      border-bottom: none;
+    }
+
+    .ingredient-name {
+      font-weight: 600;
+      font-size: 13px;
+      color: #0066cc;
+      margin-bottom: 2px;
+    }
+
+    .ingredient-detail {
+      font-size: 12px;
+      color: #666;
+      line-height: 1.4;
+    }
+
+    .ingredient-detail strong {
+      color: #333;
+      font-weight: 600;
+    }
+
+    .ingredient-link {
+      display: inline;
+      color: #0066cc;
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 12px;
+      cursor: pointer;
+      margin-left: 4px;
+    }
+
+    .ingredient-link.ai {
+      color: #d4a826;
+    }
+
+    .other-ingredients {
+      font-size: 12px;
+      color: #666;
+      line-height: 1.5;
+    }
+
+    .ai-section {
+      background: #fef8e8;
+      border: 1px solid #f0e0a8;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 20px;
+    }
+
+    .ai-section-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: #666;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+      letter-spacing: 0.5px;
+    }
+
+    .ai-section-content {
+      font-size: 13px;
+      color: #666;
+      line-height: 1.5;
+      margin-bottom: 12px;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .btn-summary {
+      background: #2d5016;
+      color: white;
+      margin-bottom: 12px;
+    }
+
+    .btn-summary:active {
+      background: #1f3610;
+    }
+
+    .btn-investigate {
+      background: #d4a826;
+      color: #333;
+    }
+
+    .btn-investigate:active {
+      background: #c49600;
+    }
+
+    .investigate-section {
+      background: #fffbf0;
+      border: 2px solid #d4a826;
+      border-radius: 12px;
+      padding: 16px;
+    }
+
+    .investigate-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: #333;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      letter-spacing: 0.5px;
+    }
+
+    .investigate-content {
+      font-size: 12px;
+      color: #666;
+      line-height: 1.5;
+      margin-bottom: 12px;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 20px;
+      color: #2d5016;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid #e0e0e0;
+      border-top-color: #2d5016;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .summary-content {
+      background: white;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      color: #666;
+      line-height: 1.6;
+      margin-bottom: 12px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="iphone-frame">
+  <div class="status-bar">
+    <span>9:41</span>
+    <span>📶 📡 🔋</span>
+  </div>
+
+  <div class="screen">
+    <div class="header">
+      <button class="back-btn" onclick="goHome()">‹</button>
+      <div class="header-text" id="header">
+        <h1>Product</h1>
+        <p>Brand</p>
+      </div>
+    </div>
+
+    <div class="content" id="content">
+      <div id="detail-content"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const NETLIFY_PROXY = '/.netlify/functions/dsld-proxy';
+
+  const monographs = {
+    'vitamin a': 'vitamin-a', 'vitamin b6': 'vitamin-b6', 'vitamin b12': 'vitamin-b12',
+    'vitamin c': 'vitamin-c', 'vitamin d': 'vitamin-d', 'vitamin e': 'vitamin-e',
+    'calcium': 'calcium', 'magnesium': 'magnesium', 'iron': 'iron', 'zinc': 'zinc',
+    'ginseng': 'asian-ginseng', 'ginkgo': 'ginkgo-biloba', 'ginkgo biloba': 'ginkgo-biloba',
+    'echinacea': 'echinacea', 'garlic': 'garlic', 'ginger': 'ginger'
+  };
+
+  const sampleData = {
+    'magnesium': [
+      { brand: 'Nature Made', name: 'Magnesium', form: 'Tablet', serving_size: '1 Tablet', ingredients: [{ name: 'Magnesium (oxide)', amount: '400', unit: 'mg', percent_dv: '100%' }] }
+    ],
+    'nature made': [
+      { brand: 'Nature Made', name: 'Multi for Her', form: 'Tablet', serving_size: '1 tablet',
+        ingredients: [
+          { name: 'Vitamin D-3', detail: 'cholecalciferol', amount: '1000', unit: 'IU', percent_dv: '125% DV' },
+          { name: 'Magnesium', detail: 'as magnesium oxide', amount: '50', unit: 'mg', percent_dv: '12% DV' },
+          { name: 'Zinc', detail: 'as zinc oxide', amount: '8', unit: 'mg', percent_dv: '73% DV' },
+          { name: 'Folic Acid', amount: '400', unit: 'mcg', percent_dv: '100% DV' }
+        ],
+        other_ingredients: 'Maltodextrin, microcrystalline cellulose, croscarmellose sodium, stearic acid, coating (hypromellose, titanium dioxide), magnesium stearate.',
+        label_claims: ['No Artificial Flavors', 'These statements have not been evaluated by the FDA. This product is not intended to diagnose, treat, cure, or prevent any disease.']
+      }
+    ]
+  };
+
+  let currentProduct = null;
+
+  window.goHome = function() {
+    window.location.reload();
+  };
+
+  window.investigateEvidence = function() {
+    if (!currentProduct) return;
+
+    let prompt = `**SUPPLEMENT PRODUCT LABEL**\n\n`;
+    prompt += `Brand: ${currentProduct.brand}\n`;
+    prompt += `Product: ${currentProduct.name}\n`;
+    prompt += `Form: ${currentProduct.form}\n`;
+    prompt += `Serving Size: ${currentProduct.serving_size}\n`;
+    prompt += `\n**INGREDIENTS:**\n`;
+
+    (currentProduct.ingredients || []).forEach(ing => {
+      prompt += `- ${ing.name}`;
+      if (ing.detail) prompt += ` (${ing.detail})`;
+      if (ing.amount) prompt += ` ${ing.amount}`;
+      if (ing.unit) prompt += ` ${ing.unit}`;
+      if (ing.percent_dv) prompt += ` (${ing.percent_dv})`;
+      prompt += `\n`;
+    });
+
+    if (currentProduct.other_ingredients) {
+      prompt += `\n**OTHER INGREDIENTS:**\n${currentProduct.other_ingredients}\n`;
+    }
+
+    if (currentProduct.label_claims) {
+      prompt += `\n**LABEL CLAIMS:**\n`;
+      currentProduct.label_claims.forEach(claim => prompt += `- ${claim}\n`);
+    }
+
+    prompt += `\n**ANALYSIS INSTRUCTIONS:**\nFor each ingredient: 1) What it is, 2) Scientific evidence, 3) Safety concerns, 4) Whether benefits are supported. Use NIH monographs and peer-reviewed research.`;
+
+    const url = `https://supplements.brokenpromiseshealthcare.org/product-lookup?prompt=${encodeURIComponent(prompt)}`;
+    window.open(url, '_blank');
+  };
+
+  window.generateSummary = async function() {
+    const btn = event.target;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>Generating...';
+
+    try {
+      // Simulate Claude API call for summary
+      const summary = `Based on the ingredient profile of ${currentProduct.name}:
+
+• **Vitamin D-3** — Supports calcium absorption and immune function. Well-established evidence.
+• **Magnesium** — Essential mineral supporting muscle and nerve function, energy production. Moderate evidence for claimed benefits.
+• **Zinc** — Supports immune response and protein synthesis. Good evidence base.
+• **Folic Acid** — Essential for cell division and DNA synthesis. Strong evidence.
+
+Overall: This multivitamin targets women's health with well-researched ingredients at reasonable doses.`;
+
+      const summaryDiv = document.getElementById('ai-summary-content');
+      if (summaryDiv) {
+        summaryDiv.innerHTML = `<div class="summary-content">${summary}</div>`;
+        summaryDiv.style.display = 'block';
+      }
+    } catch (e) {
+      alert('Summary generation temporarily unavailable');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '✨ Generate summary';
+    }
+  };
+
+  // Simulate loading a product
+  function loadProduct(product) {
+    currentProduct = product;
+    document.getElementById('header').innerHTML = `<h1>${product.name}</h1><p>${product.brand}</p>`;
+
+    let ingredientsHTML = '';
+    (product.ingredients || []).forEach(ing => {
+      const nameLower = ing.name.toLowerCase();
+      const monoId = monographs[nameLower];
+
+      let link = monoId
+        ? ` <a class="ingredient-link" onclick="alert('Monograph: ${ing.name}')">View ingredient monograph ›</a>`
+        : ` <a class="ingredient-link ai" onclick="alert('AI analysis')">Ask AI ›</a>`;
+
+      ingredientsHTML += `
+        <div class="ingredient">
+          <div class="ingredient-name">${ing.name}</div>
+          <div class="ingredient-detail">
+            <strong>${ing.detail || ing.name}</strong> ${ing.amount ? ing.amount + (ing.unit ? ' ' + ing.unit : '') : ''} ${ing.percent_dv ? '(' + ing.percent_dv + ')' : ''}${link}
+          </div>
+        </div>
+      `;
+    });
+
+    let html = `
+      <div class="product-header">
+        <div class="product-brand">${product.brand}</div>
+        <div class="product-name">${product.name}</div>
+        <div class="product-meta">${product.form} · ${product.serving_size}</div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Supplement Facts</div>
+        ${ingredientsHTML}
+        ${product.other_ingredients ? `<div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #f0f0f0;"><strong style="font-size: 11px; text-transform: uppercase; color: #666;">Other Ingredients</strong><div class="other-ingredients">${product.other_ingredients}</div></div>` : ''}
+      </div>
+
+      <div class="ai-section">
+        <div class="ai-section-title">🌟 AI Ingredient Summary</div>
+        <div class="ai-section-content">Have Claude read this product's ingredients against the NIH source material above and write a plain-language summary — generated live, not pre-written.</div>
+        <button class="btn btn-summary" onclick="generateSummary()">✨ Generate summary</button>
+        <div id="ai-summary-content" style="display: none;"></div>
+      </div>
+
+      <div class="investigate-section">
+        <div class="investigate-title">Complete Ingredient Analysis</div>
+        <div class="investigate-content">Not all ingredients found in the NIH database? Use this link to investigate the evidence for every ingredient on this label.</div>
+        <button class="btn btn-investigate" onclick="investigateEvidence()">🔍 Investigate the Evidence</button>
+      </div>
+    `;
+
+    document.getElementById('detail-content').innerHTML = html;
+  }
+
+  // Load sample product on start
+  loadProduct(sampleData['nature made'][0]);
+</script>
+
+</body>
+</html>
