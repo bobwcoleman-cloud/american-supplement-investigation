@@ -85,6 +85,18 @@
   <div id="lookup-results"></div>
   <div id="lookup-detail"></div>
 
+  <!-- Investigation Section (from SuppleFacts app) -->
+  <div id="investigation-section" style="display:none; margin-top:40px; padding-top:40px; border-top:1px solid #e0e0e0;">
+    <h2>Supplement Investigation</h2>
+    <p style="color:#666; font-size:14px;">Label data sent from SuppleFacts app — analyze with AI below:</p>
+    <textarea id="investigation-prompt" style="width:100%; height:200px; padding:12px; font-family:monospace; font-size:13px; border:1px solid #ccc; border-radius:4px; margin:16px 0;"></textarea>
+    <div style="display:flex; gap:12px; flex-wrap:wrap;">
+      <button class="btn btn-primary" onclick="sendToAI('claude')">Analyze with Claude →</button>
+      <button class="btn btn-primary" onclick="sendToAI('chatgpt')">Analyze with ChatGPT →</button>
+      <button class="btn btn-primary" onclick="sendToAI('perplexity')">Analyze with Perplexity →</button>
+    </div>
+  </div>
+
   <div class="lookup-disclaimer">
     <strong>About this data:</strong> Label information is sourced directly from the <a href="https://dsld.od.nih.gov/" target="_blank" rel="noopener">NIH Office of Dietary Supplements' Dietary Supplement Label Database (DSLD)</a>, drawn from over 200,000 product labels. Submission is voluntary and manufacturer-reported — the NIH itself notes that labels "might be incomplete and/or inaccurate," and inclusion in the database is not an endorsement of the product by NIH, FDA, or HHS. This tool shows you what a label declares; it does not show what independent testing has found in the finished product (such as heavy-metal contamination), and it does not carry this site's own evidence ratings, which you'll find on the <a href="top-25-supplements.html">Top 25 guide</a> for the most common ingredients.
   </div>
@@ -101,6 +113,53 @@
     </div>
   </div>
 </footer>
+
+<script>
+  // Check if there's a prompt parameter from SuppleFacts app
+  function initializeInvestigation() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const prompt = urlParams.get('prompt');
+
+    if (prompt) {
+      const decodedPrompt = decodeURIComponent(prompt);
+      const textarea = document.getElementById('investigation-prompt');
+      const section = document.getElementById('investigation-section');
+
+      if (textarea && section) {
+        textarea.value = decodedPrompt;
+        section.style.display = 'block';
+        // Scroll to the investigation section
+        section.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  }
+
+  // Send prompt to different AI engines
+  function sendToAI(engine) {
+    const prompt = document.getElementById('investigation-prompt').value;
+
+    if (!prompt) {
+      alert('No prompt to send');
+      return;
+    }
+
+    const encodedPrompt = encodeURIComponent(prompt);
+
+    if (engine === 'claude') {
+      // Open Claude with the prompt
+      window.open(`https://claude.ai?text=${encodedPrompt}`, '_blank');
+    } else if (engine === 'chatgpt') {
+      // Open ChatGPT with the prompt
+      window.open(`https://chat.openai.com/?q=${encodedPrompt}`, '_blank');
+    } else if (engine === 'perplexity') {
+      // Open Perplexity with the prompt
+      window.open(`https://www.perplexity.ai/?q=${encodedPrompt}`, '_blank');
+    }
+  }
+
+  // Initialize when page loads
+  window.addEventListener('load', initializeInvestigation);
+</script>
 
 <script src="product-lookup.js"></script>
 
