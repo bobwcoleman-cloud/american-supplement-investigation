@@ -151,6 +151,7 @@ body{
   font-family:'Lora',Georgia,serif;font-weight:700;font-size:17px;flex:1;min-width:0;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
 }
+.appbar svg.mark{width:26px;height:26px;border-radius:7px;flex:0 0 auto;display:block}
 .appbar .mark{
   width:22px;height:22px;border-radius:7px;
   background:linear-gradient(145deg,var(--accent),var(--accent-ink));
@@ -620,7 +621,7 @@ button{font-family:inherit}
 
         <div class="appbar">
           <button class="back" id="backBtn" aria-label="Back" hidden>&#8249;</button>
-          <div class="mark">S</div>
+          <svg class="mark" viewBox="0 0 100 100" aria-hidden="true"><use href="#sfLogo"/></svg>
           <div class="title" id="appTitle">SuppleFacts</div>
         </div>
         <div class="content" id="content"></div>
