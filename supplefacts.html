@@ -1,791 +1,288 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>SuppleFacts — Check the Evidence</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>SuppleFacts — Check the Evidence</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--navy:#1a3a52;--teal:#2a7a8a;--teal-dk:#1f6375;--gold:#d4a826;--bg:#eef2f6;--line:#e0e0e0;--muted:#666}
+html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:#222}
+body{display:flex;justify-content:center;align-items:center}
+button{font-family:inherit;cursor:pointer}
 
-        :root {
-            --navy: #1a3a52;
-            --teal: #2a7a8a;
-            --gold: #d4a826;
-            --light-bg: #f8f9fa;
-            --border-color: #e0e0e0;
-        }
+/* Phone frame on small/medium viewports, full-screen app on tablets/desktops */
+.phone{width:375px;height:812px;max-height:100vh;background:#fff;border-radius:44px;border:12px solid #000;box-shadow:0 20px 60px rgba(0,0,0,.3);position:relative;overflow:hidden;display:flex;flex-direction:column;flex-shrink:0}
+.phone::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:150px;height:24px;background:#000;border-radius:0 0 20px 20px;z-index:100}
+.status{height:40px;flex-shrink:0;background:#f4f4f4;display:flex;justify-content:space-between;align-items:flex-end;padding:0 22px 6px;font-size:12px;font-weight:600}
+@media (max-width:500px){
+  body{align-items:stretch}
+  .phone{width:100%;height:100%;max-height:none;border:none;border-radius:0;box-shadow:none}
+  .phone::before,.status{display:none}
+}
+@media (min-width:768px){
+  body{display:block}
+  .phone{width:100%;max-width:none;height:100vh;max-height:none;border:none;border-radius:0;box-shadow:none}
+  .phone::before,.status{display:none}
+  .view-inner{max-width:720px;margin:0 auto}
+}
 
-        html, body {
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: var(--light-bg);
-        }
+.screen{flex:1;position:relative;overflow:hidden;display:flex;flex-direction:column;min-height:0}
 
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
+/* Welcome */
+#welcome{position:absolute;inset:0;background:#fff;z-index:50;display:flex;flex-direction:column;justify-content:space-between;padding:36px 24px 24px;overflow-y:auto}
+#welcome.hidden{display:none}
+.w-logo{font-size:44px;text-align:center;margin-bottom:14px}
+.w-head{font-family:Georgia,'Lora',serif;font-size:30px;line-height:1.2;color:var(--navy);text-align:center;margin-bottom:12px}
+.w-head span{color:var(--gold)}
+.w-desc{font-size:14px;color:var(--muted);line-height:1.6;text-align:center;margin-bottom:22px}
+.feat{display:flex;gap:12px;margin-bottom:14px;font-size:13px;line-height:1.5}
+.feat b{color:var(--navy)}
+.btn-go{width:100%;padding:16px;background:var(--teal);color:#fff;border:none;border-radius:12px;font-size:16px;font-weight:600;margin-top:18px}
+.btn-go:active{background:var(--teal-dk)}
+.w-note{text-align:center;font-size:11px;color:#999;line-height:1.4;margin-top:10px}
 
-        .phone-container {
-            width: 375px;
-            height: 812px;
-            background: white;
-            border-radius: 50px;
-            overflow: hidden;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            border: 12px solid #000;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            flex-shrink: 0;
-        }
+/* App */
+.topbar{flex-shrink:0;background:linear-gradient(135deg,var(--navy),var(--teal));color:#fff;display:flex;align-items:center;gap:8px;padding:12px 14px}
+.back{background:none;border:none;color:#fff;font-size:26px;line-height:1;width:34px;height:34px;visibility:hidden}
+.back.show{visibility:visible}
+.tb-title{flex:1;min-width:0}
+.tb-title h1{font-size:19px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tb-title p{font-size:11.5px;opacity:.9}
+.searchbar{flex-shrink:0;display:flex;gap:8px;padding:12px 14px;border-bottom:1px solid var(--line);background:#fff}
+.searchbar .box{flex:1;display:flex;align-items:center;gap:6px;background:#f6f7f9;border:1px solid var(--line);border-radius:10px;padding:0 10px}
+.searchbar input{flex:1;min-width:0;border:none;background:transparent;padding:11px 0;font-size:16px;outline:none}
+.searchbar .go{background:var(--teal);color:#fff;border:none;border-radius:10px;padding:0 16px;font-size:14px;font-weight:600}
+.content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px}
+.view-inner{width:100%}
+.sec-title{font-size:11.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:18px 0 9px}
+.sec-title:first-child{margin-top:0}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{padding:8px 13px;background:#f6f7f9;border:1px solid var(--line);border-radius:20px;font-size:13px;font-weight:500;color:#333}
+.chip:active{background:#e4e8ec}
+.intro{font-size:13px;color:var(--muted);line-height:1.5;margin-bottom:14px}
+.msg{text-align:center;color:var(--muted);font-size:13.5px;line-height:1.55;padding:22px 8px}
+.msg a{color:var(--teal);font-weight:600}
+.msg .retry{display:inline-block;margin-top:10px;padding:9px 16px;border:1px solid var(--teal);color:var(--teal);background:#fff;border-radius:8px;font-weight:600;font-size:13px}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid #ddd;border-top-color:var(--teal);border-radius:50%;animation:sp .8s linear infinite;margin-right:8px;vertical-align:middle}
+@keyframes sp{to{transform:rotate(360deg)}}
 
-        .phone-container::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 170px;
-            height: 25px;
-            background: #000;
-            border-radius: 0 0 40px 40px;
-            z-index: 100;
-        }
+.res{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;text-align:left;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:8px}
+.res:active{background:#f3f6f8}
+.res h4{font-size:14.5px;color:var(--navy);line-height:1.3}
+.res span{font-size:12px;color:var(--muted)}
+.res .arr{color:var(--teal);font-size:18px;flex-shrink:0}
 
-        .status-bar {
-            height: 44px;
-            padding-top: 8px;
-            background: linear-gradient(180deg, #f8f8f8 0%, #f0f0f0 100%);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 16px;
-            font-size: 12px;
-            font-weight: 600;
-            color: #333;
-            flex-shrink: 0;
-            z-index: 10;
-        }
-
-        .screen {
-            flex: 1;
-            display: flex;
-            overflow: hidden;
-            position: relative;
-        }
-
-        /* WELCOME SCREEN */
-        .welcome-screen {
-            width: 100%;
-            height: 100%;
-            display: flex !important;
-            flex-direction: column;
-            justify-content: space-between;
-            padding: 40px 24px;
-            background: white;
-            position: absolute;
-            top: 0;
-            left: 0;
-            z-index: 50;
-            opacity: 1;
-            transition: opacity 0.5s ease;
-            visibility: visible;
-        }
-
-        .welcome-screen.hidden {
-            opacity: 0;
-            visibility: hidden;
-            pointer-events: none;
-            display: none !important;
-        }
-
-        .welcome-header {
-            text-align: center;
-        }
-
-        .welcome-logo {
-            font-size: 48px;
-            margin-bottom: 24px;
-        }
-
-        .welcome-headline {
-            font-size: 32px;
-            font-weight: 700;
-            line-height: 1.2;
-            color: var(--navy);
-            margin-bottom: 12px;
-        }
-
-        .welcome-headline .highlight {
-            color: var(--gold);
-        }
-
-        .welcome-description {
-            font-size: 14px;
-            color: #666;
-            line-height: 1.6;
-            margin-bottom: 32px;
-        }
-
-        .welcome-features {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            margin-bottom: 32px;
-        }
-
-        .feature {
-            display: flex;
-            gap: 12px;
-            align-items: flex-start;
-        }
-
-        .feature-icon {
-            font-size: 20px;
-            flex-shrink: 0;
-            margin-top: 2px;
-        }
-
-        .feature-text {
-            font-size: 13px;
-            color: #333;
-            line-height: 1.5;
-        }
-
-        .feature-text strong {
-            color: var(--navy);
-            font-weight: 600;
-        }
-
-        .btn-explore {
-            width: 100%;
-            padding: 16px;
-            background: var(--teal);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .btn-explore:active {
-            background: #1f6375;
-        }
-
-        .welcome-disclaimer {
-            text-align: center;
-            font-size: 11px;
-            color: #999;
-            line-height: 1.4;
-        }
-
-        /* APP SCREEN */
-        .app-screen {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            background: white;
-            position: absolute;
-            top: 0;
-            left: 0;
-            opacity: 0;
-            transition: opacity 0.5s ease;
-            pointer-events: none;
-        }
-
-        .app-screen.active {
-            opacity: 1;
-            pointer-events: auto;
-            z-index: 1;
-        }
-
-        .header {
-            padding: 20px 16px;
-            background: linear-gradient(135deg, var(--navy) 0%, var(--teal) 100%);
-            color: white;
-            text-align: center;
-            flex-shrink: 0;
-        }
-
-        .header h1 {
-            font-size: 28px;
-            font-weight: 700;
-            margin-bottom: 4px;
-        }
-
-        .header p {
-            font-size: 13px;
-            opacity: 0.9;
-            font-weight: 500;
-        }
-
-        .search-section {
-            padding: 14px 16px;
-            background: white;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            gap: 8px;
-            flex-shrink: 0;
-        }
-
-        .back-btn {
-            padding: 10px 12px;
-            background: transparent;
-            color: var(--teal);
-            border: none;
-            font-size: 18px;
-            cursor: pointer;
-            display: none;
-            font-weight: 700;
-        }
-
-        .search-input-wrapper {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            background: var(--light-bg);
-            border-radius: 8px;
-            padding: 0 12px;
-            border: 1px solid var(--border-color);
-        }
-
-        .search-input-wrapper input {
-            flex: 1;
-            padding: 10px 0;
-            border: none;
-            background: transparent;
-            font-size: 14px;
-            font-family: inherit;
-        }
-
-        .search-input-wrapper input::placeholder {
-            color: #999;
-        }
-
-        .search-section button {
-            padding: 10px 16px;
-            background: var(--teal);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        .search-section button:active {
-            background: #1f6375;
-        }
-
-        .content {
-            flex: 1;
-            overflow-y: auto;
-            overflow-x: hidden;
-            padding: 16px;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .content::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .content::-webkit-scrollbar-thumb {
-            background: #ccc;
-            border-radius: 3px;
-        }
-
-        .section {
-            margin-bottom: 24px;
-        }
-
-        .section-title {
-            font-size: 12px;
-            font-weight: 700;
-            color: #666;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 10px;
-        }
-
-        .chip-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-
-        .chip {
-            padding: 8px 12px;
-            background: var(--light-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 20px;
-            font-size: 13px;
-            font-weight: 500;
-            color: #333;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .chip:active {
-            background: #e0e0e0;
-            border-color: #ccc;
-        }
-
-        .status-message {
-            text-align: center;
-            color: #666;
-            font-size: 13px;
-            padding: 16px;
-            line-height: 1.5;
-            margin-bottom: 16px;
-        }
-
-        .spinner {
-            display: inline-block;
-            width: 14px;
-            height: 14px;
-            border: 2px solid #ddd;
-            border-top-color: var(--teal);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            margin-right: 8px;
-            vertical-align: middle;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        .product-display {
-            background: var(--light-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 16px;
-        }
-
-        .product-display h2 {
-            font-size: 16px;
-            font-weight: 700;
-            margin-bottom: 6px;
-            color: var(--navy);
-        }
-
-        .product-display .meta {
-            font-size: 12px;
-            color: #666;
-            margin-bottom: 12px;
-            line-height: 1.4;
-        }
-
-        .ingredient-item {
-            background: white;
-            padding: 12px;
-            margin-bottom: 8px;
-            border-radius: 8px;
-            border-left: 3px solid var(--teal);
-        }
-
-        .ingredient-name {
-            font-weight: 600;
-            font-size: 14px;
-            color: var(--navy);
-            margin-bottom: 4px;
-        }
-
-        .ingredient-detail {
-            font-size: 12px;
-            color: #666;
-            line-height: 1.5;
-        }
-
-        .btn-investigate {
-            width: 100%;
-            padding: 12px;
-            background: var(--gold);
-            color: #333;
-            border: none;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            font-family: inherit;
-            margin-top: 12px;
-        }
-
-        .btn-investigate:active {
-            background: #c49600;
-        }
-
-        /* RESPONSIVE */
-        @media (min-width: 768px) {
-            body {
-                min-height: 100vh;
-            }
-
-            .phone-container {
-                width: 100%;
-                height: 100vh;
-                border-radius: 0;
-                border: none;
-                box-shadow: none;
-            }
-
-            .phone-container::before {
-                display: none;
-            }
-
-            .status-bar {
-                display: none;
-            }
-        }
-    </style>
+.prod-brand{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase}
+.prod-name{font-size:19px;font-weight:700;color:var(--navy);margin:2px 0 4px}
+.prod-meta{font-size:12px;color:var(--muted);margin-bottom:14px}
+.card{border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:14px;background:#fff}
+.card h3{font-size:11.5px;text-transform:uppercase;letter-spacing:.5px;color:#333;margin-bottom:10px}
+.ing{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid #f0f0f0;font-size:13.5px}
+.ing:last-child{border-bottom:none}
+.ing .nm{color:var(--navy);font-weight:600}
+.ing .am{color:#444;white-space:nowrap;text-align:right}
+.other{font-size:12.5px;color:var(--muted);line-height:1.5}
+.stm{font-size:12.5px;color:var(--muted);line-height:1.5;margin-left:16px}
+.ok{display:inline-block;font-size:11.5px;font-weight:700;color:#1b7a46;margin-bottom:8px}
+.invest{background:#fffbf0;border:2px solid var(--gold);border-radius:12px;padding:14px}
+.invest h3{font-size:11.5px;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.invest p{font-size:12.5px;color:var(--muted);line-height:1.5;margin-bottom:12px}
+.btn-inv{width:100%;padding:13px;background:var(--gold);color:#222;border:none;border-radius:8px;font-size:14.5px;font-weight:700}
+.btn-inv:active{background:#c49600}
+.disc{font-size:11px;color:#999;line-height:1.5;margin-top:12px}
+</style>
 </head>
 <body>
+<div class="phone">
+  <div class="status"><span>9:41</span><span>📶 🔋</span></div>
+  <div class="screen">
 
-<div class="phone-container">
-    <div class="status-bar">
-        <span>9:41</span>
-        <span>📶 📡 🔋</span>
+    <div id="welcome">
+      <div>
+        <div class="w-logo">🔬</div>
+        <h1 class="w-head">Before You Take That Supplement, <span>Check the Evidence.</span></h1>
+        <p class="w-desc">Search thousands of real supplement labels and see exactly what's in the product you're considering. Then explore the clinical evidence.</p>
+        <div class="feat"><div>📋</div><div><b>Real labels:</b> pulled live from the NIH Dietary Supplement Label Database</div></div>
+        <div class="feat"><div>🔍</div><div><b>Evidence-based:</b> compare each ingredient and dose with published research</div></div>
+        <div class="feat"><div>🧪</div><div><b>No marketing:</b> safety, interactions and what's actually supported</div></div>
+      </div>
+      <div>
+        <button class="btn-go" id="btn-explore">Explore Now</button>
+        <p class="w-note">SuppleFacts uses the NIH Office of Dietary Supplements label database. A research tool, not medical advice.</p>
+      </div>
     </div>
 
-    <div class="screen">
-        <!-- WELCOME SCREEN -->
-        <div id="welcomeScreen" class="welcome-screen">
-            <div class="welcome-header">
-                <div class="welcome-logo">🔬</div>
-                <h1 class="welcome-headline">
-                    Before You Take That Supplement,
-                    <span class="highlight">Check the Evidence.</span>
-                </h1>
-            </div>
-
-            <div>
-                <p class="welcome-description">
-                    Search thousands of real supplement labels and find out what's actually in the product you're considering. Then explore the clinical evidence.
-                </p>
-
-                <div class="welcome-features">
-                    <div class="feature">
-                        <div class="feature-icon">📋</div>
-                        <div class="feature-text"><strong>Real Labels:</strong> Pulled directly from the NIH Dietary Supplement Label Database</div>
-                    </div>
-                    <div class="feature">
-                        <div class="feature-icon">🔍</div>
-                        <div class="feature-text"><strong>Evidence-Based:</strong> Cross-reference ingredients with peer-reviewed research</div>
-                    </div>
-                    <div class="feature">
-                        <div class="feature-icon">🧪</div>
-                        <div class="feature-text"><strong>No Marketing:</strong> See safety concerns and supported benefits, not claims</div>
-                    </div>
-                </div>
-            </div>
-
-            <div>
-                <button class="btn-explore" onclick="startApp()">Explore Now</button>
-                <p class="welcome-disclaimer">
-                    SuppleFacts is powered by the NIH Office of Dietary Supplements. It's a tool for research, not medical advice.
-                </p>
-            </div>
-        </div>
-
-        <!-- APP SCREEN -->
-        <div id="appScreen" class="app-screen">
-            <div class="header">
-                <h1>SuppleFacts</h1>
-                <p>Supplement Label Lookup</p>
-            </div>
-
-            <div class="search-section">
-                <button id="backBtn" class="back-btn" onclick="resetSearch()">‹ Back</button>
-                <div class="search-input-wrapper">
-                    <span style="color: #666; margin-right: 6px; font-size: 16px;">🔍</span>
-                    <input type="text" id="productSearch" placeholder="Search a product or ingredient..." />
-                </div>
-                <button id="searchBtn">Go</button>
-            </div>
-
-            <div class="content">
-                <div id="quickItems">
-                    <div class="status-message">Searches both product labels and ingredient monographs at once.</div>
-
-                    <div class="section">
-                        <div class="section-title">TRY AN INGREDIENT</div>
-                        <div class="chip-group">
-                            <button class="chip" onclick="doSearch('Magnesium')">Magnesium</button>
-                            <button class="chip" onclick="doSearch('Ginkgo biloba')">Ginkgo biloba</button>
-                            <button class="chip" onclick="doSearch('Vitamin D')">Vitamin D</button>
-                            <button class="chip" onclick="doSearch('Echinacea')">Echinacea</button>
-                        </div>
-                    </div>
-
-                    <div class="section">
-                        <div class="section-title">TRY A PRODUCT</div>
-                        <div class="chip-group">
-                            <button class="chip" onclick="doSearch('Nature Made')">Nature Made</button>
-                            <button class="chip" onclick="doSearch('Nature\'s Way')">Nature's Way</button>
-                            <button class="chip" onclick="doSearch('NOW Foods')">NOW Foods</button>
-                            <button class="chip" onclick="doSearch('Solgar')">Solgar</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="result"></div>
-            </div>
-        </div>
+    <div class="topbar">
+      <button class="back" id="back" aria-label="Back">‹</button>
+      <div class="tb-title"><h1 id="tb-h">SuppleFacts</h1><p id="tb-p">Supplement Label Lookup</p></div>
     </div>
+    <div class="searchbar">
+      <div class="box"><span>🔍</span><input id="q" type="search" placeholder="Search a product or brand…" autocomplete="off" enterkeyhint="search"></div>
+      <button class="go" id="go">Go</button>
+    </div>
+    <div class="content" id="content"><div class="view-inner" id="view"></div></div>
+
+  </div>
 </div>
 
 <script>
-    // Sample data fallback
-    const sampleProducts = {
-        'magnesium': {
-            brand: 'Nature Made',
-            name: 'Magnesium',
-            form: 'Tablet',
-            serving_size: '1 Tablet',
-            ingredients: [
-                { name: 'Magnesium (oxide)', amount: '400', unit: 'mg', percent_dv: '100%' },
-                { name: 'Microcrystalline Cellulose', amount: '', unit: '', percent_dv: '' }
-            ],
-            label_claims: ['Supports muscle and nerve function', 'Supports energy metabolism']
-        },
-        'ginkgo biloba': {
-            brand: 'Solgar',
-            name: 'Ginkgo Biloba Leaf Extract',
-            form: 'Capsule',
-            serving_size: '1 Capsule',
-            ingredients: [
-                { name: 'Ginkgo Biloba Leaf Extract', amount: '60', unit: 'mg', percent_dv: '*' }
-            ],
-            label_claims: ['Supports cognitive function', 'Promotes mental clarity']
-        },
-        'vitamin d': {
-            brand: 'Nature\'s Way',
-            name: 'Vitamin D-3',
-            form: 'Softgel',
-            serving_size: '1 Softgel',
-            ingredients: [
-                { name: 'Vitamin D3 (Cholecalciferol)', amount: '2000', unit: 'IU', percent_dv: '500%' }
-            ],
-            label_claims: ['Supports calcium absorption', 'Supports immune function']
-        },
-        'echinacea': {
-            brand: 'NOW Foods',
-            name: 'Echinacea',
-            form: 'Capsule',
-            serving_size: '2 Capsules',
-            ingredients: [
-                { name: 'Echinacea Angustifolia Root', amount: '400', unit: 'mg', percent_dv: '*' }
-            ],
-            label_claims: ['Supports immune system']
-        },
-        'nature made': {
-            brand: 'Nature Made',
-            name: 'Multi for Her',
-            form: 'Tablet',
-            serving_size: '1 Tablet',
-            ingredients: [
-                { name: 'Vitamin D-3', amount: '1000', unit: 'IU', percent_dv: '125%' },
-                { name: 'Magnesium', amount: '50', unit: 'mg', percent_dv: '12%' },
-                { name: 'Zinc', amount: '8', unit: 'mg', percent_dv: '73%' },
-                { name: 'Folic Acid', amount: '400', unit: 'mcg', percent_dv: '100%' }
-            ],
-            label_claims: ['Supports women\'s health']
-        }
-    };
+(function(){
+  var API = 'https://api.ods.od.nih.gov/dsld/v9';
+  var SITE = 'https://supplements.brokenpromiseshealthcare.org';
+  var $ = function(id){return document.getElementById(id);};
+  var view = $('view'), back = $('back'), qEl = $('q');
+  var state = {level:'home', query:'', results:[], label:null};
+  var reqId = 0;
 
-    let currentProduct = null;
+  function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
 
-    function startApp() {
-        document.getElementById('welcomeScreen').classList.add('hidden');
-        document.getElementById('appScreen').classList.add('active');
-    }
+  /* ---------- views ---------- */
+  function setBar(h,p,showBack){
+    $('tb-h').textContent = h; $('tb-p').textContent = p;
+    back.classList.toggle('show', !!showBack);
+    $('content').scrollTop = 0;
+  }
 
-    document.getElementById('searchBtn').addEventListener('click', () => {
-        const query = document.getElementById('productSearch').value.trim();
-        if (query) doSearch(query);
-    });
+  function showHome(){
+    state.level='home'; qEl.value='';
+    setBar('SuppleFacts','Supplement Label Lookup',false);
+    var ing=['Magnesium','Turmeric','CoQ10','Melatonin','Ginkgo','Vitamin D'];
+    var prod=['Nature Made','Nature\'s Way','NOW Foods','Solgar'];
+    function chips(a){return a.map(function(x){return '<button class="chip" data-q="'+esc(x)+'">'+esc(x)+'</button>';}).join('');}
+    view.innerHTML =
+      '<p class="intro">Search any U.S. dietary supplement by product name or brand. Labels come live from the NIH Dietary Supplement Label Database.</p>'+
+      '<div class="sec-title">Try a search</div><div class="chips">'+chips(ing)+'</div>'+
+      '<div class="sec-title">Try a brand</div><div class="chips">'+chips(prod)+'</div>';
+  }
 
-    document.getElementById('productSearch').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            const query = e.target.value.trim();
-            if (query) doSearch(query);
-        }
-    });
+  function showMsg(html){ view.innerHTML = '<div class="msg">'+html+'</div>'; }
+  function showError(retryFn, detail){
+    showMsg('<strong>Couldn\'t reach the NIH database right now.</strong><br>'+esc(detail||'')+'<br>'+
+      '<button class="retry" id="retry">Try again</button><br><br>'+
+      '<a href="https://dsld.od.nih.gov/" target="_blank" rel="noopener">Search the NIH database directly →</a>');
+    $('retry').onclick = retryFn;
+  }
 
-    async function doSearch(query) {
-        document.getElementById('productSearch').value = query;
-        const quickItems = document.getElementById('quickItems');
-        const result = document.getElementById('result');
-        const backBtn = document.getElementById('backBtn');
-
-        quickItems.innerHTML = '<div class="status-message"><span class="spinner"></span>Searching NIH database...</div>';
-        result.innerHTML = '';
-
-        try {
-            const response = await fetch(`/.netlify/functions/dsld-proxy?q=${encodeURIComponent(query)}`);
-            const data = await response.json();
-
-            if (data && data.results && data.results.length > 0) {
-                const product = data.results[0];
-                currentProduct = product;
-                quickItems.innerHTML = '';
-                backBtn.style.display = 'block';
-                displayProduct(product);
-                return;
-            }
-        } catch (e) {
-            console.log('API error, using sample data');
-        }
-
-        // Fallback to sample data
-        const queryLower = query.toLowerCase();
-        let fallbackProduct = null;
-
-        for (let key in sampleProducts) {
-            if (key.includes(queryLower) || sampleProducts[key].brand.toLowerCase().includes(queryLower) || sampleProducts[key].name.toLowerCase().includes(queryLower)) {
-                fallbackProduct = sampleProducts[key];
-                break;
-            }
-        }
-
-        if (fallbackProduct) {
-            currentProduct = fallbackProduct;
-            quickItems.innerHTML = '';
-            backBtn.style.display = 'block';
-            displayProduct(fallbackProduct);
-        } else {
-            quickItems.innerHTML = '<div class="status-message">No results found. Try: Magnesium, Ginkgo biloba, Vitamin D, Echinacea</div>';
-            result.innerHTML = '';
-            backBtn.style.display = 'none';
-        }
-    }
-
-    function displayProduct(product) {
-        const result = document.getElementById('result');
-        const ingredients = product.ingredients || [];
-
-        let ingredientsHTML = '';
-        ingredients.forEach(ing => {
-            const name = ing.name || 'Unknown';
-            let detail = `<strong>${name}</strong>`;
-            if (ing.amount) detail += ` ${ing.amount}`;
-            if (ing.unit) detail += ` ${ing.unit}`;
-            if (ing.percent_dv) detail += ` (${ing.percent_dv})`;
-
-            ingredientsHTML += `<div class="ingredient-item"><div class="ingredient-name">${name}</div><div class="ingredient-detail">${detail}</div></div>`;
+  /* ---------- search ---------- */
+  function search(query){
+    query = (query||'').trim();
+    if(query.length<3){ showMsg('Type at least 3 characters to search.'); return; }
+    var my = ++reqId;
+    state.level='results'; state.query=query; qEl.value=query;
+    setBar('Results','“'+query+'”',true);
+    showMsg('<span class="spin"></span>Searching the NIH database…');
+    fetch(API+'/browse-products?method=by_keyword&q='+encodeURIComponent(query)+'&size=20')
+      .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+      .then(function(data){
+        if(my!==reqId) return;
+        var hits=(data.hits||[]).map(function(h){
+          var src = h._source!==undefined ? h._source : h;
+          if(typeof src==='string'){ try{src=JSON.parse(src);}catch(e){} }
+          if(src && !src.id && !src.dsldId && h._id){ src._fallbackId=h._id; }
+          return src;
         });
-
-        let claimsHTML = '';
-        if (product.label_claims && product.label_claims.length) {
-            claimsHTML = '<strong style="display: block; font-size: 13px; margin-top: 12px; margin-bottom: 8px;">Label Claims:</strong>';
-            product.label_claims.forEach(claim => {
-                claimsHTML += `<div style="font-size: 12px; color: #666; margin-bottom: 4px;">• ${claim}</div>`;
-            });
-        }
-
-        result.innerHTML = `
-            <div class="product-display">
-                <h2>${product.brand}</h2>
-                <div class="meta">
-                    ${product.name}<br/>
-                    Form: ${product.form}<br/>
-                    Serving: ${product.serving_size}
-                </div>
-                <strong style="display: block; font-size: 13px; margin-top: 12px; margin-bottom: 8px;">Ingredients:</strong>
-                ${ingredientsHTML}
-                ${claimsHTML}
-                <button class="btn-investigate" onclick="investigateEvidence()">🔍 Investigate the Evidence</button>
-            </div>
-        `;
-    }
-
-    function buildPrompt() {
-        if (!currentProduct) return '';
-
-        let p = `**SUPPLEMENT PRODUCT LABEL**\n\n`;
-        p += `Brand: ${currentProduct.brand}\n`;
-        p += `Product: ${currentProduct.name}\n`;
-        p += `Form: ${currentProduct.form}\n`;
-        p += `Serving Size: ${currentProduct.serving_size}\n`;
-        p += `\n**INGREDIENTS:**\n`;
-
-        (currentProduct.ingredients || []).forEach(ing => {
-            p += `- ${ing.name}`;
-            if (ing.amount) p += ` ${ing.amount}`;
-            if (ing.unit) p += ` ${ing.unit}`;
-            if (ing.percent_dv) p += ` (${ing.percent_dv})`;
-            p += `\n`;
+        var seen={}, list=hits.filter(function(it){
+          var k=((it.fullName||it.name||'')+'|'+(it.brandName||'')).trim().toLowerCase();
+          if(seen[k]) return false; seen[k]=1; return true;
         });
+        state.results=list;
+        if(!list.length){ showMsg('No products found for “'+esc(query)+'”. Try a shorter or more general term.'); return; }
+        view.innerHTML = list.map(function(it,i){
+          return '<button class="res" data-i="'+i+'"><div><h4>'+esc(it.fullName||it.name||'Unknown product')+'</h4><span>'+esc(it.brandName||'')+'</span></div><div class="arr">›</div></button>';
+        }).join('');
+      })
+      .catch(function(e){ if(my!==reqId) return; console.error('DSLD search failed',e); showError(function(){search(query);}, e.message); });
+  }
 
-        if (currentProduct.label_claims && currentProduct.label_claims.length) {
-            p += `\n**LABEL CLAIMS:**\n`;
-            currentProduct.label_claims.forEach(claim => {
-                p += `- ${claim}\n`;
-            });
-        }
+  /* ---------- label detail ---------- */
+  function openLabel(item){
+    var id = item.id || item.dsldId || item._fallbackId;
+    if(!id){ showMsg('This record has no ID the database can look up.'); return; }
+    var my = ++reqId;
+    state.level='detail';
+    setBar(item.fullName||item.name||'Product', item.brandName||'', true);
+    showMsg('<span class="spin"></span>Loading label…');
+    fetch(API+'/label/'+encodeURIComponent(id))
+      .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+      .then(function(label){ if(my!==reqId) return; state.label=label; renderLabel(label); })
+      .catch(function(e){ if(my!==reqId) return; console.error('DSLD label failed',e); showError(function(){openLabel(item);}, e.message); });
+  }
 
-        p += `\n**ANALYSIS INSTRUCTIONS:**\n`;
-        p += `For each ingredient, provide neutral, evidence-based analysis:\n`;
-        p += `1. What it is (source, form)\n`;
-        p += `2. What the scientific evidence shows\n`;
-        p += `3. Safety concerns and potential interactions\n`;
-        p += `4. Whether claimed benefits are supported\n`;
-        p += `Use NIH monographs and peer-reviewed research.`;
+  function amountOf(row){
+    var q = row.quantity && row.quantity[0];
+    return q ? (q.quantity+' '+(q.unit||'')).trim() : '—';
+  }
 
-        return p;
-    }
+  function renderLabel(l){
+    var rows=(l.ingredientRows||[]).map(function(r){
+      return '<div class="ing"><div class="nm">'+esc(r.name||'Unnamed ingredient')+'</div><div class="am">'+esc(amountOf(r))+'</div></div>';
+    }).join('');
+    var other = l.otherIngredients; if(other && typeof other==='object') other = other.text || other.ingredients || '';
+    var stm=(l.statements||[]).map(function(s){return '<li>'+esc(s.notes||s.type||'')+'</li>';}).join('');
+    view.innerHTML =
+      '<div class="ok">NIH label retrieved ✓</div>'+
+      '<div class="prod-brand">'+esc(l.brandName||'')+'</div>'+
+      '<div class="prod-name">'+esc(l.fullName||'Product')+'</div>'+
+      '<div class="prod-meta">'+(l.upcSku?'UPC '+esc(l.upcSku):'')+'</div>'+
+      '<div class="card"><h3>Supplement Facts (as declared)</h3>'+(rows||'<p class="other">No itemized ingredient data available for this product.</p>')+
+        (other?'<div style="margin-top:12px;padding-top:12px;border-top:1px solid #f0f0f0"><h3>Other ingredients</h3><div class="other">'+esc(other)+'</div></div>':'')+'</div>'+
+      (stm?'<div class="card"><h3>Label statements</h3><ul class="stm">'+stm+'</ul></div>':'')+
+      '<div class="invest"><h3>Investigate the Evidence</h3><p>Compare this exact formulation and dose with published clinical evidence — safety, interactions and contaminant testing — using the AI assistant of your choice.</p><button class="btn-inv" id="btn-inv">🔍 Investigate the Evidence</button></div>'+
+      '<p class="disc">The NIH label lists only what the manufacturer declares. It does not show contaminant testing or whether a given bottle matches its label.</p>';
+    $('btn-inv').onclick = investigate;
+  }
 
-    function investigateEvidence() {
-        const prompt = buildPrompt();
-        if (!prompt) {
-            alert('No product data');
-            return;
-        }
-        const url = `https://supplements.brokenpromiseshealthcare.org/product-lookup?prompt=${encodeURIComponent(prompt)}`;
-        window.open(url, '_blank');
-    }
+  /* ---------- hand-off to the website (same methodology as product-lookup.js) ---------- */
+  var METHOD =
+    'You are acting as a research assistant for an evidence-based supplement investigation. Analyze the specific product and formulation below. Do not give a generic answer about the ingredient category in the abstract — evaluate THIS exact product at THIS exact dose.\n\n'+
+    'Start with your Overall Verdict: a short, direct assessment of this specific product and formulation as a whole — not just its ingredients in isolation. Give the reader your conclusion first, then support it with the detailed analysis below.\n\n'+
+    'Then, for each active ingredient in this product, do the following:\n\n'+
+    '1. Identify the principal health claims the ingredient is commonly used or marketed for.\n'+
+    '2. Prioritize high-quality evidence: systematic reviews and meta-analyses first, then randomized controlled trials, then major evidence-based clinical guidelines where relevant. Prioritize clinically meaningful outcomes over surrogate lab endpoints.\n'+
+    '3. Compare the dose in THIS product with the doses actually used in the relevant clinical trials. State plainly whether this product\'s dose: matches studied doses, falls below studied doses, exceeds studied doses, or cannot meaningfully be compared.\n'+
+    '4. Identify established adverse effects, clinically significant drug interactions, and important contraindications.\n'+
+    '5. If relevant, distinguish evidence for correcting a documented nutritional deficiency from evidence for supplementation in people who are not deficient.\n'+
+    '6. Distinguish the type of evidence explicitly: biological plausibility, animal/mechanistic evidence, observational evidence, and randomized clinical evidence. Do not treat anecdotes or testimonials as evidence of efficacy.\n'+
+    '7. Rate the strength of evidence for each major use as one of: Strong, Moderate, Limited/Insufficient, Evidence of No Benefit, or Evidence of Harm — and explain WHY it earns that rating rather than just stating the label.\n'+
+    '8. Note any conflicting evidence or important uncertainty.\n'+
+    '9. Check product quality, not just ingredient science: say whether the brand publishes third-party contaminant testing (for example, heavy metals such as lead, cadmium, and arsenic) or a certificate of analysis, and note any recalls, warnings, or regulatory actions involving this product or brand. If you find no public information, say so plainly rather than guessing.\n'+
+    '10. Cite the principal sources with publication dates. Prefer primary, peer-reviewed, and authoritative government sources.\n\n'+
+    'Throughout, keep these distinctions clear: ingredient evidence vs. product evidence; the dose in this product vs. the dose actually studied; biological plausibility vs. demonstrated clinical outcome; and label information vs. proof of efficacy or purity.\n\n---\n\n';
 
-    function resetSearch() {
-        document.getElementById('productSearch').value = '';
-        document.getElementById('quickItems').innerHTML = `
-            <div class="status-message">Searches both product labels and ingredient monographs at once.</div>
+  function buildPrompt(l){
+    var lines=(l.ingredientRows||[]).map(function(r){return '- '+(r.name||'Unnamed ingredient')+': '+amountOf(r);}).join('\n');
+    return METHOD+'PRODUCT\nName: '+(l.fullName||'Unknown product')+'\nBrand: '+(l.brandName||'Unknown')+'\n'+(l.upcSku?'UPC: '+l.upcSku+'\n':'')+'\nIngredients (as declared on the NIH label):\n'+lines;
+  }
 
-            <div class="section">
-                <div class="section-title">TRY AN INGREDIENT</div>
-                <div class="chip-group">
-                    <button class="chip" onclick="doSearch('Magnesium')">Magnesium</button>
-                    <button class="chip" onclick="doSearch('Ginkgo biloba')">Ginkgo biloba</button>
-                    <button class="chip" onclick="doSearch('Vitamin D')">Vitamin D</button>
-                    <button class="chip" onclick="doSearch('Echinacea')">Echinacea</button>
-                </div>
-            </div>
+  function investigate(){
+    if(!state.label) return;
+    window.open(SITE+'/product-lookup?prompt='+encodeURIComponent(buildPrompt(state.label)),'_blank');
+  }
 
-            <div class="section">
-                <div class="section-title">TRY A PRODUCT</div>
-                <div class="chip-group">
-                    <button class="chip" onclick="doSearch('Nature Made')">Nature Made</button>
-                    <button class="chip" onclick="doSearch('Nature\'s Way')">Nature's Way</button>
-                    <button class="chip" onclick="doSearch('NOW Foods')">NOW Foods</button>
-                    <button class="chip" onclick="doSearch('Solgar')">Solgar</button>
-                </div>
-            </div>
-        `;
-        document.getElementById('result').innerHTML = '';
-        document.getElementById('backBtn').style.display = 'none';
-    }
+  /* ---------- navigation & events ---------- */
+  back.onclick = function(){
+    reqId++;
+    if(state.level==='detail' && state.results.length){
+      state.level='results';
+      setBar('Results','“'+state.query+'”',true);
+      view.innerHTML = state.results.map(function(it,i){
+        return '<button class="res" data-i="'+i+'"><div><h4>'+esc(it.fullName||it.name||'Unknown product')+'</h4><span>'+esc(it.brandName||'')+'</span></div><div class="arr">›</div></button>';
+      }).join('');
+    } else { showHome(); }
+  };
+  view.addEventListener('click', function(e){
+    var chip = e.target.closest('.chip'); if(chip){ search(chip.getAttribute('data-q')); return; }
+    var res = e.target.closest('.res'); if(res){ openLabel(state.results[+res.getAttribute('data-i')]); }
+  });
+  $('go').onclick = function(){ search(qEl.value); };
+  qEl.addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); search(qEl.value); qEl.blur(); } });
+  $('btn-explore').onclick = function(){ $('welcome').classList.add('hidden'); };
+
+  showHome();
+  // Deep link: supplefacts.html?q=magnesium skips the welcome screen and searches.
+  try{ var p=new URLSearchParams(location.search).get('q'); if(p){ $('welcome').classList.add('hidden'); search(p); } }catch(e){}
+})();
 </script>
-
 </body>
 </html>
