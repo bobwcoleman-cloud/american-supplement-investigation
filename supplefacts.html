@@ -1,288 +1,1098 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="SuppleFacts">
+<meta name="theme-color" content="#1B2A41">
 <title>SuppleFacts — Check the Evidence</title>
+<meta name="description" content="Search real supplement labels from the NIH Dietary Supplement Label Database, then check the evidence behind every ingredient.">
+<style>html{height:100%}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-:root{--navy:#1a3a52;--teal:#2a7a8a;--teal-dk:#1f6375;--gold:#d4a826;--bg:#eef2f6;--line:#e0e0e0;--muted:#666}
-html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:#222}
-body{display:flex;justify-content:center;align-items:center}
-button{font-family:inherit;cursor:pointer}
+/*
+  Layout concept: a centered iPhone-style device frame holding the actual
+  app prototype (home search -> grouped results -> product label / ingredient
+  monograph, cross-linked both directions), with a short explanatory strip
+  underneath describing the real data sources this would run on.
+*/
+:root{
+  --bg:#EEF2F6;
+  --surface:#FFFFFF;
+  --surface-2:#F7FAFC;
+  --fg:#1B2A41;
+  --muted:#4A5568;
+  --line:#D8E1E9;
+  --accent:#1F7A6C;
+  --accent-ink:#175D52;
+  --gold:#C9A227;
+  --navy:#1B2A41;
+  --navy-dark:#0D1620;
+  --danger:#B3482F;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0D1620;
+    --surface:#16222F;
+    --surface-2:#1C2B3A;
+    --fg:#EAF0F5;
+    --muted:#9FB0BF;
+    --line:#28394A;
+    --accent:#2FA08D;
+    --accent-ink:#7FD6C4;
+    --gold:#D9BB55;
+    --navy:#16222F;
+    --navy-dark:#0A121A;
+    --danger:#E08064;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0D1620;
+  --surface:#16222F;
+  --surface-2:#1C2B3A;
+  --fg:#EAF0F5;
+  --muted:#9FB0BF;
+  --line:#28394A;
+  --accent:#2FA08D;
+  --accent-ink:#7FD6C4;
+  --gold:#D9BB55;
+  --navy:#16222F;
+  --navy-dark:#0A121A;
+  --danger:#E08064;
+  color-scheme:dark;
+}
 
-/* Phone frame on small/medium viewports, full-screen app on tablets/desktops */
-.phone{width:375px;height:812px;max-height:100vh;background:#fff;border-radius:44px;border:12px solid #000;box-shadow:0 20px 60px rgba(0,0,0,.3);position:relative;overflow:hidden;display:flex;flex-direction:column;flex-shrink:0}
-.phone::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:150px;height:24px;background:#000;border-radius:0 0 20px 20px;z-index:100}
-.status{height:40px;flex-shrink:0;background:#f4f4f4;display:flex;justify-content:space-between;align-items:flex-end;padding:0 22px 6px;font-size:12px;font-weight:600}
+*{box-sizing:border-box;}
+body{
+  background:var(--bg);
+  color:var(--fg);
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+  padding-inline:16px;
+  padding-block:40px;
+}
+.wrap{max-width:900px;margin:0 auto;}
+
+.intro{max-width:640px;margin:0 auto 28px;text-align:center;}
+.eyebrow{
+  font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--accent-ink);font-weight:700;margin-bottom:10px;
+}
+.intro h1{
+  font-family:'Lora',Georgia,serif;font-weight:700;
+  font-size:clamp(24px,4.5vw,32px);margin:0 0 10px;letter-spacing:-.01em;
+  text-wrap:balance;
+}
+.intro p{color:var(--muted);line-height:1.55;font-size:14.5px;margin:0;}
+.concept-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  margin-top:14px;padding:5px 12px;border-radius:99px;
+  border:1px solid var(--line);background:var(--surface);
+  font-size:11.5px;font-weight:600;color:var(--muted);
+}
+.concept-badge .dot{width:6px;height:6px;border-radius:50%;background:var(--gold);}
+
+/* device frame */
+.stage{display:flex;justify-content:center;}
+.device{
+  width:min(100%,336px);
+  background:var(--navy-dark);
+  border-radius:44px;
+  padding:12px;
+  box-shadow:0 30px 60px -20px rgba(13,22,32,.45), 0 0 0 1px rgba(13,22,32,.08);
+}
+.screen{
+  position:relative;
+  background:var(--surface);
+  border-radius:34px;
+  overflow:hidden;
+  height:680px;
+  display:flex;
+  flex-direction:column;
+}
+.statusbar{
+  flex:0 0 auto;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 24px 2px;
+  font-size:13px;font-weight:600;color:var(--fg);
+  font-variant-numeric:tabular-nums;
+}
+.statusbar .icons{display:flex;gap:4px;align-items:center;color:var(--fg);opacity:.85;}
+.notch{
+  position:absolute;top:0;left:50%;transform:translateX(-50%);
+  width:120px;height:24px;background:var(--navy-dark);
+  border-bottom-left-radius:16px;border-bottom-right-radius:16px;
+  z-index:5;
+}
+
+.appbar{
+  flex:0 0 auto;
+  display:flex;align-items:center;gap:10px;
+  padding:6px 14px 12px;
+  border-bottom:1px solid var(--line);
+  background:var(--surface);
+}
+.appbar .back{
+  all:unset;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  width:30px;height:30px;border-radius:50%;color:var(--accent-ink);
+  font-size:18px;font-weight:700;
+}
+.appbar .back:hover{background:var(--surface-2);}
+.appbar .back[hidden]{visibility:hidden;}
+.appbar .title{
+  font-family:'Lora',Georgia,serif;font-weight:700;font-size:17px;flex:1;min-width:0;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.appbar .mark{
+  width:22px;height:22px;border-radius:7px;
+  background:linear-gradient(145deg,var(--accent),var(--accent-ink));
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;font-family:'Lora',serif;font-weight:700;font-size:12px;flex:0 0 auto;
+}
+
+.content{
+  flex:1 1 auto;
+  overflow-y:auto;
+  padding:16px 16px calc(20px + env(safe-area-inset-bottom,0px));
+  -webkit-overflow-scrolling:touch;
+}
+.home-indicator{
+  position:absolute;bottom:8px;left:50%;transform:translateX(-50%);
+  width:120px;height:4px;border-radius:99px;background:var(--fg);opacity:.25;
+}
+
+/* search */
+.search-row{display:flex;gap:8px;margin-bottom:6px;}
+.search-box{
+  flex:1;display:flex;align-items:center;gap:8px;
+  background:var(--surface-2);border:1px solid var(--line);
+  border-radius:12px;padding:10px 12px;
+}
+.search-box input{
+  all:unset;flex:1;min-width:0;font-size:14.5px;color:var(--fg);font-family:'Inter',sans-serif;
+}
+.search-box input::placeholder{color:var(--muted);}
+.search-go{
+  all:unset;cursor:pointer;background:var(--accent);color:#fff;
+  padding:10px 14px;border-radius:12px;font-size:13.5px;font-weight:600;
+}
+.mode-copy{font-size:12px;color:var(--muted);margin:2px 0 18px;}
+
+.section-label{
+  font-size:11px;letter-spacing:.07em;text-transform:uppercase;
+  color:var(--muted);font-weight:700;margin:18px 0 8px;
+}
+.section-label:first-child{margin-top:0;}
+
+.chip-row{display:flex;flex-wrap:wrap;gap:8px;}
+.chip{
+  all:unset;cursor:pointer;
+  padding:7px 13px;border-radius:99px;border:1px solid var(--line);
+  background:var(--surface-2);font-size:13px;font-weight:600;color:var(--fg);
+}
+.chip:hover{border-color:var(--accent);color:var(--accent-ink);}
+
+.card-list{display:flex;flex-direction:column;gap:8px;}
+.card{
+  all:unset;cursor:pointer;display:block;
+  border:1px solid var(--line);border-radius:14px;padding:12px 14px;
+  background:var(--surface);
+}
+.card:hover{border-color:var(--accent);}
+.card .top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;}
+.card .name{font-weight:600;font-size:14.5px;line-height:1.3;}
+.card .meta{font-size:12px;color:var(--muted);margin-top:2px;}
+.card .chev{color:var(--muted);font-size:16px;flex:0 0 auto;}
+.kind-tag{
+  display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.04em;
+  text-transform:uppercase;color:var(--accent-ink);background:rgba(31,122,108,.12);
+  padding:2px 7px;border-radius:6px;margin-top:6px;
+}
+:root[data-theme="dark"] .kind-tag{ background:rgba(47,160,141,.18); }
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .kind-tag{ background:rgba(47,160,141,.18); } }
+
+.empty{
+  text-align:center;color:var(--muted);font-size:13.5px;
+  padding:40px 10px;line-height:1.6;
+}
+
+/* product detail */
+.label-head{margin-bottom:14px;}
+.label-head .brand{font-size:12px;color:var(--muted);font-weight:600;letter-spacing:.03em;text-transform:uppercase;}
+.label-head h2{font-family:'Lora',Georgia,serif;font-size:19px;margin:3px 0 6px;line-height:1.25;}
+.label-head .form{font-size:12.5px;color:var(--muted);}
+
+.panel{
+  border:1px solid var(--line);border-radius:14px;padding:13px 14px;margin-bottom:12px;background:var(--surface);
+}
+.panel h3{
+  font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);
+  font-weight:700;margin:0 0 10px;
+}
+.ingredient-row{
+  all:unset;cursor:pointer;display:flex;width:100%;align-items:center;justify-content:space-between;gap:10px;
+  padding:9px 0;border-bottom:1px solid var(--line);
+}
+.ingredient-row:last-child{border-bottom:none;}
+.ingredient-row .iname{font-size:14px;font-weight:600;}
+.ingredient-row .idetail{font-size:11.5px;color:var(--muted);font-weight:400;}
+.ingredient-row .iamt{font-size:12.5px;color:var(--muted);white-space:nowrap;text-align:right;}
+.ingredient-row.linked .iname{color:var(--accent-ink);}
+.ingredient-row.ai-link .iname{color:var(--accent-ink);}
+.ingredient-row .link-hint{font-size:10.5px;color:var(--accent-ink);font-weight:700;}
+.ingredient-row .ai-hint{font-size:10px;color:var(--gold);font-weight:600;letter-spacing:.02em;text-transform:uppercase;}
+.other-ing{font-size:12.5px;color:var(--muted);line-height:1.6;}
+.claims{display:flex;flex-wrap:wrap;gap:6px;}
+.claim{
+  font-size:11.5px;font-weight:600;background:rgba(201,162,39,.14);color:#8a6a10;
+  padding:4px 9px;border-radius:7px;
+}
+:root[data-theme="dark"] .claim{ background:rgba(217,187,85,.16); color:var(--gold); }
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .claim{ background:rgba(217,187,85,.16); color:var(--gold); } }
+.footnote{font-size:11px;color:var(--muted);margin-top:10px;line-height:1.5;}
+.source-line{
+  font-size:11px;color:var(--muted);display:flex;align-items:center;gap:6px;margin-top:4px;
+}
+
+/* monograph detail */
+.mono-head{margin-bottom:12px;}
+.mono-head .kind{font-size:12px;color:var(--muted);font-weight:600;letter-spacing:.03em;text-transform:uppercase;}
+.mono-head h2{font-family:'Lora',Georgia,serif;font-size:21px;margin:3px 0 0;}
+
+.toggle{
+  display:inline-flex;border:1px solid var(--line);border-radius:10px;padding:3px;
+  margin:12px 0 14px;background:var(--surface-2);
+}
+.toggle button{
+  all:unset;cursor:pointer;font-size:12.5px;font-weight:600;padding:6px 13px;border-radius:8px;color:var(--muted);
+}
+.toggle button.active{background:var(--surface);color:var(--fg);box-shadow:0 1px 3px rgba(13,22,32,.15);}
+
+.mono-section{margin-bottom:14px;}
+.mono-section h3{
+  font-size:12px;font-weight:700;color:var(--accent-ink);margin:0 0 5px;
+  display:flex;align-items:center;gap:6px;
+}
+.mono-section p{font-size:13.5px;line-height:1.58;color:var(--fg);margin:0;}
+
+.related-row{
+  all:unset;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:8px;
+  width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:11px;background:var(--surface);
+  margin-bottom:7px;font-size:13px;font-weight:600;
+}
+.related-row:hover{border-color:var(--accent);}
+.related-row .chev{color:var(--muted);}
+
+.mono-footnote{
+  font-size:11px;color:var(--muted);line-height:1.55;margin-top:6px;
+  border-top:1px dashed var(--line);padding-top:10px;
+}
+
+.disclaimer-bar{
+  flex:0 0 auto;display:flex;align-items:center;gap:6px;
+  padding:9px 14px calc(9px + env(safe-area-inset-bottom,0px));
+  border-top:1px solid var(--line);background:var(--surface-2);
+  font-size:10.5px;color:var(--muted);line-height:1.4;
+}
+.disclaimer-bar .lock{flex:0 0 auto;}
+
+/* strip under the phone */
+.strip{
+  max-width:760px;margin:40px auto 0;
+  display:grid;grid-template-columns:repeat(3,1fr);gap:14px;
+}
+@media (max-width:620px){ .strip{grid-template-columns:1fr;} }
+.strip .f{
+  border:1px solid var(--line);background:var(--surface);border-radius:14px;padding:16px 16px 17px;min-width:0;
+}
+.strip .f .n{
+  font-family:'Lora',Georgia,serif;font-weight:700;font-size:14.5px;margin-bottom:6px;
+  display:flex;align-items:center;gap:8px;
+}
+.strip .f .n .ico{
+  width:24px;height:24px;border-radius:7px;flex:0 0 auto;
+  background:var(--surface-2);display:flex;align-items:center;justify-content:center;font-size:13px;
+}
+.strip .f p{font-size:12.5px;color:var(--muted);line-height:1.55;margin:0;}
+
+.note{
+  max-width:640px;margin:22px auto 0;text-align:center;
+  font-size:12px;color:var(--muted);line-height:1.6;
+}
+.note a{color:var(--accent-ink);}
+
+/* AI summary panel */
+.ai-panel-head{display:flex;align-items:center;gap:7px;margin-bottom:9px;}
+.ai-panel-head .spark{font-size:13px;}
+.ai-intro{font-size:12.5px;color:var(--muted);line-height:1.55;margin:0 0 11px;}
+.ai-btn{
+  all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:7px;
+  background:var(--accent);color:#fff;font-size:13px;font-weight:700;
+  padding:9px 15px;border-radius:10px;
+}
+.ai-btn:hover{background:var(--accent-ink);}
+.ai-btn[disabled]{opacity:.55;cursor:default;}
+.ai-state{display:flex;align-items:center;gap:9px;font-size:12.5px;color:var(--muted);}
+.ai-spinner{
+  width:13px;height:13px;border-radius:50%;flex:0 0 auto;
+  border:2px solid var(--line);border-top-color:var(--accent);
+  animation:ai-spin .7s linear infinite;
+}
+@keyframes ai-spin{ to{ transform:rotate(360deg); } }
+@media (prefers-reduced-motion: reduce){ .ai-spinner{ animation:none; } }
+.ai-live{font-size:13.5px;line-height:1.62;color:var(--fg);white-space:pre-wrap;}
+.ai-meta{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;
+  margin-top:11px;padding-top:9px;border-top:1px dashed var(--line);
+  font-size:11px;color:var(--muted);
+}
+.ai-meta .src{display:flex;align-items:center;gap:5px;}
+.ai-meta button{all:unset;cursor:pointer;color:var(--accent-ink);font-weight:700;font-size:11px;}
+.ai-error-box{font-size:12.5px;color:var(--danger);line-height:1.5;margin-bottom:8px;}
+.ai-unavail{font-size:12.5px;color:var(--muted);line-height:1.55;font-style:italic;}
+
+/* Investigate link */
+.investigate-panel{
+  border:1px solid var(--line);border-radius:14px;padding:13px 14px;margin-bottom:12px;background:var(--surface);
+  border-left:3px solid var(--gold);
+}
+.investigate-panel h3{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700;margin:0 0 8px;}
+.investigate-text{font-size:12.5px;color:var(--fg);line-height:1.55;margin-bottom:10px;}
+.investigate-btn{
+  all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:7px;
+  background:var(--gold);color:#1B2A41;font-size:13px;font-weight:700;
+  padding:9px 15px;border-radius:10px;
+}
+.investigate-btn:hover{background:var(--gold);opacity:.85;}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .investigate-btn{ color:#EAF0F5; } }
+:root[data-theme="dark"] .investigate-btn{ color:#EAF0F5; }
+</style>
+<style>
+/* ===== Additions for the live site (everything above is the original design, unchanged) ===== */
+html,body{min-height:100%}
+button{font-family:inherit}
+
+/* Welcome screen */
+.welcome{
+  position:absolute;inset:0;z-index:30;background:var(--surface);
+  display:flex;flex-direction:column;justify-content:space-between;
+  padding:46px 22px 24px;overflow-y:auto;
+}
+.welcome[hidden]{display:none!important}
+.welcome .mark-lg{
+  width:46px;height:46px;border-radius:14px;margin:0 auto 14px;
+  background:linear-gradient(145deg,var(--accent),var(--accent-ink));
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;font-family:'Lora',serif;font-weight:700;font-size:24px;
+}
+.welcome h1{
+  font-family:'Lora',Georgia,serif;font-weight:700;font-size:27px;line-height:1.2;
+  text-align:center;margin:0 0 12px;color:var(--fg);text-wrap:balance;
+}
+.welcome h1 span{color:var(--gold)}
+.welcome .w-desc{font-size:14px;line-height:1.6;color:var(--muted);text-align:center;margin:0 0 20px}
+.welcome .w-feat{display:flex;gap:11px;margin-bottom:13px;font-size:13px;line-height:1.5}
+.welcome .w-feat b{color:var(--fg)}
+.welcome .w-btn{
+  all:unset;cursor:pointer;box-sizing:border-box;width:100%;text-align:center;
+  background:var(--accent);color:#fff;font-size:16px;font-weight:700;
+  padding:15px;border-radius:12px;margin-top:10px;
+}
+.welcome .w-btn:hover{background:var(--accent-ink)}
+.welcome .w-note{font-size:11px;color:var(--muted);text-align:center;line-height:1.5;margin:10px 0 0}
+
+/* live-data extras */
+.ingredient-row.sub{padding-left:14px}
+.ingredient-row.sub .iname{font-weight:500;font-size:13px}
+.ingredient-row.macro .iname{font-weight:500;color:var(--muted)}
+.status{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--muted);padding:18px 4px}
+.err-box{font-size:13px;line-height:1.55;color:var(--fg);border:1px solid var(--line);border-radius:12px;padding:14px;background:var(--surface-2);margin:8px 0}
+.err-box a{color:var(--accent-ink);font-weight:600}
+.err-box button{
+  all:unset;cursor:pointer;display:inline-block;margin:8px 8px 0 0;
+  border:1px solid var(--accent);color:var(--accent-ink);font-weight:700;font-size:12.5px;
+  padding:7px 13px;border-radius:9px;
+}
+.upc{font-size:11.5px;color:var(--muted);margin-top:2px}
+
+/* Layout: the iPhone frame is shown on tablets and desktops (original look);
+   on an actual phone the app fills the screen instead, so the frame doesn't waste space. */
+@media (min-width:501px){
+  .screen{height:min(780px,calc(100vh - 90px));min-height:560px}
+  .device{width:min(100%,360px)}
+}
 @media (max-width:500px){
-  body{align-items:stretch}
-  .phone{width:100%;height:100%;max-height:none;border:none;border-radius:0;box-shadow:none}
-  .phone::before,.status{display:none}
+  body{padding:0!important}
+  .wrap{max-width:none;margin:0}
+  .stage{display:block}
+  .device{width:100%;height:100vh;height:100dvh;border-radius:0;padding:0;background:transparent;box-shadow:none}
+  .screen{height:100vh;height:100dvh;border-radius:0}
+  .notch,.statusbar,.home-indicator,.strip{display:none!important}
+  .welcome{padding-top:32px}
 }
-@media (min-width:768px){
-  body{display:block}
-  .phone{width:100%;max-width:none;height:100vh;max-height:none;border:none;border-radius:0;box-shadow:none}
-  .phone::before,.status{display:none}
-  .view-inner{max-width:720px;margin:0 auto}
-}
-
-.screen{flex:1;position:relative;overflow:hidden;display:flex;flex-direction:column;min-height:0}
-
-/* Welcome */
-#welcome{position:absolute;inset:0;background:#fff;z-index:50;display:flex;flex-direction:column;justify-content:space-between;padding:36px 24px 24px;overflow-y:auto}
-#welcome.hidden{display:none}
-.w-logo{font-size:44px;text-align:center;margin-bottom:14px}
-.w-head{font-family:Georgia,'Lora',serif;font-size:30px;line-height:1.2;color:var(--navy);text-align:center;margin-bottom:12px}
-.w-head span{color:var(--gold)}
-.w-desc{font-size:14px;color:var(--muted);line-height:1.6;text-align:center;margin-bottom:22px}
-.feat{display:flex;gap:12px;margin-bottom:14px;font-size:13px;line-height:1.5}
-.feat b{color:var(--navy)}
-.btn-go{width:100%;padding:16px;background:var(--teal);color:#fff;border:none;border-radius:12px;font-size:16px;font-weight:600;margin-top:18px}
-.btn-go:active{background:var(--teal-dk)}
-.w-note{text-align:center;font-size:11px;color:#999;line-height:1.4;margin-top:10px}
-
-/* App */
-.topbar{flex-shrink:0;background:linear-gradient(135deg,var(--navy),var(--teal));color:#fff;display:flex;align-items:center;gap:8px;padding:12px 14px}
-.back{background:none;border:none;color:#fff;font-size:26px;line-height:1;width:34px;height:34px;visibility:hidden}
-.back.show{visibility:visible}
-.tb-title{flex:1;min-width:0}
-.tb-title h1{font-size:19px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.tb-title p{font-size:11.5px;opacity:.9}
-.searchbar{flex-shrink:0;display:flex;gap:8px;padding:12px 14px;border-bottom:1px solid var(--line);background:#fff}
-.searchbar .box{flex:1;display:flex;align-items:center;gap:6px;background:#f6f7f9;border:1px solid var(--line);border-radius:10px;padding:0 10px}
-.searchbar input{flex:1;min-width:0;border:none;background:transparent;padding:11px 0;font-size:16px;outline:none}
-.searchbar .go{background:var(--teal);color:#fff;border:none;border-radius:10px;padding:0 16px;font-size:14px;font-weight:600}
-.content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px}
-.view-inner{width:100%}
-.sec-title{font-size:11.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:18px 0 9px}
-.sec-title:first-child{margin-top:0}
-.chips{display:flex;flex-wrap:wrap;gap:8px}
-.chip{padding:8px 13px;background:#f6f7f9;border:1px solid var(--line);border-radius:20px;font-size:13px;font-weight:500;color:#333}
-.chip:active{background:#e4e8ec}
-.intro{font-size:13px;color:var(--muted);line-height:1.5;margin-bottom:14px}
-.msg{text-align:center;color:var(--muted);font-size:13.5px;line-height:1.55;padding:22px 8px}
-.msg a{color:var(--teal);font-weight:600}
-.msg .retry{display:inline-block;margin-top:10px;padding:9px 16px;border:1px solid var(--teal);color:var(--teal);background:#fff;border-radius:8px;font-weight:600;font-size:13px}
-.spin{display:inline-block;width:14px;height:14px;border:2px solid #ddd;border-top-color:var(--teal);border-radius:50%;animation:sp .8s linear infinite;margin-right:8px;vertical-align:middle}
-@keyframes sp{to{transform:rotate(360deg)}}
-
-.res{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;text-align:left;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:8px}
-.res:active{background:#f3f6f8}
-.res h4{font-size:14.5px;color:var(--navy);line-height:1.3}
-.res span{font-size:12px;color:var(--muted)}
-.res .arr{color:var(--teal);font-size:18px;flex-shrink:0}
-
-.prod-brand{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase}
-.prod-name{font-size:19px;font-weight:700;color:var(--navy);margin:2px 0 4px}
-.prod-meta{font-size:12px;color:var(--muted);margin-bottom:14px}
-.card{border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:14px;background:#fff}
-.card h3{font-size:11.5px;text-transform:uppercase;letter-spacing:.5px;color:#333;margin-bottom:10px}
-.ing{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid #f0f0f0;font-size:13.5px}
-.ing:last-child{border-bottom:none}
-.ing .nm{color:var(--navy);font-weight:600}
-.ing .am{color:#444;white-space:nowrap;text-align:right}
-.other{font-size:12.5px;color:var(--muted);line-height:1.5}
-.stm{font-size:12.5px;color:var(--muted);line-height:1.5;margin-left:16px}
-.ok{display:inline-block;font-size:11.5px;font-weight:700;color:#1b7a46;margin-bottom:8px}
-.invest{background:#fffbf0;border:2px solid var(--gold);border-radius:12px;padding:14px}
-.invest h3{font-size:11.5px;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
-.invest p{font-size:12.5px;color:var(--muted);line-height:1.5;margin-bottom:12px}
-.btn-inv{width:100%;padding:13px;background:var(--gold);color:#222;border:none;border-radius:8px;font-size:14.5px;font-weight:700}
-.btn-inv:active{background:#c49600}
-.disc{font-size:11px;color:#999;line-height:1.5;margin-top:12px}
 </style>
 </head>
 <body>
-<div class="phone">
-  <div class="status"><span>9:41</span><span>📶 🔋</span></div>
-  <div class="screen">
 
-    <div id="welcome">
-      <div>
-        <div class="w-logo">🔬</div>
-        <h1 class="w-head">Before You Take That Supplement, <span>Check the Evidence.</span></h1>
-        <p class="w-desc">Search thousands of real supplement labels and see exactly what's in the product you're considering. Then explore the clinical evidence.</p>
-        <div class="feat"><div>📋</div><div><b>Real labels:</b> pulled live from the NIH Dietary Supplement Label Database</div></div>
-        <div class="feat"><div>🔍</div><div><b>Evidence-based:</b> compare each ingredient and dose with published research</div></div>
-        <div class="feat"><div>🧪</div><div><b>No marketing:</b> safety, interactions and what's actually supported</div></div>
+<div class="wrap">
+
+  <div class="stage">
+    <div class="device">
+      <div class="screen">
+        <div class="notch"></div>
+        <div class="statusbar">
+          <span>9:41</span>
+          <span class="icons">●●●&nbsp;&nbsp;📶&nbsp;&nbsp;🔋</span>
+        </div>
+
+        <div class="welcome" id="welcome">
+          <div>
+            <div class="mark-lg">S</div>
+            <h1>Before You Take That Supplement, <span>Check the Evidence.</span></h1>
+            <p class="w-desc">Search thousands of real supplement labels and see exactly what's in the product you're considering. Then explore the evidence behind every ingredient.</p>
+            <div class="w-feat"><div>📋</div><div><b>Real labels:</b> pulled live from the NIH Dietary Supplement Label Database</div></div>
+            <div class="w-feat"><div>📖</div><div><b>Ingredient monographs:</b> plain-language evidence summaries, one tap from any ingredient</div></div>
+            <div class="w-feat"><div>✨</div><div><b>AI ingredient summary:</b> Claude reads the label against the NIH source material</div></div>
+            <div class="w-feat"><div>🔍</div><div><b>Investigate the evidence:</b> send the full label to the website for a deeper AI analysis</div></div>
+          </div>
+          <div>
+            <button class="w-btn" id="exploreBtn">Explore Now</button>
+            <p class="w-note">SuppleFacts uses data from the NIH Office of Dietary Supplements. A research tool, not medical advice.</p>
+          </div>
+        </div>
+
+        <div class="appbar">
+          <button class="back" id="backBtn" aria-label="Back" hidden>&#8249;</button>
+          <div class="mark">S</div>
+          <div class="title" id="appTitle">SuppleFacts</div>
+        </div>
+        <div class="content" id="content"></div>
+        <div class="disclaimer-bar">
+          <span class="lock">ⓘ</span>
+          <span>Informational only, not medical advice. Label and monograph data from NIH ODS; AI summaries are Claude-generated from that data.</span>
+        </div>
+        <div class="home-indicator"></div>
       </div>
-      <div>
-        <button class="btn-go" id="btn-explore">Explore Now</button>
-        <p class="w-note">SuppleFacts uses the NIH Office of Dietary Supplements label database. A research tool, not medical advice.</p>
-      </div>
     </div>
-
-    <div class="topbar">
-      <button class="back" id="back" aria-label="Back">‹</button>
-      <div class="tb-title"><h1 id="tb-h">SuppleFacts</h1><p id="tb-p">Supplement Label Lookup</p></div>
-    </div>
-    <div class="searchbar">
-      <div class="box"><span>🔍</span><input id="q" type="search" placeholder="Search a product or brand…" autocomplete="off" enterkeyhint="search"></div>
-      <button class="go" id="go">Go</button>
-    </div>
-    <div class="content" id="content"><div class="view-inner" id="view"></div></div>
-
   </div>
+
+  <div class="strip">
+    <div class="f">
+      <div class="n"><span class="ico">🔎</span>Products</div>
+      <p>Live label search against the NIH Dietary Supplement Label Database — ingredients, doses, and claims exactly as printed, for 200,000+ real products.</p>
+    </div>
+    <div class="f">
+      <div class="n"><span class="ico">📖</span>Monographs</div>
+      <p>Plain-language evidence summaries pulled from NIH ODS and NCCIH fact sheets, linked directly off any ingredient a product search turns up.</p>
+    </div>
+    <div class="f">
+      <div class="n"><span class="ico">📱</span>On your phone</div>
+      <p>Installs straight from Safari to the home screen — no App Store needed to start, with a full App Store release as a later step once it's proven useful.</p>
+    </div>
+  </div>
+
 </div>
 
 <script>
 (function(){
+  "use strict";
+
   var API = 'https://api.ods.od.nih.gov/dsld/v9';
   var SITE = 'https://supplements.brokenpromiseshealthcare.org';
-  var $ = function(id){return document.getElementById(id);};
-  var view = $('view'), back = $('back'), qEl = $('q');
-  var state = {level:'home', query:'', results:[], label:null};
-  var reqId = 0;
+  var SUMMARY_ENDPOINT = '/.netlify/functions/ai-summary';
 
-  function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  /* ---- Ingredient monographs (curated; unchanged from the original design) ---- */
+  var MONOGRAPHS = [
+    { id:'magnesium', name:'Magnesium', kind:'Mineral &middot; ODS Fact Sheet',
+      consumer:{ what:'An essential mineral involved in more than 300 processes in the body, including muscle and nerve function, blood sugar control, and building bone.',
+        evidence:'Good evidence it helps when levels are genuinely low. For sleep or muscle cramps in people with normal levels, trial results are mixed.',
+        safety:'High supplement doses (not food) commonly cause diarrhea and cramping, and can reduce absorption of some antibiotics.',
+        bottom:'Most people get enough from food. Supplementing is clearest when a deficiency is confirmed.' },
+      clinical:{ what:'Cofactor in 300+ enzymatic reactions (ATP metabolism, neuromuscular transmission). RDA ≈ 400–420 mg/day (men), 310–320 mg/day (women).',
+        evidence:'RCTs support repletion in documented hypomagnesemia. Evidence for primary insomnia and nocturnal leg cramps is mixed, with modest effect sizes at 300–500 mg elemental Mg.',
+        safety:'Doses above the 350 mg/day UL commonly cause osmotic diarrhea; can reduce absorption of tetracyclines/fluoroquinolones; caution with loop/thiazide diuretics in renal impairment.',
+        bottom:'Strongest evidence is for correcting confirmed deficiency; benefit in replete individuals is inconsistent across trials.' } },
+    { id:'ginkgo', name:'Ginkgo biloba', kind:'Botanical &middot; ODS Fact Sheet',
+      consumer:{ what:'An extract from the ginkgo tree leaf, one of the best-selling herbal supplements, marketed for memory and circulation.',
+        evidence:'Large, well-run trials have not shown a consistent benefit for memory or preventing cognitive decline in healthy older adults.',
+        safety:'Can increase bleeding risk — use caution with blood thinners, and stop before surgery or dental procedures.',
+        bottom:'Popular, but the clinical evidence behind its main marketed claim is weak.' },
+      clinical:{ what:'Standardized leaf extract (commonly EGb 761: 24% flavone glycosides / 6% terpene lactones).',
+        evidence:'Large RCTs (e.g. the GEM study, n>3,000) found no significant reduction in incident dementia or cognitive decline vs. placebo.',
+        safety:'Antiplatelet effect; case reports of bleeding with anticoagulants, antiplatelets, and NSAIDs; standard precaution to discontinue before surgery.',
+        bottom:'Well studied — large trials do not support the primary marketed cognitive claim.' } },
+    { id:'vitamind', name:'Vitamin D', kind:'Vitamin &middot; ODS Fact Sheet',
+      consumer:{ what:'A fat-soluble vitamin the body makes from sunlight, which supports calcium absorption and bone health.',
+        evidence:'Strong evidence for bone health and preventing rickets. Evidence for broader claims like immunity or mood is mixed.',
+        safety:'Very high doses over time can raise blood calcium to unsafe levels.',
+        bottom:'Widely recommended, especially with low sun exposure — but more is not automatically better.' },
+      clinical:{ what:'Cholecalciferol (D3) or ergocalciferol (D2). RDA 600–800 IU/day; optimal serum 25(OH)D target still debated.',
+        evidence:'Strong RCT evidence for bone mineralization and fracture risk reduction when deficient. Large trials (e.g. VITAL) found no significant reduction in cancer or CV incidence in replete adults.',
+        safety:'Hypercalcemia risk with sustained intake >4,000 IU/day; potentiates thiazide effect on serum calcium; monitor with digoxin.',
+        bottom:'Well supported for bone health and documented deficiency; weaker evidence for broader disease-prevention claims than marketing suggests.' } },
+    { id:'echinacea', name:'Echinacea', kind:'Botanical &middot; ODS Fact Sheet',
+      consumer:{ what:'A flowering plant native to North America, traditionally used and widely marketed to prevent or shorten colds.',
+        evidence:'Clinical trial results are mixed and inconsistent. Any benefit for cold duration appears modest at best.',
+        safety:'Generally well tolerated short-term; allergic reactions possible, especially with ragweed-family allergies.',
+        bottom:'Reasonable to try for some people — just don’t expect a dramatic effect.' },
+      clinical:{ what:'Genus of flowering plants; E. purpurea most studied. Preparations vary widely (root vs. aerial parts, extraction method), complicating cross-trial comparison.',
+        evidence:'Meta-analyses show inconsistent, generally modest effects on cold incidence/duration; heterogeneity across preparations limits firm conclusions.',
+        safety:'Well tolerated short-term (<10 days); caution in Asteraceae/ragweed-family allergy; theoretical interaction with immunosuppressants.',
+        bottom:'Plausible modest benefit for some, undermined by inconsistent preparations across the evidence base.' } }
+  ];
 
-  /* ---------- views ---------- */
-  function setBar(h,p,showBack){
-    $('tb-h').textContent = h; $('tb-p').textContent = p;
-    back.classList.toggle('show', !!showBack);
-    $('content').scrollTop = 0;
-  }
-
-  function showHome(){
-    state.level='home'; qEl.value='';
-    setBar('SuppleFacts','Supplement Label Lookup',false);
-    var ing=['Magnesium','Turmeric','CoQ10','Melatonin','Ginkgo','Vitamin D'];
-    var prod=['Nature Made','Nature\'s Way','NOW Foods','Solgar'];
-    function chips(a){return a.map(function(x){return '<button class="chip" data-q="'+esc(x)+'">'+esc(x)+'</button>';}).join('');}
-    view.innerHTML =
-      '<p class="intro">Search any U.S. dietary supplement by product name or brand. Labels come live from the NIH Dietary Supplement Label Database.</p>'+
-      '<div class="sec-title">Try a search</div><div class="chips">'+chips(ing)+'</div>'+
-      '<div class="sec-title">Try a brand</div><div class="chips">'+chips(prod)+'</div>';
-  }
-
-  function showMsg(html){ view.innerHTML = '<div class="msg">'+html+'</div>'; }
-  function showError(retryFn, detail){
-    showMsg('<strong>Couldn\'t reach the NIH database right now.</strong><br>'+esc(detail||'')+'<br>'+
-      '<button class="retry" id="retry">Try again</button><br><br>'+
-      '<a href="https://dsld.od.nih.gov/" target="_blank" rel="noopener">Search the NIH database directly →</a>');
-    $('retry').onclick = retryFn;
-  }
-
-  /* ---------- search ---------- */
-  function search(query){
-    query = (query||'').trim();
-    if(query.length<3){ showMsg('Type at least 3 characters to search.'); return; }
-    var my = ++reqId;
-    state.level='results'; state.query=query; qEl.value=query;
-    setBar('Results','“'+query+'”',true);
-    showMsg('<span class="spin"></span>Searching the NIH database…');
-    fetch(API+'/browse-products?method=by_keyword&q='+encodeURIComponent(query)+'&size=20')
-      .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
-      .then(function(data){
-        if(my!==reqId) return;
-        var hits=(data.hits||[]).map(function(h){
-          var src = h._source!==undefined ? h._source : h;
-          if(typeof src==='string'){ try{src=JSON.parse(src);}catch(e){} }
-          if(src && !src.id && !src.dsldId && h._id){ src._fallbackId=h._id; }
-          return src;
-        });
-        var seen={}, list=hits.filter(function(it){
-          var k=((it.fullName||it.name||'')+'|'+(it.brandName||'')).trim().toLowerCase();
-          if(seen[k]) return false; seen[k]=1; return true;
-        });
-        state.results=list;
-        if(!list.length){ showMsg('No products found for “'+esc(query)+'”. Try a shorter or more general term.'); return; }
-        view.innerHTML = list.map(function(it,i){
-          return '<button class="res" data-i="'+i+'"><div><h4>'+esc(it.fullName||it.name||'Unknown product')+'</h4><span>'+esc(it.brandName||'')+'</span></div><div class="arr">›</div></button>';
-        }).join('');
-      })
-      .catch(function(e){ if(my!==reqId) return; console.error('DSLD search failed',e); showError(function(){search(query);}, e.message); });
-  }
-
-  /* ---------- label detail ---------- */
-  function openLabel(item){
-    var id = item.id || item.dsldId || item._fallbackId;
-    if(!id){ showMsg('This record has no ID the database can look up.'); return; }
-    var my = ++reqId;
-    state.level='detail';
-    setBar(item.fullName||item.name||'Product', item.brandName||'', true);
-    showMsg('<span class="spin"></span>Loading label…');
-    fetch(API+'/label/'+encodeURIComponent(id))
-      .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
-      .then(function(label){ if(my!==reqId) return; state.label=label; renderLabel(label); })
-      .catch(function(e){ if(my!==reqId) return; console.error('DSLD label failed',e); showError(function(){openLabel(item);}, e.message); });
-  }
-
-  function amountOf(row){
-    var q = row.quantity && row.quantity[0];
-    return q ? (q.quantity+' '+(q.unit||'')).trim() : '—';
-  }
-
-  function renderLabel(l){
-    var rows=(l.ingredientRows||[]).map(function(r){
-      return '<div class="ing"><div class="nm">'+esc(r.name||'Unnamed ingredient')+'</div><div class="am">'+esc(amountOf(r))+'</div></div>';
-    }).join('');
-    var other = l.otherIngredients; if(other && typeof other==='object') other = other.text || other.ingredients || '';
-    var stm=(l.statements||[]).map(function(s){return '<li>'+esc(s.notes||s.type||'')+'</li>';}).join('');
-    view.innerHTML =
-      '<div class="ok">NIH label retrieved ✓</div>'+
-      '<div class="prod-brand">'+esc(l.brandName||'')+'</div>'+
-      '<div class="prod-name">'+esc(l.fullName||'Product')+'</div>'+
-      '<div class="prod-meta">'+(l.upcSku?'UPC '+esc(l.upcSku):'')+'</div>'+
-      '<div class="card"><h3>Supplement Facts (as declared)</h3>'+(rows||'<p class="other">No itemized ingredient data available for this product.</p>')+
-        (other?'<div style="margin-top:12px;padding-top:12px;border-top:1px solid #f0f0f0"><h3>Other ingredients</h3><div class="other">'+esc(other)+'</div></div>':'')+'</div>'+
-      (stm?'<div class="card"><h3>Label statements</h3><ul class="stm">'+stm+'</ul></div>':'')+
-      '<div class="invest"><h3>Investigate the Evidence</h3><p>Compare this exact formulation and dose with published clinical evidence — safety, interactions and contaminant testing — using the AI assistant of your choice.</p><button class="btn-inv" id="btn-inv">🔍 Investigate the Evidence</button></div>'+
-      '<p class="disc">The NIH label lists only what the manufacturer declares. It does not show contaminant testing or whether a given bottle matches its label.</p>';
-    $('btn-inv').onclick = investigate;
-  }
-
-  /* ---------- hand-off to the website (same methodology as product-lookup.js) ---------- */
-  var METHOD =
-    'You are acting as a research assistant for an evidence-based supplement investigation. Analyze the specific product and formulation below. Do not give a generic answer about the ingredient category in the abstract — evaluate THIS exact product at THIS exact dose.\n\n'+
-    'Start with your Overall Verdict: a short, direct assessment of this specific product and formulation as a whole — not just its ingredients in isolation. Give the reader your conclusion first, then support it with the detailed analysis below.\n\n'+
-    'Then, for each active ingredient in this product, do the following:\n\n'+
-    '1. Identify the principal health claims the ingredient is commonly used or marketed for.\n'+
-    '2. Prioritize high-quality evidence: systematic reviews and meta-analyses first, then randomized controlled trials, then major evidence-based clinical guidelines where relevant. Prioritize clinically meaningful outcomes over surrogate lab endpoints.\n'+
-    '3. Compare the dose in THIS product with the doses actually used in the relevant clinical trials. State plainly whether this product\'s dose: matches studied doses, falls below studied doses, exceeds studied doses, or cannot meaningfully be compared.\n'+
-    '4. Identify established adverse effects, clinically significant drug interactions, and important contraindications.\n'+
-    '5. If relevant, distinguish evidence for correcting a documented nutritional deficiency from evidence for supplementation in people who are not deficient.\n'+
-    '6. Distinguish the type of evidence explicitly: biological plausibility, animal/mechanistic evidence, observational evidence, and randomized clinical evidence. Do not treat anecdotes or testimonials as evidence of efficacy.\n'+
-    '7. Rate the strength of evidence for each major use as one of: Strong, Moderate, Limited/Insufficient, Evidence of No Benefit, or Evidence of Harm — and explain WHY it earns that rating rather than just stating the label.\n'+
-    '8. Note any conflicting evidence or important uncertainty.\n'+
-    '9. Check product quality, not just ingredient science: say whether the brand publishes third-party contaminant testing (for example, heavy metals such as lead, cadmium, and arsenic) or a certificate of analysis, and note any recalls, warnings, or regulatory actions involving this product or brand. If you find no public information, say so plainly rather than guessing.\n'+
-    '10. Cite the principal sources with publication dates. Prefer primary, peer-reviewed, and authoritative government sources.\n\n'+
-    'Throughout, keep these distinctions clear: ingredient evidence vs. product evidence; the dose in this product vs. the dose actually studied; biological plausibility vs. demonstrated clinical outcome; and label information vs. proof of efficacy or purity.\n\n---\n\n';
-
-  function buildPrompt(l){
-    var lines=(l.ingredientRows||[]).map(function(r){return '- '+(r.name||'Unnamed ingredient')+': '+amountOf(r);}).join('\n');
-    return METHOD+'PRODUCT\nName: '+(l.fullName||'Unknown product')+'\nBrand: '+(l.brandName||'Unknown')+'\n'+(l.upcSku?'UPC: '+l.upcSku+'\n':'')+'\nIngredients (as declared on the NIH label):\n'+lines;
-  }
-
-  function investigate(){
-    if(!state.label) return;
-    window.open(SITE+'/product-lookup?prompt='+encodeURIComponent(buildPrompt(state.label)),'_blank');
-  }
-
-  /* ---------- navigation & events ---------- */
-  back.onclick = function(){
-    reqId++;
-    if(state.level==='detail' && state.results.length){
-      state.level='results';
-      setBar('Results','“'+state.query+'”',true);
-      view.innerHTML = state.results.map(function(it,i){
-        return '<button class="res" data-i="'+i+'"><div><h4>'+esc(it.fullName||it.name||'Unknown product')+'</h4><span>'+esc(it.brandName||'')+'</span></div><div class="arr">›</div></button>';
-      }).join('');
-    } else { showHome(); }
+  // How a live label's ingredient name maps onto a curated monograph above
+  var MONO_MATCH = {
+    magnesium: /^magnesium(?!\s+stearate)/i,
+    ginkgo:    /ginkgo/i,
+    vitamind:  /vitamin\s*d|cholecalciferol|ergocalciferol/i,
+    echinacea: /echinacea/i
   };
-  view.addEventListener('click', function(e){
-    var chip = e.target.closest('.chip'); if(chip){ search(chip.getAttribute('data-q')); return; }
-    var res = e.target.closest('.res'); if(res){ openLabel(state.results[+res.getAttribute('data-i')]); }
-  });
-  $('go').onclick = function(){ search(qEl.value); };
-  qEl.addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); search(qEl.value); qEl.blur(); } });
-  $('btn-explore').onclick = function(){ $('welcome').classList.add('hidden'); };
+  // Label rows that are nutrition-facts macros rather than supplement ingredients
+  var MACRO = /^(calories|calories from fat|total (carbohydrates?|sugars?|fat)|added sugars?)$/i;
 
-  showHome();
-  // Deep link: supplefacts.html?q=magnesium skips the welcome screen and searches.
-  try{ var p=new URLSearchParams(location.search).get('q'); if(p){ $('welcome').classList.add('hidden'); search(p); } }catch(e){}
+  /* ---- State ---- */
+  var LABELS = {};      // id -> normalized product (full label, loaded on demand)
+  var SUMMARIES = {};   // id -> {name, brand, form} from search results
+  var RESULT_CACHE = {};// query -> [summary]
+  var content = document.getElementById('content');
+  var backBtn = document.getElementById('backBtn');
+  var appTitle = document.getElementById('appTitle');
+  var history = [ { screen:'home', param:null } ];
+  var monoLevel = 'consumer';
+  var aiCache = {};
+  var sampleCap = null;
+  var sampleInit = false;
+  var navToken = 0;
+
+  function relatedProducts(monoId){
+    var out = [];
+    for (var id in LABELS){
+      var p = LABELS[id];
+      if (p.ingredients.some(function(i){ return i.mono === monoId; })) out.push(p);
+    }
+    return out;
+  }
+  function monoById(id){ for (var i=0;i<MONOGRAPHS.length;i++){ if(MONOGRAPHS[i].id===id) return MONOGRAPHS[i]; } return null; }
+  function prodById(id){ return LABELS[id] || null; }
+  function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+  /* ---- Turn a raw NIH DSLD label into the shape the UI renders ---- */
+  function qtyText(q){
+    if (!q || q.unit === 'NP' || q.quantity == null) return '';
+    if (q.quantity === 0 && !q.unit) return '';
+    return ((q.operator && q.operator !== '=') ? q.operator + ' ' : '') + q.quantity + (q.unit ? ' ' + q.unit : '');
+  }
+  function dvText(q){
+    var g = q && q.dailyValueTargetGroup && q.dailyValueTargetGroup[0];
+    if (!g) return '';
+    if (g.percent != null) return g.percent + '% DV';
+    if (g.footnote) return '†';
+    return '';
+  }
+  function monoFor(names){
+    for (var id in MONO_MATCH){
+      for (var i=0;i<names.length;i++){ if (names[i] && MONO_MATCH[id].test(names[i])) return id; }
+    }
+    return null;
+  }
+  function flattenRows(rows, depth, out){
+    (rows || []).forEach(function(r){
+      var q = (r.quantity && r.quantity[0]) || null;
+      var forms = (r.forms || []).map(function(f){ return f.name; }).filter(Boolean);
+      var macro = MACRO.test((r.name || '').trim());
+      var mono = macro ? null : monoFor([r.name].concat(forms));
+      out.push({
+        name: r.name || 'Unnamed ingredient',
+        detail: forms.length ? 'as ' + forms.join(', ') : ((r.description || '').trim()),
+        amount: qtyText(q), dv: dvText(q),
+        mono: mono, aiLink: !mono && !macro && depth === 0,
+        depth: depth, macro: macro
+      });
+      flattenRows(r.nestedRows, depth + 1, out);
+    });
+    return out;
+  }
+  function normalizeLabel(l){
+    var ss = (l.servingSizes || [])[0], serving = '';
+    if (ss){
+      serving = ((ss.minQuantity === ss.maxQuantity || !ss.maxQuantity) ? ss.minQuantity : ss.minQuantity + '–' + ss.maxQuantity) + ' ' + (ss.unit || '');
+      serving = serving.trim();
+    }
+    var form = [ (l.physicalState && l.physicalState.langualCodeDescription) || '',
+                 (l.netContents && l.netContents[0] && l.netContents[0].display) || '' ].filter(Boolean).join(' · ');
+    var oi = l.otheringredients || l.otherIngredients || {};
+    var other = typeof oi === 'string' ? oi : (oi.text || (oi.ingredients || []).map(function(n){ return n.name; }).join(', '));
+    var seen = {}, claims = [];
+    (l.statements || []).forEach(function(s){
+      if (/^(Formulation re|Formula re|Seals\/Symbols|FDA Statement of Identity)/i.test(s.type || '')){
+        var t = (s.notes || '').replace(/\s+/g, ' ').trim();
+        if (t && t.length <= 110 && !seen[t.toLowerCase()]){ seen[t.toLowerCase()] = 1; claims.push(t); }
+      }
+    });
+    if (!claims.length){
+      (l.claims || []).forEach(function(c){
+        var t = (c.langualCodeDescription || '').trim();
+        if (t && !/^all other$/i.test(t) && !seen[t.toLowerCase()]){ seen[t.toLowerCase()] = 1; claims.push(t); }
+      });
+    }
+    return {
+      id: String(l.id), brand: l.brandName || '', name: l.fullName || 'Product',
+      form: form, serving: serving || '—', upc: l.upcSku || '',
+      ingredients: flattenRows(l.ingredientRows, 0, []),
+      other: other || '', claims: claims.slice(0, 8)
+    };
+  }
+  function activeIngredients(p){ return p.ingredients.filter(function(i){ return !i.macro; }); }
+
+  /* ---- AI summary (original behaviour in Claude; server function on the live site) ---- */
+  async function ensureSample(){
+    if (sampleInit) return sampleCap;
+    sampleInit = true;
+    try {
+      if (window.claude && window.claude.use){ sampleCap = await window.claude.use('sample'); }
+    } catch (e){ sampleCap = null; }
+    return sampleCap;
+  }
+  ensureSample();
+
+  function ingredientNotes(ing){
+    var m = monoById(ing.mono);
+    return m ? { what:m.consumer.what, evidence:m.consumer.evidence, safety:m.consumer.safety } : null;
+  }
+
+  function buildIngredientPrompt(product){
+    var act = activeIngredients(product).slice(0, 40);
+    var parts = [];
+    parts.push('You write short, neutral, evidence-based ingredient summaries for an independent, pharmacist-run dietary-supplement education site. Plain language, no marketing tone, no claims beyond what the source material below actually supports.');
+    parts.push('Product label: ' + product.brand + ' — ' + product.name + ' (' + product.form + ', serving size ' + product.serving + ').');
+    parts.push('Use ONLY the NIH-sourced material given for each ingredient below. Do not add outside claims or invented statistics.');
+    act.forEach(function(ing){
+      var n = ingredientNotes(ing);
+      parts.push('\n' + ing.name + (ing.amount ? ' (' + ing.amount + ' per serving)' : '') + ':');
+      if (n){
+        parts.push('What it is: ' + n.what);
+        parts.push('What the evidence shows: ' + n.evidence);
+        parts.push('Safety & interactions: ' + n.safety);
+      } else {
+        parts.push('(No NIH monograph on file for this ingredient — note that plainly rather than guessing.)');
+      }
+    });
+    parts.push('\nWrite one consumer-friendly summary, ' + (act.length > 3 ? '180–260' : '120–180') + ' words, covering what this product’s active ingredient(s) are for and what the evidence actually supports. Stay neutral; do not overstate benefit. End with one short sentence noting this is general information drawn from NIH source material, not medical advice.');
+    return parts.join('\n');
+  }
+
+  async function requestSummary(product){
+    // 1) Inside Claude (artifact preview): use the built-in capability, exactly as before
+    var cap = await ensureSample();
+    if (cap){
+      var res = await cap(buildIngredientPrompt(product), { modelTier:'quick', onText:function(ev){ product._onText && product._onText(ev.text); } });
+      return res.text;
+    }
+    // 2) On the live site: ask the Netlify function (holds the API key server-side)
+    var body = {
+      brand: product.brand, name: product.name, form: product.form, serving: product.serving,
+      ingredients: activeIngredients(product).slice(0, 40).map(function(ing){
+        return { name: ing.name, amount: ing.amount, notes: ingredientNotes(ing) };
+      })
+    };
+    var r = await fetch(SUMMARY_ENDPOINT, { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(body) });
+    var data = {};
+    try { data = await r.json(); } catch (e){}
+    if (!r.ok || !data.text){
+      var err = new Error(data.error || ('HTTP ' + r.status));
+      err.code = data.error || ('http_' + r.status);
+      throw err;
+    }
+    return data.text;
+  }
+
+  async function generateAISummary(productId, force){
+    var product = prodById(productId);
+    if (!product) return;
+    if (!force && aiCache[productId]) { render(); return; }
+
+    var panel = document.getElementById('aiPanel');
+    if (!panel) return;
+    panel.innerHTML = ''
+      + '<div class="ai-panel-head"><span class="spark">✨</span><h3 style="margin:0;">AI Ingredient Summary</h3></div>'
+      + '<div class="ai-state"><span class="ai-spinner"></span><span id="aiStateText">Asking Claude…</span></div>'
+      + '<div class="ai-live" id="aiLive"></div>';
+
+    var stillHere = function(){
+      var cur = history[history.length - 1];
+      return cur.screen === 'product' && cur.param === productId && document.getElementById('aiPanel');
+    };
+    product._onText = function(t){
+      if (!stillHere()) return;
+      var live = document.getElementById('aiLive'), st = document.getElementById('aiStateText');
+      if (st) st.textContent = 'Writing…';
+      if (live) live.textContent = t;
+    };
+
+    try {
+      var text = await requestSummary(product);
+      aiCache[productId] = text;
+      if (stillHere()) render();
+    } catch (err){
+      if (!stillHere()) return;
+      var head = '<div class="ai-panel-head"><span class="spark">✨</span><h3 style="margin:0;">AI Ingredient Summary</h3></div>';
+      var notConfigured = err && (err.code === 'not_configured' || err.code === 'http_404');
+      var msg = 'Couldn’t generate a summary just now. Please try again.';
+      if (err && err.code === 'rate_limited') msg = 'Claude is busy right now — try again in a moment.';
+      if (notConfigured) msg = 'The live AI summary isn’t switched on for this site yet. You can still get the complete AI analysis of this label on the website.';
+      document.getElementById('aiPanel').innerHTML = head
+        + '<div class="ai-error-box">' + esc(msg) + '</div>'
+        + (notConfigured ? '' : '<button class="ai-btn" data-ai-generate="' + esc(productId) + '">Try again</button> ')
+        + '<button class="ai-btn" style="background:var(--gold);color:#1B2A41" data-ai-fallback="' + esc(productId) + '">🔍 Full analysis on the website</button>';
+    }
+  }
+
+  /* ---- Hand-off to the website (prompt format unchanged from the original) ---- */
+  function buildInvestigateUrl(product){
+    var base = SITE + '/product-lookup?prompt=';
+    var ings = activeIngredients(product), keepOther = true, keepClaims = true;
+    function make(list){
+      var prompt = 'Analyze this dietary supplement product and its ingredients:\n\n';
+      prompt += '=== PRODUCT LABEL ===\n';
+      prompt += 'Brand: ' + product.brand + '\n';
+      prompt += 'Product: ' + product.name + '\n';
+      prompt += 'Form: ' + product.form + '\n';
+      prompt += 'Serving Size: ' + product.serving + '\n';
+      if (product.upc) prompt += 'UPC: ' + product.upc + '\n';
+      prompt += '\nSUPPLEMENT FACTS:\n';
+      list.forEach(function(ing){
+        prompt += '- ' + ing.name;
+        if (ing.detail) prompt += ' (' + ing.detail + ')';
+        if (ing.amount) prompt += ': ' + ing.amount;
+        if (ing.dv) prompt += ', ' + ing.dv;
+        prompt += '\n';
+      });
+      if (keepOther && product.other) prompt += '\nOther Ingredients: ' + product.other + '\n';
+      if (keepClaims && product.claims.length) prompt += '\nLabel Claims: ' + product.claims.join(' | ') + '\n';
+      prompt += '\n=== ANALYSIS REQUESTED ===\n';
+      prompt += 'Please provide an evidence-based analysis of this product\'s ingredients. For each ingredient, explain:\n';
+      prompt += '1. What it is\n';
+      prompt += '2. What the scientific evidence shows (cite specific studies/evidence where available)\n';
+      prompt += '3. Safety concerns and potential interactions\n';
+      prompt += '4. Whether the claimed benefits are supported by evidence\n\n';
+      prompt += 'Be neutral and fact-based. Note when evidence is weak, missing, or contradictory. Highlight any concerns with ingredient interactions or excessive doses.';
+      return base + encodeURIComponent(prompt);
+    }
+    var url = make(ings);
+    // Very long labels: shrink so the link stays within browser/server URL limits
+    var LIMIT = 7500;
+    if (url.length > LIMIT){ keepOther = false; url = make(ings); }
+    if (url.length > LIMIT){ keepClaims = false; url = make(ings); }
+    while (url.length > LIMIT && ings.length > 1){ ings = ings.slice(0, ings.length - 1); url = make(ings); }
+    return url;
+  }
+
+  /* ---- Navigation ---- */
+  function navigate(screen, param, opts){
+    opts = opts || {};
+    var entry = { screen:screen, param:param };
+    if (opts.replace && history.length){ history[history.length-1] = entry; }
+    else { history.push(entry); }
+    render();
+  }
+  function goBack(){ if (history.length > 1){ history.pop(); render(); } }
+  backBtn.addEventListener('click', goBack);
+
+  function render(){
+    var cur = history[history.length - 1];
+    navToken++;
+    backBtn.hidden = history.length <= 1;
+    content.scrollTop = 0;
+    if (cur.screen === 'home'){ appTitle.textContent = 'SuppleFacts'; content.innerHTML = renderHome(); }
+    else if (cur.screen === 'results'){ appTitle.textContent = 'Results'; content.innerHTML = renderResults(cur.param); loadProductResults(cur.param); }
+    else if (cur.screen === 'product'){
+      var p = prodById(cur.param);
+      appTitle.textContent = p ? p.name : ((SUMMARIES[cur.param] && SUMMARIES[cur.param].name) || 'Product');
+      if (p){ content.innerHTML = renderProduct(cur.param); }
+      else { content.innerHTML = '<div class="status"><span class="ai-spinner"></span>Loading label from the NIH database…</div>'; loadLabel(cur.param); }
+    }
+    else if (cur.screen === 'monograph'){ var m = monoById(cur.param); appTitle.textContent = m ? m.name : 'Monograph'; monoLevel='consumer'; content.innerHTML = renderMonograph(cur.param); }
+    wireContent();
+  }
+
+  function searchRow(value){
+    return '<div class="search-row">'
+      + '<div class="search-box"><span>🔎</span><input id="searchInput" type="search" enterkeyhint="search" autocomplete="off" value="' + esc(value || '') + '" placeholder="Search a product or an ingredient…" /></div>'
+      + '<button class="search-go" id="searchGo">Go</button>'
+      + '</div>';
+  }
+
+  function renderHome(){
+    var brands = ['Nature Made', 'Nature\'s Way', 'NOW Foods', 'Solgar', 'Multi for Her'];
+    return searchRow('')
+      + '<div class="mode-copy">Searches both product labels and ingredient monographs at once.</div>'
+      + '<div class="section-label">Try an ingredient</div>'
+      + '<div class="chip-row">'
+      +   MONOGRAPHS.map(function(m){ return '<button class="chip" data-go="results:' + esc(m.name) + '">' + esc(m.name) + '</button>'; }).join('')
+      + '</div>'
+      + '<div class="section-label">Try a product</div>'
+      + '<div class="chip-row">'
+      +   brands.map(function(b){ return '<button class="chip" data-go="results:' + esc(b) + '">' + esc(b) + '</button>'; }).join('')
+      + '</div>';
+  }
+
+  function matches(hay, q){ return hay.toLowerCase().indexOf(q.toLowerCase()) !== -1; }
+
+  function renderResults(query){
+    query = query || '';
+    var qMonos = MONOGRAPHS.filter(function(m){ return matches(m.name, query); });
+    var html = searchRow(query) + '<div id="prodResults"></div>';
+    if (qMonos.length){
+      html += '<div class="section-label">Ingredients & Herbs (' + qMonos.length + ')</div><div class="card-list">'
+        + qMonos.map(function(m){
+            return '<button class="card" data-go="monograph:' + m.id + '">'
+              + '<div class="top"><div><div class="name">' + esc(m.name) + '</div>'
+              + '<div class="meta">' + m.kind + '</div></div>'
+              + '<div class="chev">›</div></div>'
+              + '</button>';
+          }).join('')
+        + '</div>';
+    }
+    return html;
+  }
+
+  function productCards(list){
+    return '<div class="section-label">Products (' + list.length + ')</div><div class="card-list">'
+      + list.map(function(p){
+          return '<button class="card" data-go="product:' + esc(p.id) + '">'
+            + '<div class="top"><div><div class="name">' + esc(p.name) + '</div>'
+            + '<div class="meta">' + esc(p.brand) + (p.form ? ' · ' + esc(p.form) : '') + '</div></div>'
+            + '<div class="chev">›</div></div>'
+            + '<div class="kind-tag">DSLD Label</div>'
+            + '</button>';
+        }).join('')
+      + '</div>';
+  }
+
+  function nihError(retryAttr, detail){
+    return '<div class="err-box"><strong>Couldn’t reach the NIH database right now.</strong><br>' + esc(detail || '')
+      + '<br><button ' + retryAttr + '>Try again</button>'
+      + '<a href="https://dsld.od.nih.gov/" target="_blank" rel="noopener">Search the NIH database directly →</a></div>';
+  }
+
+  async function loadProductResults(query){
+    var box = document.getElementById('prodResults');
+    if (!box) return;
+    query = (query || '').trim();
+    if (query.length < 3){
+      box.innerHTML = '<div class="empty" style="padding:18px 10px">Type at least 3 characters to search product labels.</div>';
+      return;
+    }
+    var token = navToken;
+    var still = function(){ var el = document.getElementById('prodResults'); return el && token === navToken; };
+    if (RESULT_CACHE[query]){ showProducts(box, RESULT_CACHE[query], query); return; }
+    box.innerHTML = '<div class="status"><span class="ai-spinner"></span>Searching the NIH label database…</div>';
+    try {
+      var res = await fetch(API + '/browse-products?method=by_keyword&q=' + encodeURIComponent(query) + '&size=25');
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      var data = await res.json();
+      var seen = {}, list = [];
+      (data.hits || []).forEach(function(h){
+        var src = h._source !== undefined ? h._source : h;
+        if (typeof src === 'string'){ try { src = JSON.parse(src); } catch (e){} }
+        var id = src && (src.id || src.dsldId) || h._id;
+        if (!id) return;
+        var name = src.fullName || src.name || 'Unknown product', brand = src.brandName || '';
+        var key = (name + '|' + brand).toLowerCase();
+        if (seen[key]) return; seen[key] = 1;
+        var form = (src.physicalState && src.physicalState.langualCodeDescription) || '';
+        var sum = { id:String(id), name:name, brand:brand, form:form };
+        SUMMARIES[sum.id] = sum;
+        list.push(sum);
+      });
+      RESULT_CACHE[query] = list;
+      if (still()) showProducts(document.getElementById('prodResults'), list, query);
+    } catch (e){
+      console.error('DSLD search failed', e);
+      if (still()) document.getElementById('prodResults').innerHTML = nihError('data-retry-search="' + esc(query) + '"', e.message);
+    }
+  }
+  function showProducts(box, list, query){
+    box.innerHTML = list.length
+      ? productCards(list)
+      : '<div class="empty" style="padding:18px 10px">No product labels found for “' + esc(query) + '.” Try a shorter or more general term.</div>';
+  }
+
+  async function loadLabel(id){
+    var token = navToken;
+    try {
+      var res = await fetch(API + '/label/' + encodeURIComponent(id));
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      var raw = await res.json();
+      LABELS[id] = normalizeLabel(raw);
+      var cur = history[history.length - 1];
+      if (cur.screen === 'product' && cur.param === id) render();
+    } catch (e){
+      console.error('DSLD label failed', e);
+      var cur2 = history[history.length - 1];
+      if (token === navToken && cur2.screen === 'product' && cur2.param === id){
+        content.innerHTML = nihError('data-retry-label="' + esc(id) + '"', e.message);
+      }
+    }
+  }
+
+  function renderProduct(id){
+    var p = prodById(id);
+    if (!p) return '<div class="empty">Product not found.</div>';
+    var ingredientsHtml = p.ingredients.map(function(ing){
+      var cls = (ing.mono ? ' linked' : (ing.aiLink ? ' ai-link' : '')) + (ing.depth ? ' sub' : '') + (ing.macro ? ' macro' : '');
+      var goAttr = ing.mono ? ' data-go="monograph:' + ing.mono + '"' : (ing.aiLink ? ' data-ask-ai="' + esc(ing.name) + '"' : '');
+      var isClickable = ing.mono || ing.aiLink;
+      return '<button class="ingredient-row' + cls + '"' + goAttr + (isClickable ? ' style="cursor:pointer"' : ' disabled style="cursor:default"') + '>'
+        + '<span><span class="iname">' + esc(ing.name) + '</span> <span class="idetail">' + esc(ing.detail) + '</span>'
+        + (ing.mono ? '<br><span class="link-hint">View ingredient monograph ›</span>' : (ing.aiLink ? '<br><span class="ai-hint">Ask AI ›</span>' : '')) + '</span>'
+        + '<span class="iamt">' + esc(ing.amount) + '<br>' + esc(ing.dv) + '</span>'
+        + '</button>';
+    }).join('');
+
+    return ''
+      + '<div class="label-head">'
+      +   '<div class="brand">' + esc(p.brand) + '</div>'
+      +   '<h2>' + esc(p.name) + '</h2>'
+      +   '<div class="form">' + esc(p.form) + (p.form ? ' · ' : '') + 'Serving size: ' + esc(p.serving) + '</div>'
+      +   (p.upc ? '<div class="upc">UPC ' + esc(p.upc) + '</div>' : '')
+      + '</div>'
+      + '<div class="panel"><h3>Supplement Facts</h3>' + (ingredientsHtml || '<div class="other-ing">No itemized ingredient data available for this product.</div>') + '</div>'
+      + (p.other ? '<div class="panel"><h3>Other Ingredients</h3><div class="other-ing">' + esc(p.other) + '</div></div>' : '')
+      + (p.claims.length ? '<div class="panel"><h3>Label Claims</h3><div class="claims">' + p.claims.map(function(c){ return '<span class="claim">' + esc(c) + '</span>'; }).join('') + '</div>'
+        + '<div class="footnote">*These statements have not been evaluated by the FDA. This product is not intended to diagnose, treat, cure, or prevent any disease.</div>'
+        + '</div>' : '')
+      + '<div class="source-line">Source: NIH Dietary Supplement Label Database (DSLD) · live record. Shows what the manufacturer declares — not contaminant testing.</div>'
+      + '<div class="panel ai-panel" id="aiPanel">' + renderAIPanel(p.id) + '</div>'
+      + '<div class="investigate-panel">'
+      +   '<h3>Complete ingredient analysis</h3>'
+      +   '<div class="investigate-text">Not all ingredients found in the NIH database? Use this link to investigate the evidence for every ingredient on this label.</div>'
+      +   '<div style="display:flex; gap:8px; margin-bottom:10px;"><input type="text" id="labelUrl-' + esc(id) + '" placeholder="Paste label image URL (optional)" style="flex:1; padding:8px 12px; border:1px solid var(--line); border-radius:8px; font-size:12px; font-family:inherit;" /></div>'
+      +   '<button class="investigate-btn" data-investigate="' + esc(id) + '">🔍 Investigate the Evidence</button>'
+      + '</div>';
+  }
+
+  function renderAIPanel(productId){
+    if (aiCache[productId]){ return aiPanelResultHtml(aiCache[productId], productId); }
+    return ''
+      + '<div class="ai-panel-head"><span class="spark">✨</span><h3 style="margin:0;">AI Ingredient Summary</h3></div>'
+      + '<div class="ai-intro">Have Claude read this product’s ingredients against the NIH source material above and write a plain-language summary — generated live, not pre-written.</div>'
+      + '<button class="ai-btn" data-ai-generate="' + esc(productId) + '">✨ Generate summary</button>';
+  }
+
+  function aiPanelResultHtml(text, productId){
+    return ''
+      + '<div class="ai-panel-head"><span class="spark">✨</span><h3 style="margin:0;">AI Ingredient Summary</h3></div>'
+      + '<div class="ai-live">' + esc(text) + '</div>'
+      + '<div class="ai-meta"><span class="src">Generated by Claude · grounded in the NIH source above, not medical advice</span>'
+      + '<button data-ai-generate="' + esc(productId) + '" data-ai-force="1">Regenerate</button></div>';
+  }
+
+  function renderMonograph(id){
+    var m = monoById(id);
+    if (!m) return '<div class="empty">Monograph not found.</div>';
+    var related = relatedProducts(id);
+    var level = monoLevel;
+    var d = m[level];
+
+    var relatedHtml = related.length
+      ? '<div class="section-label">Found in products you looked up</div>'
+        + related.map(function(p){
+            return '<button class="related-row" data-go="product:' + esc(p.id) + '"><span>' + esc(p.brand) + ' — ' + esc(p.name) + '</span><span class="chev">›</span></button>';
+          }).join('')
+      : '';
+
+    return ''
+      + '<div class="mono-head"><div class="kind">' + m.kind + '</div><h2>' + esc(m.name) + '</h2></div>'
+      + '<div class="toggle">'
+      +   '<button class="' + (level==='consumer'?'active':'') + '" data-level="consumer">Plain language</button>'
+      +   '<button class="' + (level==='clinical'?'active':'') + '" data-level="clinical">Clinical detail</button>'
+      + '</div>'
+      + '<div class="mono-section"><h3>What it is</h3><p>' + esc(d.what) + '</p></div>'
+      + '<div class="mono-section"><h3>What the evidence shows</h3><p>' + esc(d.evidence) + '</p></div>'
+      + '<div class="mono-section"><h3>Safety &amp; interactions</h3><p>' + esc(d.safety) + '</p></div>'
+      + '<div class="mono-section"><h3>Bottom line</h3><p>' + esc(d.bottom) + '</p></div>'
+      + relatedHtml
+      + '<div class="mono-footnote">Source: NIH Office of Dietary Supplements / NCCIH fact sheet (summarized). Not a substitute for advice from your pharmacist or provider.</div>';
+  }
+
+  function wireContent(){
+    var searchInput = document.getElementById('searchInput');
+    var searchGo = document.getElementById('searchGo');
+    function doSearch(){
+      var q = (searchInput && searchInput.value || '').trim();
+      if (!q) return;
+      var cur = history[history.length-1];
+      navigate('results', q, { replace: cur.screen === 'results' });
+    }
+    if (searchGo) searchGo.addEventListener('click', doSearch);
+    if (searchInput) searchInput.addEventListener('keydown', function(e){ if (e.key === 'Enter'){ e.preventDefault(); doSearch(); } });
+  }
+
+  content.addEventListener('click', function(e){
+    var retryS = e.target.closest('[data-retry-search]');
+    if (retryS){ var q = retryS.getAttribute('data-retry-search'); delete RESULT_CACHE[q]; loadProductResults(q); return; }
+    var retryL = e.target.closest('[data-retry-label]');
+    if (retryL){ var lid = retryL.getAttribute('data-retry-label'); content.innerHTML = '<div class="status"><span class="ai-spinner"></span>Loading label from the NIH database…</div>'; loadLabel(lid); return; }
+
+    var goEl = e.target.closest('[data-go]');
+    if (goEl){
+      var parts = goEl.getAttribute('data-go').split(':');
+      navigate(parts[0], parts.slice(1).join(':'));
+      return;
+    }
+    var askEl = e.target.closest('[data-ask-ai]');
+    if (askEl){
+      window.open(SITE + '/product-lookup?q=' + encodeURIComponent(askEl.getAttribute('data-ask-ai')), '_blank');
+      return;
+    }
+    var levelEl = e.target.closest('[data-level]');
+    if (levelEl){
+      monoLevel = levelEl.getAttribute('data-level');
+      var cur = history[history.length - 1];
+      content.innerHTML = renderMonograph(cur.param);
+      return;
+    }
+    var aiEl = e.target.closest('[data-ai-generate]');
+    if (aiEl){
+      generateAISummary(aiEl.getAttribute('data-ai-generate'), aiEl.getAttribute('data-ai-force') === '1');
+      return;
+    }
+    var fbEl = e.target.closest('[data-ai-fallback]');
+    if (fbEl){
+      var fp = prodById(fbEl.getAttribute('data-ai-fallback'));
+      if (fp) window.open(buildInvestigateUrl(fp), '_blank');
+      return;
+    }
+    var invEl = e.target.closest('[data-investigate]');
+    if (invEl){
+      var productId = invEl.getAttribute('data-investigate');
+      var labelUrlInput = document.getElementById('labelUrl-' + productId);
+      var labelUrl = labelUrlInput ? labelUrlInput.value.trim() : '';
+      var product = prodById(productId);
+      if (!product) return;
+      var finalUrl = labelUrl
+        ? SITE + '/product-lookup?label=' + encodeURIComponent(labelUrl)   // label image URL provided
+        : buildInvestigateUrl(product);                                     // otherwise the full analysis prompt
+      window.open(finalUrl, '_blank');
+      return;
+    }
+  });
+
+  /* ---- Welcome screen & deep link ---- */
+  var welcome = document.getElementById('welcome');
+  document.getElementById('exploreBtn').addEventListener('click', function(){ welcome.hidden = true; });
+
+  render();
+  try {
+    var dq = new URLSearchParams(location.search).get('q');
+    if (dq && dq.trim()){ welcome.hidden = true; navigate('results', dq.trim()); }
+  } catch (e){}
 })();
 </script>
-</body>
-</html>
+
+</body></html>
