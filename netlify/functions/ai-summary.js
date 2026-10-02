@@ -20,13 +20,20 @@ const DEFAULT_ORIGINS = ['https://supplements.brokenpromiseshealthcare.org'];
 const CACHE_STORE = 'ai-summaries';
 const CACHE_TTL_MS = 90 * 24 * 60 * 60 * 1000; // 90 days, then refresh
 // Bump this whenever the prompt/model above changes so old cached text isn't reused.
-const CACHE_VERSION = 'v1';
+const CACHE_VERSION = 'v2';
 
 const json = (statusCode, obj) => ({
   statusCode,
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify(obj)
 });
+// The page shows plain text, so strip any markdown the model adds (headings, bold, bullets)
+const plain = (t) => String(t || '')
+  .replace(/^\s*#{1,6}\s+.*(\r?\n)+/, '')      // drop a leading "# Title" line
+  .replace(/^[ \t]*#{1,6}[ \t]+/gm, '')               // any other heading markers
+  .replace(/\*\*(.+?)\*\*/g, '$1')              // **bold**
+  .replace(/^[ \t]*[-*][ \t]+/gm, '')                  // bullet markers
+  .trim();
 const clip = (v, n) => String(v == null ? '' : v).slice(0, n);
 
 // ---- cache helpers (all failures are swallowed: caching is a bonus, never a requirement) ----
@@ -106,7 +113,7 @@ export const handler = async (event) => {
       body: JSON.stringify({
         model: MODEL,
         max_tokens: 600,
-        system: 'You write short, neutral, evidence-based ingredient summaries for an independent, pharmacist-run dietary-supplement education site. Plain language, no marketing tone, no claims beyond what the source material actually supports. Output only the summary.',
+        system: 'You write short, neutral, evidence-based ingredient summaries for an independent, pharmacist-run dietary-supplement education site. Plain language, no marketing tone, no claims beyond what the source material actually supports. Output only the summary as plain paragraphs: no title, no headings, no bold, no bullet points.',
         messages: [{ role: 'user', content: promptText }]
       })
     });
@@ -116,7 +123,7 @@ export const handler = async (event) => {
       console.error('Anthropic API error', r.status, JSON.stringify(data).slice(0, 500));
       return json(502, { error: 'upstream_error' });
     }
-    const text = (data.content || []).filter((c) => c.type === 'text').map((c) => c.text).join('').trim();
+    const text = plain((data.content || []).filter((c) => c.type === 'text').map((c) => c.text).join(''));
     if (!text) return json(502, { error: 'empty_response' });
     if (store && ckey) {
       try { await store.setJSON(ckey, { text, savedAt: Date.now() }); }

@@ -705,7 +705,7 @@ button{font-family:inherit}
     var payload = JSON.stringify(body), lsKey = 'sf_sum_' + sfHash(payload);
     try {
       var saved = JSON.parse(localStorage.getItem(lsKey) || 'null');
-      if (saved && saved.text && Date.now() - saved.t < 30*24*60*60*1000) return saved.text;
+      if (saved && saved.text && Date.now() - saved.t < 30*24*60*60*1000 && !/^\s*#/.test(saved.text)) return saved.text;
     } catch (e){}
     var r = await fetch(SUMMARY_ENDPOINT, { method:'POST', headers:{ 'Content-Type':'application/json' }, body: payload });
     var data = {};
