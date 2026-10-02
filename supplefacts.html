@@ -6,6 +6,11 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="SuppleFacts">
 <meta name="theme-color" content="#1B2A41">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="/supplefacts.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="/supplefacts-icons/favicon-32.png">
+<link rel="apple-touch-icon" href="/supplefacts-icons/apple-touch-icon.png">
 <title>SuppleFacts — Check the Evidence</title>
 <meta name="description" content="Search real supplement labels from the NIH Dietary Supplement Label Database, then check the evidence behind every ingredient.">
 <style>html{height:100%}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>
@@ -1104,4 +1109,12 @@ button{font-family:inherit}
 })();
 </script>
 
+<script>
+/* Makes SuppleFacts installable (Add to Home Screen / Play Store wrapper). The worker does no caching. */
+if ('serviceWorker' in navigator && location.protocol === 'https:') {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('/supplefacts-sw.js', { scope: '/supplefacts.html' }).catch(function () {});
+  });
+}
+</script>
 </body></html>
