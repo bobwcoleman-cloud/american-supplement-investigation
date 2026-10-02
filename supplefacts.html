@@ -469,6 +469,90 @@ button{font-family:inherit}
   .notch,.statusbar,.home-indicator,.strip{display:none!important}
   .welcome{padding-top:max(env(safe-area-inset-top),26px)}
 }
+
+/* ===== Home rails, Search tab, Guide tab, bottom tab bar (added Oct 2026; nothing above was removed) ===== */
+.tabs{flex:0 0 auto;display:flex;border-top:1px solid var(--line);background:var(--surface);padding:5px 6px 2px}
+.tabs button{all:unset;cursor:pointer;flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:5px 0 8px;font:600 10px 'Inter',-apple-system,sans-serif;color:var(--muted);position:relative}
+.tabs button svg{width:22px;height:22px}
+.tabs button.on{color:var(--accent-ink)}
+.tabs button.on::after{content:"";position:absolute;bottom:1px;width:34px;height:3px;border-radius:2px;background:var(--accent)}
+.tabs button:focus-visible{outline:2px solid var(--gold);outline-offset:-2px;border-radius:8px}
+.home{margin:-16px -16px 0}
+.hero{position:relative;padding:16px 16px 16px;isolation:isolate}
+.hero::before{content:"";position:absolute;inset:0 0 0 40%;z-index:-1;background:url('/supplefacts-icons/home-hero.jpg') right center/cover no-repeat;-webkit-mask-image:linear-gradient(to right,transparent 0,#000 40%);mask-image:linear-gradient(to right,transparent 0,#000 40%)}
+.hero h1{font-family:'Lora',Georgia,serif;font-size:20px;line-height:1.12;letter-spacing:-.3px;margin:0 0 6px;color:var(--fg);white-space:nowrap}
+.hero h1 span{color:#9a6f12}
+:root[data-theme="dark"] .hero h1 span{color:var(--gold)}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .hero h1 span{color:var(--gold)} }
+.hero p{font-size:11.5px;line-height:1.35;margin:0 0 12px;max-width:190px;color:var(--fg)}
+.hero .search-row{margin:0}
+.hero .search-box{background:var(--surface);border-radius:30px;box-shadow:0 6px 18px rgba(15,42,82,.14);padding:5px 6px 5px 14px}
+.hero .search-box input{font-size:13.5px}
+.hero .search-go{border-radius:22px;padding:9px 14px}
+.sec{padding:14px 0 0}
+.sec-h{display:flex;align-items:baseline;justify-content:space-between;padding:0 16px 8px}
+.sec-h h2{font-family:'Lora',Georgia,serif;font-size:15px;letter-spacing:-.2px;margin:0;color:var(--fg)}
+.sec-h small{display:block;font:500 10px 'Inter',sans-serif;color:var(--muted);margin-top:2px}
+.seeall{all:unset;cursor:pointer;white-space:nowrap;flex:none;margin-left:8px;color:var(--accent-ink);font:700 12px 'Inter',sans-serif;padding:4px 0}
+.rail{position:relative}
+.track{display:flex;gap:8px;overflow-x:auto;scroll-snap-type:x proximity;padding:2px 16px 6px;scrollbar-width:none;-webkit-overflow-scrolling:touch;scroll-padding:0 16px}
+.track::-webkit-scrollbar{display:none}
+.rail::after{content:"";position:absolute;right:0;top:0;bottom:6px;width:26px;background:linear-gradient(to left,var(--surface),transparent);pointer-events:none;transition:opacity .2s}
+.rail.end::after{opacity:0}
+.arrow{all:unset;cursor:pointer;position:absolute;top:34px;z-index:3;width:28px;height:28px;border-radius:50%;background:var(--surface);box-shadow:0 2px 8px rgba(0,0,0,.25);display:none;place-items:center;color:var(--fg);font-size:17px;font-weight:700;text-align:center;line-height:28px}
+.arrow.l{left:4px}.arrow.r{right:4px}
+@media (hover:hover){.rail:hover .arrow{display:block}.rail.start .arrow.l{display:none!important}.rail.end .arrow.r{display:none!important}}
+.track.grid{flex-wrap:wrap;overflow:visible;scroll-snap-type:none}
+.tile{all:unset;display:flex;flex-direction:column;box-sizing:border-box;cursor:pointer;flex:none;scroll-snap-align:start;width:96px;border:1px solid var(--line);background:var(--surface);border-radius:13px;padding:0 0 7px;text-align:center;box-shadow:0 2px 6px rgba(15,42,82,.07);transition:transform .12s,box-shadow .12s}
+.tile:active{transform:scale(.96)}
+.tile:hover{box-shadow:0 5px 14px rgba(15,42,82,.16)}
+.tile:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.tile .pic{height:72px;flex:none;border-radius:12px 12px 0 0;overflow:hidden;background:#f1f3f7}
+.tile .pic img{display:block;width:100%;height:100%;object-fit:cover}
+.tile .lb{font:700 11px/1.15 'Inter',sans-serif;color:var(--fg);padding:6px 4px 0;min-height:27px;display:flex;align-items:center;justify-content:center}
+.c-vit{background:#fbf1d4;color:#8a5f0a}.c-min{background:#e3ecf7;color:#1f4f8a}.c-herb{background:#e2f1e8;color:#1b6a4f}.c-oth{background:#e9edf4;color:#0f2a52}
+.legend{display:flex;gap:12px;flex-wrap:wrap;margin:4px 16px 0;font:600 9.5px 'Inter',sans-serif;color:var(--muted)}
+.legend i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px;vertical-align:-0.5px}
+.tile.brand{width:118px;padding:14px 10px 12px;text-align:left;border-top:3px solid #d4a826}
+.tile.brand .lb{padding:0;min-height:36px;justify-content:flex-start;text-align:left;font:700 14px/1.15 'Lora',Georgia,serif;letter-spacing:-.2px}
+.tile.brand.img{width:108px;padding:0;border:1px solid var(--line);border-radius:13px;overflow:hidden}
+.tile.brand.img img{display:block;width:100%;height:auto}
+.tile.brand .bar{height:4px;border-radius:2px;background:var(--line);margin-top:8px;overflow:hidden}
+.tile.brand .bar b{display:block;height:100%;width:100%;background:var(--accent);border-radius:2px}
+.home .strip2{display:flex;align-items:center;gap:10px;margin:16px 16px 6px;padding:11px 12px;background:var(--surface-2);border:1px solid var(--line);border-radius:12px;font-size:11px;line-height:1.35;color:var(--fg)}
+.srch h2.sh{font-family:'Lora',Georgia,serif;font-size:21px;margin:0 0 4px;letter-spacing:-.3px;line-height:1.15}
+.srch .sub{font-size:12px;line-height:1.45;color:var(--muted);margin:0 0 12px}
+.seg{display:flex;background:var(--surface-2);border:1px solid var(--line);border-radius:11px;padding:3px;margin:8px 0 6px}
+.seg button{all:unset;cursor:pointer;flex:1;text-align:center;font:600 12px 'Inter',sans-serif;color:var(--muted);padding:8px 4px;border-radius:9px}
+.seg button.on{background:var(--surface);color:var(--fg);box-shadow:0 1px 3px rgba(13,22,32,.15)}
+.seg-help{font-size:11px;color:var(--muted);margin:0 2px 8px}
+.rec-h{display:flex;justify-content:space-between;align-items:baseline}
+.rec-h button{all:unset;cursor:pointer;color:var(--accent-ink);font:700 11px 'Inter',sans-serif;margin-top:18px}
+.rec{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.rec button{all:unset;cursor:pointer;box-sizing:border-box;width:100%;display:flex;align-items:center;gap:10px;padding:11px 12px;border-top:1px solid var(--line);font-size:13px;color:var(--fg)}
+.rec button:first-child{border-top:0}
+.rec button .k{margin-left:auto;font-size:10px;color:var(--muted);font-weight:600}
+.rec-empty{font-size:12px;color:var(--muted);padding:12px;border:1px dashed var(--line);border-radius:12px}
+.tipcard{margin-top:16px;background:var(--surface-2);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:10px;padding:11px 13px;font-size:11.5px;line-height:1.5;color:var(--fg)}
+.tipcard b.h{display:block;font:700 10px 'Inter',sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--accent-ink);margin-bottom:5px}
+.tipcard ul{margin:0;padding-left:16px}.tipcard li{margin-bottom:3px}
+.lnk{all:unset;cursor:pointer;display:inline-block;margin-top:12px;color:var(--accent-ink);font:700 12px 'Inter',sans-serif}
+.nores{margin-top:12px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px}
+.nores h4{font:700 14px 'Lora',Georgia,serif;color:var(--fg);margin:0 0 4px}
+.nores p{font-size:12px;color:var(--muted);margin:0 0 10px;line-height:1.5}
+.guide h2.gh{font-family:'Lora',Georgia,serif;font-size:21px;margin:0 0 2px;letter-spacing:-.3px}
+.guide .sub{font-size:12px;color:var(--muted);margin:0 0 12px;line-height:1.4}
+.guide details{background:var(--surface);border:1px solid var(--line);border-radius:12px;margin-bottom:8px}
+.guide summary{list-style:none;cursor:pointer;padding:12px 14px;font:700 13px 'Inter',sans-serif;color:var(--fg);display:flex;align-items:center;gap:10px}
+.guide summary::-webkit-details-marker{display:none}
+.guide summary .n{width:22px;height:22px;border-radius:50%;background:var(--navy);color:#fff;font:700 11px 'Inter',sans-serif;display:grid;place-items:center;flex:none}
+:root[data-theme="dark"] .guide summary .n{background:var(--accent)}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .guide summary .n{background:var(--accent)} }
+.guide summary::after{content:"+";margin-left:auto;color:var(--accent-ink);font:700 18px 'Inter',sans-serif}
+.guide details[open] summary::after{content:"\2013"}
+.guide .bd{padding:0 14px 13px 46px;font-size:12px;line-height:1.5;color:var(--fg)}
+.guide .bd p{margin:0 0 7px}.guide .bd ul{margin:0 0 4px;padding-left:16px}.guide .bd li{margin-bottom:3px}
+.guide .warn{background:rgba(201,162,39,.14);border:1px solid rgba(201,162,39,.4);border-radius:12px;padding:11px 13px;font-size:11px;line-height:1.45;color:var(--fg);margin:4px 0 12px}
 </style>
 </head>
 <body>
@@ -526,6 +610,11 @@ button{font-family:inherit}
           <div class="title" id="appTitle">SuppleFacts</div>
         </div>
         <div class="content" id="content"></div>
+        <nav class="tabs" id="tabs" aria-label="Main">
+          <button type="button" data-tab="home"><svg viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v9a1 1 0 0 1-1 1h-4v-6h-6v6H5a1 1 0 0 1-1-1v-9z" fill="currentColor"/></svg>Home</button>
+          <button type="button" data-tab="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/></svg>Search</button>
+          <button type="button" data-tab="guide"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M12 6.5C10 5 7 4.5 4 5v13c3-.5 6 0 8 1.5 2-1.5 5-2 8-1.5V5c-3-.5-6 0-8 1.5z"/><path d="M12 6.5v13"/></svg>Guide</button>
+        </nav>
         <div class="disclaimer-bar">
           <span class="lock">ⓘ</span>
           <span>Informational only, not medical advice. Label and monograph data from NIH ODS; AI summaries are Claude-generated from that data.</span>
@@ -859,6 +948,7 @@ button{font-family:inherit}
   /* ---- Navigation ---- */
   function navigate(screen, param, opts){
     opts = opts || {};
+    if (screen === 'results' || screen === 'brand') addRecent(param, screen === 'brand' ? 'brand' : 'all');
     var entry = { screen:screen, param:param };
     if (opts.replace && history.length){ history[history.length-1] = entry; }
     else { history.push(entry); }
@@ -881,7 +971,12 @@ button{font-family:inherit}
       else { content.innerHTML = '<div class="status"><span class="ai-spinner"></span>Loading label from the NIH database…</div>'; loadLabel(cur.param); }
     }
     else if (cur.screen === 'monograph'){ var m = monoById(cur.param); appTitle.textContent = m ? m.name : 'Monograph'; monoLevel='consumer'; content.innerHTML = renderMonograph(cur.param); }
+    else if (cur.screen === 'search'){ appTitle.textContent = 'Search'; content.innerHTML = renderSearchTab(); }
+    else if (cur.screen === 'guide'){ appTitle.textContent = 'User\u2019s Guide'; content.innerHTML = renderGuide(); }
+    else if (cur.screen === 'brand'){ appTitle.textContent = brandLabel(cur.param); content.innerHTML = renderBrand(cur.param); loadBrandProducts(cur.param, false); }
+    markTab();
     wireContent();
+    wireRails();
   }
 
   function searchRow(value){
@@ -891,7 +986,7 @@ button{font-family:inherit}
       + '</div>';
   }
 
-  function renderHome(){
+  function renderHomeClassic(){
     var brands = ['Nature Made', 'Nature\'s Way', 'NOW Foods', 'Solgar', 'Multi for Her'];
     return searchRow('')
       + '<div class="mode-copy">Searches both product labels and ingredient monographs at once.</div>'
@@ -904,6 +999,195 @@ button{font-family:inherit}
       +   brands.map(function(b){ return '<button class="chip" data-go="results:' + esc(b) + '">' + esc(b) + '</button>'; }).join('')
       + '</div>';
   }
+
+
+  /* ===== Home rails, Search tab, Guide tab (added Oct 2026) ===== */
+  var ING = [
+    ['Ashwagandha','ashwagandha','Ash','herb','ashwagandha'],['B-Complex / B12','vitamin b12','B12','vit','b-complex'],['Biotin','biotin','B7','vit','biotin'],
+    ['Calcium','calcium','Ca','min','calcium'],['Collagen','collagen','Col','oth','collagen'],['CoQ10','coq10','Q10','oth','coq10'],
+    ['Creatine','creatine','Cre','oth','creatine'],['Echinacea','echinacea','Ech','herb','echinacea'],['Elderberry','elderberry','Eld','herb','elderberry'],
+    ['Garlic','garlic','Gar','herb','garlic'],['Glucosamine / Chondroitin','glucosamine','Glu','oth','glucosamine'],['Green Tea','green tea','GT','herb','green-tea'],
+    ['Iron','iron','Fe','min','iron'],['Magnesium','magnesium','Mg','min','magnesium'],['Melatonin','melatonin','Mel','oth','melatonin'],
+    ['Milk Thistle','milk thistle','MT','herb','milk-thistle'],['Multivitamin','multivitamin','MV','vit','multivitamin'],['Omega-3 / Fish Oil','fish oil','Ω3','oth','omega-3'],
+    ['Probiotics','probiotic','CFU','oth','probiotics'],['Protein Powder','protein powder','Pro','oth','protein-powder'],['Saw Palmetto','saw palmetto','SP','herb','saw-palmetto'],
+    ['Turmeric','turmeric','Cur','herb','turmeric'],['Vitamin C','vitamin c','C','vit','vitamin-c'],['Vitamin D','vitamin d','D3','vit','vitamin-d'],['Zinc','zinc','Zn','min','zinc']
+  ];
+  // [name shown, brand name as the NIH records it]
+  var BRANDS = [
+    ['GNC','GNC','gnc'],['Nature Made','Nature Made','nature-made'],['Nature’s Bounty','Nature\'s Bounty','natures-bounty'],['Nature’s Way','Nature\'s Way','natures-way'],
+    ['NOW Foods','NOW','now-foods'],['Puritan’s Pride','Puritan\'s Pride','puritans-pride'],['Solgar','Solgar','solgar'],['Spring Valley','Spring Valley','spring-valley'],
+    ['Swanson','Swanson','swanson'],['The Vitamin Shoppe','The Vitamin Shoppe','vitamin-shoppe']
+  ];
+  function brandLabel(q){ for (var i=0;i<BRANDS.length;i++){ if (BRANDS[i][1] === q) return BRANDS[i][0]; } return q; }
+
+  function renderHome(){
+    var ings = ING.map(function(it){
+      return '<button class="tile" data-go="results:' + esc(it[1]) + '"><div class="pic c-' + it[3] + '"><img src="/supplefacts-icons/ingredients/' + it[4] + '.jpg" alt="" width="252" height="186" loading="lazy" decoding="async"></div><div class="lb">' + esc(it[0]) + '</div></button>';
+    }).join('');
+    var brs = BRANDS.map(function(it){
+      return '<button class="tile brand img" data-go="brand:' + esc(it[1]) + '" aria-label="' + esc(it[0]) + ' — list NIH labels"><img src="/supplefacts-icons/brands/' + it[2] + '.jpg" alt="' + esc(it[0]) + '" width="284" height="340" loading="lazy" decoding="async"></button>';
+    }).join('');
+    return '<div class="home">'
+      + '<div class="hero"><h1>Search Any Supplement<br><span>See the Real Evidence.</span></h1>'
+      +   '<p>Product labels, ingredient research, safety information, and AI summaries — all in one place.</p>'
+      +   searchRow('').replace('Search a product or an ingredient\u2026', (window.matchMedia && window.matchMedia('(max-width:500px)').matches) ? 'Search product, brand or ingredient' : 'Product, brand or ingredient') + '</div>'
+      + '<section class="sec"><div class="sec-h"><div><h2>Quik Search Common Ingredients</h2><small>Tap one to search NIH labels · swipe for more</small></div><button class="seeall" data-grid="ings">See All ›</button></div>'
+      +   '<div class="rail start" data-rail="ings"><button class="arrow l" aria-label="Scroll left" data-arrow="-1">‹</button><button class="arrow r" aria-label="Scroll right" data-arrow="1">›</button><div class="track" id="trk-ings">' + ings + '</div></div>'
+      +   ''
+      + '</section>'
+      + '<section class="sec"><div class="sec-h"><div><h2>Quik Search Major Brands</h2><small>Tap one to list its NIH labels · swipe for more</small></div><button class="seeall" data-grid="brands">See All ›</button></div>'
+      +   '<div class="rail start" data-rail="brands"><button class="arrow l" aria-label="Scroll left" data-arrow="-1">‹</button><button class="arrow r" aria-label="Scroll right" data-arrow="1">›</button><div class="track" id="trk-brands">' + brs + '</div></div></section>'
+      + '<div class="strip2"><span>📄</span><div>Real supplement labels from NIH databases.<br>Evidence summaries from focused AI searches.</div></div>'
+      + '</div>';
+  }
+
+  function wireRails(){
+    Array.prototype.forEach.call(content.querySelectorAll('.rail'), function(rail){
+      var tr = rail.querySelector('.track');
+      function upd(){ var max = tr.scrollWidth - tr.clientWidth; rail.classList.toggle('start', tr.scrollLeft < 4); rail.classList.toggle('end', tr.scrollLeft > max - 4 || tr.classList.contains('grid')); }
+      tr.addEventListener('scroll', upd, { passive:true }); upd();
+      rail._upd = upd;
+    });
+  }
+
+  /* ---- recent searches (kept on this phone only) ---- */
+  var RKEY = 'sf_recent', smode = 'all';
+  function getRecents(){ try { var r = JSON.parse(localStorage.getItem(RKEY) || '[]'); return Array.isArray(r) ? r : []; } catch (e){ return []; } }
+  function addRecent(q, m){
+    q = (q || '').trim(); if (q.length < 2) return;
+    var r = getRecents().filter(function(x){ return !(String(x.q).toLowerCase() === q.toLowerCase() && x.m === m); });
+    r.unshift({ q:q, m:m });
+    try { localStorage.setItem(RKEY, JSON.stringify(r.slice(0, 6))); } catch (e){}
+  }
+  var SMODES = {
+    all:   { ph:'Try: Nature Made Vitamin D3', help:'Searches product labels and ingredient guides together.' },
+    brand: { ph:'Try: Solgar', help:'Lists labels filed under one brand name in the NIH database.' }
+  };
+  function renderSearchTab(){
+    var rec = getRecents();
+    var recHtml = rec.length
+      ? '<div class="rec">' + rec.map(function(r, i){
+          return '<button data-recent="' + i + '"><span>⏱</span><span>' + esc(r.m === 'brand' ? brandLabel(r.q) : r.q) + '</span><span class="k">' + (r.m === 'brand' ? 'Brand' : 'Everything') + '</span></button>';
+        }).join('') + '</div>'
+      : '<div class="rec-empty">Your recent searches will show up here.</div>';
+    return '<div class="srch">'
+      + '<h2 class="sh">Search the NIH label database</h2>'
+      + '<p class="sub">Type a product, a brand, or an ingredient. Results come straight from the NIH.</p>'
+      + '<div class="search-row"><div class="search-box"><span>🔎</span><input id="searchInput" type="search" enterkeyhint="search" autocomplete="off" placeholder="' + esc(SMODES[smode].ph) + '" /></div><button class="search-go" id="searchGo">Go</button></div>'
+      + '<div class="seg"><button data-smode="all" class="' + (smode === 'all' ? 'on' : '') + '">Everything</button><button data-smode="brand" class="' + (smode === 'brand' ? 'on' : '') + '">Brand</button></div>'
+      + '<div class="seg-help">' + esc(SMODES[smode].help) + '</div>'
+      + '<div class="section-label">Try one</div>'
+      + '<div class="chip-row">'
+      +   '<button class="chip" data-try="all|Nature Made Vitamin D3">Nature Made Vitamin D3</button>'
+      +   '<button class="chip" data-try="all|magnesium glycinate">magnesium glycinate</button>'
+      +   '<button class="chip" data-try="brand|Solgar">Solgar</button>'
+      +   '<button class="chip" data-try="all|fish oil">fish oil</button>'
+      + '</div>'
+      + '<div class="section-label">Ingredient guides</div>'
+      + '<div class="chip-row">' + MONOGRAPHS.map(function(m){ return '<button class="chip" data-go="monograph:' + m.id + '">' + esc(m.name) + '</button>'; }).join('') + '</div>'
+      + '<div class="rec-h"><div class="section-label" style="margin-bottom:8px">Recent searches</div>' + (rec.length ? '<button data-recent-clear="1">Clear</button>' : '') + '</div>'
+      + recHtml
+      + '<div class="tipcard"><b class="h">Searching tips</b><ul>'
+      +   '<li>Add the brand to narrow things down: “Nature Made Vitamin D3” beats “vitamin D.”</li>'
+      +   '<li>The NIH uses the wording printed on the bottle, so try dropping words like “Complex” or “Advanced.”</li>'
+      +   '<li>Use Brand to list a maker’s labels.</li></ul></div>'
+      + '<button class="lnk" data-tab-go="guide">How searching works ›</button>'
+      + '</div>';
+  }
+
+  function renderGuide(){
+    function item(n, title, body, open){ return '<details' + (open ? ' open' : '') + '><summary><span class="n">' + n + '</span>' + title + '</summary><div class="bd">' + body + '</div></details>'; }
+    return '<div class="guide">'
+      + '<h2 class="gh">User’s Guide</h2><p class="sub">Everything you need to get the most out of SuppleFacts.</p>'
+      + item(1, 'Searching for a supplement', '<p>Type a product name, brand or ingredient in the search box and tap Go. Or skip typing: tap any ingredient or brand tile on the Home screen to pull up its labels from the NIH database.</p><p>Swipe the rows sideways to see more, or tap See All to view them in a grid.</p>', true)
+      + item(2, 'Reading a supplement label', '<ul><li><b>Supplement Facts:</b> every active ingredient, its amount per serving, and the serving size.</li><li><b>Other ingredients:</b> fillers, binders, colors and flavors.</li><li><b>Proprietary blends:</b> a total weight with no per-ingredient amounts. You cannot tell how much of each ingredient you are getting.</li><li><b>% Daily Value:</b> where none is listed, no official daily target exists.</li></ul>')
+      + item(3, 'The AI Ingredient Summary', '<p>For each label, tap Generate summary to get a plain-language summary of what the main ingredients are, what the research says, and what to watch for.</p><p>It is a starting point written by AI, not a verdict. Check anything important against the studies it points to.</p>')
+      + item(4, 'Going deeper with the research prompt', '<p>Tap Investigate the Evidence to send the full label and a ready-made research prompt to the Product Lookup page. There you choose Claude, ChatGPT or Perplexity to:</p><ul><li>check whether the doses match what studies used</li><li>compare the published evidence for each ingredient</li><li>look for interactions and safety concerns</li></ul>')
+      + item(5, 'Where the information comes from', '<p>Label data comes live from the NIH Office of Dietary Supplements Dietary Supplement Label Database. Ingredient guides are curated from NIH fact sheets and published research. Brand names are the names recorded on each label.</p>')
+      + '<div class="warn"><b>Important:</b> SuppleFacts is for education, not medical advice. Talk with your doctor or pharmacist before starting a supplement, especially if you take prescription medicines, are pregnant, or have a medical condition.</div>'
+      + '<div class="investigate-panel"><h3>Full illustrated guide</h3><div class="investigate-text">Step-by-step instructions for both evidence buttons, plus how to use Claude, ChatGPT and Perplexity on your phone.</div>'
+      +   '<a class="investigate-btn" href="/supplefacts-guide.pdf" target="_blank" rel="noopener">📄 Open the User’s Guide (PDF)</a></div>'
+      + '</div>';
+  }
+
+  /* ---- brand listing (NIH brand-products endpoint) ---- */
+  var BRAND_CACHE = {};
+  function renderBrand(brand){
+    return searchRow('') + '<div class="mode-copy">Labels filed under the brand name “' + esc(brandLabel(brand)) + '” in the NIH database.</div><div id="brandResults"></div>';
+  }
+  function parseHits(data){
+    var out = [];
+    (data.hits || []).forEach(function(h){
+      var src = h._source !== undefined ? h._source : h;
+      if (typeof src === 'string'){ try { src = JSON.parse(src); } catch (e){} }
+      var id = src && (src.id || src.dsldId) || h._id;
+      if (!id) return;
+      var sum = { id:String(id), name:src.fullName || src.name || 'Unknown product', brand:src.brandName || '',
+                  form:(src.physicalState && src.physicalState.langualCodeDescription) || '' };
+      SUMMARIES[sum.id] = sum; out.push(sum);
+    });
+    return out;
+  }
+  function showBrand(box, st, brand){
+    if (!st.list.length){
+      box.innerHTML = '<div class="nores"><h4>No labels found under “' + esc(brandLabel(brand)) + '”</h4><p>The NIH may file this maker under a slightly different brand name. You can also search all labels for the name.</p>'
+        + '<div class="chip-row"><button class="chip" data-go="results:' + esc(brandLabel(brand)) + '">Search all labels for “' + esc(brandLabel(brand)) + '”</button></div></div>';
+      return;
+    }
+    var more = st.offset < st.total;
+    box.innerHTML = '<div class="section-label">Labels (showing ' + st.list.length.toLocaleString('en-US') + ' of ' + st.total.toLocaleString('en-US') + ')</div><div class="card-list">'
+      + st.list.map(function(p){
+          return '<button class="card" data-go="product:' + esc(p.id) + '"><div class="top"><div><div class="name">' + esc(p.name) + '</div>'
+            + '<div class="meta">' + esc(p.brand) + (p.form ? ' · ' + esc(p.form) : '') + '</div></div><div class="chev">›</div></div><div class="kind-tag">DSLD Label</div></button>';
+        }).join('') + '</div>'
+      + (more ? '<div style="margin-top:12px"><button class="ai-btn" data-brand-more="' + esc(brand) + '">Show more labels</button></div>' : '');
+  }
+  async function loadBrandProducts(brand, more){
+    var box = document.getElementById('brandResults'); if (!box) return;
+    var token = navToken;
+    var still = function(){ var el = document.getElementById('brandResults'); return el && token === navToken; };
+    var st = BRAND_CACHE[brand];
+    if (st && !more){ showBrand(box, st, brand); return; }
+    if (!st) st = BRAND_CACHE[brand] = { list:[], total:0, offset:0 };
+    if (!more) box.innerHTML = '<div class="status"><span class="ai-spinner"></span>Searching the NIH label database…</div>';
+    else { var mb = box.querySelector('[data-brand-more]'); if (mb){ mb.textContent = 'Loading…'; mb.style.opacity = '.6'; } }
+    try {
+      var res = await fetch(API + '/brand-products?q=' + encodeURIComponent(brand) + '&size=25&from=' + st.offset);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      var data = await res.json();
+      var got = parseHits(data), have = {};
+      st.list.forEach(function(p){ have[p.id] = 1; });
+      got.forEach(function(p){ if (!have[p.id]){ have[p.id] = 1; st.list.push(p); } });
+      st.offset += (data.hits || []).length;
+      st.total = (data.total && data.total.value) || st.list.length;
+      if ((data.hits || []).length === 0) st.total = st.offset;
+      if (still()) showBrand(document.getElementById('brandResults'), st, brand);
+    } catch (e){
+      console.error('DSLD brand search failed', e);
+      if (BRAND_CACHE[brand] && !BRAND_CACHE[brand].list.length) delete BRAND_CACHE[brand];
+      if (still()) document.getElementById('brandResults').innerHTML = nihError('data-retry-brand="' + esc(brand) + '"', e.message);
+    }
+  }
+  function noResultsHtml(query){
+    var stem = query.replace(/\b(complex|advanced|ultra|plus|formula|extra|strength)\b/ig, '').replace(/\s+/g, ' ').trim();
+    var first = query.split(/\s+/)[0], btns = '';
+    if (stem && stem.toLowerCase() !== query.toLowerCase()) btns += '<button class="chip" data-go="results:' + esc(stem) + '">Drop extra words: ' + esc(stem) + '</button>';
+    if (query.indexOf(' ') > -1 && first.length >= 3 && first.toLowerCase() !== stem.toLowerCase()) btns += '<button class="chip" data-go="results:' + esc(first) + '">Search just “' + esc(first) + '”</button>';
+    return '<div class="nores"><h4>Nothing found for “' + esc(query) + '”</h4><p>The NIH uses the wording printed on the bottle. Try a shorter or more general search' + (btns ? ', or one of these:' : '.') + '</p>' + (btns ? '<div class="chip-row">' + btns + '</div>' : '') + '</div>';
+  }
+  function markTab(){
+    var top = history[0] ? history[0].screen : 'home';
+    if (top !== 'search' && top !== 'guide') top = 'home';
+    Array.prototype.forEach.call(document.querySelectorAll('#tabs button'), function(b){ b.classList.toggle('on', b.getAttribute('data-tab') === top); });
+  }
+  function goTab(tab){
+    history = [ { screen:tab, param:null } ];
+    render();
+    if (tab === 'search'){ var si = document.getElementById('searchInput'); if (si) setTimeout(function(){ si.focus(); }, 80); }
+  }
+  document.getElementById('tabs').addEventListener('click', function(e){
+    var b = e.target.closest('[data-tab]'); if (b) goTab(b.getAttribute('data-tab'));
+  });
 
   function matches(hay, q){ return hay.toLowerCase().indexOf(q.toLowerCase()) !== -1; }
 
@@ -984,7 +1268,7 @@ button{font-family:inherit}
   function showProducts(box, list, query){
     box.innerHTML = list.length
       ? productCards(list)
-      : '<div class="empty" style="padding:18px 10px">No product labels found for “' + esc(query) + '.” Try a shorter or more general term.</div>';
+      : noResultsHtml(query);
   }
 
   async function loadLabel(id){
@@ -1092,7 +1376,8 @@ button{font-family:inherit}
       var q = (searchInput && searchInput.value || '').trim();
       if (!q) return;
       var cur = history[history.length-1];
-      navigate('results', q, { replace: cur.screen === 'results' });
+      var target = (cur.screen === 'search' && smode === 'brand') ? 'brand' : 'results';
+      navigate(target, q, { replace: cur.screen === 'results' || cur.screen === 'brand' });
     }
     if (searchGo) searchGo.addEventListener('click', doSearch);
     if (searchInput) searchInput.addEventListener('keydown', function(e){ if (e.key === 'Enter'){ e.preventDefault(); doSearch(); } });
@@ -1103,6 +1388,29 @@ button{font-family:inherit}
     if (retryS){ var q = retryS.getAttribute('data-retry-search'); delete RESULT_CACHE[q]; loadProductResults(q); return; }
     var retryL = e.target.closest('[data-retry-label]');
     if (retryL){ var lid = retryL.getAttribute('data-retry-label'); content.innerHTML = '<div class="status"><span class="ai-spinner"></span>Loading label from the NIH database…</div>'; loadLabel(lid); return; }
+
+    var tabGo = e.target.closest('[data-tab-go]');
+    if (tabGo){ goTab(tabGo.getAttribute('data-tab-go')); return; }
+    var sm = e.target.closest('[data-smode]');
+    if (sm){ smode = sm.getAttribute('data-smode'); content.innerHTML = renderSearchTab(); wireContent(); var si2 = document.getElementById('searchInput'); if (si2) si2.focus(); return; }
+    var tryEl = e.target.closest('[data-try]');
+    if (tryEl){ var tp = tryEl.getAttribute('data-try').split('|'); smode = tp[0]; navigate(tp[0] === 'brand' ? 'brand' : 'results', tp[1]); return; }
+    var recEl = e.target.closest('[data-recent]');
+    if (recEl){ var rr = getRecents()[+recEl.getAttribute('data-recent')]; if (rr) navigate(rr.m === 'brand' ? 'brand' : 'results', rr.q); return; }
+    if (e.target.closest('[data-recent-clear]')){ try { localStorage.removeItem(RKEY); } catch (e2){} content.innerHTML = renderSearchTab(); wireContent(); return; }
+    var moreB = e.target.closest('[data-brand-more]');
+    if (moreB){ loadBrandProducts(moreB.getAttribute('data-brand-more'), true); return; }
+    var retryB = e.target.closest('[data-retry-brand]');
+    if (retryB){ var bq = retryB.getAttribute('data-retry-brand'); delete BRAND_CACHE[bq]; loadBrandProducts(bq, false); return; }
+    var gridEl = e.target.closest('[data-grid]');
+    if (gridEl){
+      var gtr = document.getElementById('trk-' + gridEl.getAttribute('data-grid')), on = gtr.classList.toggle('grid');
+      gridEl.textContent = on ? 'Show less' : 'See All ›'; gtr.scrollLeft = 0;
+      var grail = gtr.closest('.rail'); if (grail && grail._upd) grail._upd();
+      return;
+    }
+    var arrEl = e.target.closest('[data-arrow]');
+    if (arrEl){ var atr = arrEl.closest('.rail').querySelector('.track'); atr.scrollBy({ left: atr.clientWidth * .8 * (+arrEl.getAttribute('data-arrow')), behavior:'smooth' }); return; }
 
     var goEl = e.target.closest('[data-go]');
     if (goEl){
