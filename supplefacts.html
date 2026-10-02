@@ -685,6 +685,8 @@ button{font-family:inherit}
     return parts.join('\n');
   }
 
+  function sfHash(str){ var h = 5381; for (var i = 0; i < str.length; i++) h = ((h << 5) + h + str.charCodeAt(i)) | 0; return (h >>> 0).toString(36) + str.length.toString(36); }
+
   async function requestSummary(product){
     // 1) Inside Claude (artifact preview): use the built-in capability, exactly as before
     var cap = await ensureSample();
@@ -699,7 +701,13 @@ button{font-family:inherit}
         return { name: ing.name, amount: ing.amount, notes: ingredientNotes(ing) };
       })
     };
-    var r = await fetch(SUMMARY_ENDPOINT, { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(body) });
+    // Remember summaries this visitor has already seen (30 days) so reopening a product is instant
+    var payload = JSON.stringify(body), lsKey = 'sf_sum_' + sfHash(payload);
+    try {
+      var saved = JSON.parse(localStorage.getItem(lsKey) || 'null');
+      if (saved && saved.text && Date.now() - saved.t < 30*24*60*60*1000) return saved.text;
+    } catch (e){}
+    var r = await fetch(SUMMARY_ENDPOINT, { method:'POST', headers:{ 'Content-Type':'application/json' }, body: payload });
     var data = {};
     try { data = await r.json(); } catch (e){}
     if (!r.ok || !data.text){
@@ -707,6 +715,7 @@ button{font-family:inherit}
       err.code = data.error || ('http_' + r.status);
       throw err;
     }
+    try { localStorage.setItem(lsKey, JSON.stringify({ text: data.text, t: Date.now() })); } catch (e){}
     return data.text;
   }
 

@@ -8,10 +8,19 @@
 // Setup (Netlify > Site configuration > Environment variables):
 //   ANTHROPIC_API_KEY = your key from console.anthropic.com
 // Optional: ALLOWED_ORIGINS = comma-separated list (defaults to the supplements site)
+//
+// Caching: finished summaries are saved in Netlify Blobs, keyed by a fingerprint of the
+// structured label input. The same product is summarized by Claude once; after that every
+// visitor gets the saved copy instantly and for free. If Blobs is unavailable for any reason
+// the cache is skipped and the function works exactly as before (it never blocks a summary).
 
 const MODEL = 'claude-haiku-4-5';
 const MAX_INGREDIENTS = 40;
 const DEFAULT_ORIGINS = ['https://supplements.brokenpromiseshealthcare.org'];
+const CACHE_STORE = 'ai-summaries';
+const CACHE_TTL_MS = 90 * 24 * 60 * 60 * 1000; // 90 days, then refresh
+// Bump this whenever the prompt/model above changes so old cached text isn't reused.
+const CACHE_VERSION = 'v1';
 
 const json = (statusCode, obj) => ({
   statusCode,
@@ -19,6 +28,22 @@ const json = (statusCode, obj) => ({
   body: JSON.stringify(obj)
 });
 const clip = (v, n) => String(v == null ? '' : v).slice(0, n);
+
+// ---- cache helpers (all failures are swallowed: caching is a bonus, never a requirement) ----
+async function openCache(event) {
+  try {
+    const mod = await import('@netlify/blobs');
+    if (typeof mod.connectLambda === 'function') mod.connectLambda(event);
+    return mod.getStore(CACHE_STORE);
+  } catch (e) {
+    console.warn('summary cache unavailable:', e && e.message);
+    return null;
+  }
+}
+async function cacheKey(lines) {
+  const { createHash } = await import('node:crypto');
+  return CACHE_VERSION + '-' + createHash('sha256').update(lines).digest('hex');
+}
 
 export const handler = async (event) => {
   if (event.httpMethod !== 'POST') return json(405, { error: 'POST only' });
@@ -57,6 +82,19 @@ export const handler = async (event) => {
     'Stay neutral; do not overstate benefit. End with one short sentence noting this is general information ' +
     'drawn from NIH source material, not medical advice.');
 
+  const promptText = lines.join('\n');
+  const store = await openCache(event);
+  let ckey = null;
+  if (store) {
+    try {
+      ckey = await cacheKey(promptText);
+      const hit = await store.get(ckey, { type: 'json' });
+      if (hit && hit.text && Date.now() - (hit.savedAt || 0) < CACHE_TTL_MS) {
+        return json(200, { text: hit.text, cached: true });
+      }
+    } catch (e) { console.warn('cache read failed:', e && e.message); }
+  }
+
   try {
     const r = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -69,7 +107,7 @@ export const handler = async (event) => {
         model: MODEL,
         max_tokens: 600,
         system: 'You write short, neutral, evidence-based ingredient summaries for an independent, pharmacist-run dietary-supplement education site. Plain language, no marketing tone, no claims beyond what the source material actually supports. Output only the summary.',
-        messages: [{ role: 'user', content: lines.join('\n') }]
+        messages: [{ role: 'user', content: promptText }]
       })
     });
     if (r.status === 429) return json(429, { error: 'rate_limited' });
@@ -80,7 +118,11 @@ export const handler = async (event) => {
     }
     const text = (data.content || []).filter((c) => c.type === 'text').map((c) => c.text).join('').trim();
     if (!text) return json(502, { error: 'empty_response' });
-    return json(200, { text });
+    if (store && ckey) {
+      try { await store.setJSON(ckey, { text, savedAt: Date.now() }); }
+      catch (e) { console.warn('cache write failed:', e && e.message); }
+    }
+    return json(200, { text, cached: false });
   } catch (e) {
     console.error('ai-summary failed', e);
     return json(500, { error: 'server_error' });
