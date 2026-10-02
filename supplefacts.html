@@ -28,13 +28,13 @@
   --bg:#EEF2F6;
   --surface:#FFFFFF;
   --surface-2:#F7FAFC;
-  --fg:#1B2A41;
+  --fg:#0f2a52;
   --muted:#4A5568;
   --line:#D8E1E9;
-  --accent:#1F7A6C;
-  --accent-ink:#175D52;
+  --accent:#1b6a4f;
+  --accent-ink:#14563f;
   --gold:#C9A227;
-  --navy:#1B2A41;
+  --navy:#0f2a52;
   --navy-dark:#0D1620;
   --danger:#B3482F;
 }
@@ -380,34 +380,65 @@ body{
 html,body{min-height:100%}
 button{font-family:inherit}
 
-/* Welcome screen */
+/* Welcome screen (landing) — colors taken from the SuppleFacts cover page */
 .welcome{
-  position:absolute;inset:0;z-index:30;background:var(--surface);
-  display:flex;flex-direction:column;justify-content:space-between;
-  padding:46px 22px 24px;overflow-y:auto;
+  --cv-cream:#faf8f3; --cv-navy:#0f2a52; --cv-gold:#9a6f12; --cv-gold-bright:#d4a826;
+  --cv-green:#1b6a4f; --cv-green-dark:#14563f; --cv-ink:#243247; --cv-muted:#5b6778;
+  position:absolute;inset:0;z-index:30;background:var(--cv-cream);
+  display:flex;flex-direction:column;padding:42px 0 0;overflow:hidden;
 }
 .welcome[hidden]{display:none!important}
-.welcome .mark-lg{
-  width:46px;height:46px;border-radius:14px;margin:0 auto 14px;
-  background:linear-gradient(145deg,var(--accent),var(--accent-ink));
-  display:flex;align-items:center;justify-content:center;
-  color:#fff;font-family:'Lora',serif;font-weight:700;font-size:24px;
-}
+.welcome .cv-top{padding:10px 18px 0;text-align:center;flex:none}
+.welcome .cv-brand{display:flex;align-items:center;justify-content:center;gap:9px}
+.welcome .cv-brand svg{width:38px;height:38px;flex:none}
+.welcome .cv-name{font-family:'Lora',Georgia,serif;font-weight:700;font-size:29px;letter-spacing:-.4px;color:var(--cv-navy);line-height:1}
+.welcome .cv-name b{color:var(--cv-gold);font-weight:700}
 .welcome h1{
-  font-family:'Lora',Georgia,serif;font-weight:700;font-size:27px;line-height:1.2;
-  text-align:center;margin:0 0 12px;color:var(--fg);text-wrap:balance;
+  font-family:'Lora',Georgia,serif;font-weight:700;font-size:25px;line-height:1.12;letter-spacing:-.3px;
+  text-align:center;margin:13px 0 7px;color:var(--cv-navy);
 }
-.welcome h1 span{color:var(--gold)}
-.welcome .w-desc{font-size:14px;line-height:1.6;color:var(--muted);text-align:center;margin:0 0 20px}
-.welcome .w-feat{display:flex;gap:11px;margin-bottom:13px;font-size:13px;line-height:1.5}
-.welcome .w-feat b{color:var(--fg)}
+.welcome h1 span{color:var(--cv-gold)}
+.welcome .cv-sub{margin:0 auto;max-width:270px;font-size:13px;line-height:1.35;color:var(--cv-ink)}
+.welcome .cv-hero{
+  flex:1;min-height:90px;margin-top:4px;
+  background:url('/supplefacts-icons/landing-hero.jpg') center 38%/cover no-repeat;
+  -webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 22%,#000 86%,transparent 100%);
+          mask-image:linear-gradient(to bottom,transparent 0,#000 22%,#000 86%,transparent 100%);
+}
+.welcome .cv-feats{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;padding:0 8px;flex:none}
+.welcome .cv-feat{text-align:center;padding:0 1px}
+.welcome .cv-ico{width:40px;height:40px;border-radius:50%;margin:0 auto 5px;display:grid;place-items:center}
+.welcome .cv-ico svg{width:21px;height:21px}
+.welcome .cv-feat h3{font-family:'Lora',Georgia,serif;font-size:12px;line-height:1.12;margin:0 0 3px;color:var(--cv-navy)}
+.welcome .cv-feat p{margin:0;font-size:9.5px;line-height:1.25;color:var(--cv-muted)}
+.welcome .cv-cta{padding:12px 16px 0;flex:none}
 .welcome .w-btn{
-  all:unset;cursor:pointer;box-sizing:border-box;width:100%;text-align:center;
-  background:var(--accent);color:#fff;font-size:16px;font-weight:700;
-  padding:15px;border-radius:12px;margin-top:10px;
+  all:unset;cursor:pointer;box-sizing:border-box;width:100%;display:flex;align-items:center;justify-content:center;gap:9px;
+  background:var(--cv-green);color:#fff;font:700 13.5px 'Inter',-apple-system,sans-serif;letter-spacing:.08em;text-transform:uppercase;
+  padding:14px;border-radius:14px;box-shadow:0 6px 16px rgba(27,106,79,.28);
 }
-.welcome .w-btn:hover{background:var(--accent-ink)}
-.welcome .w-note{font-size:11px;color:var(--muted);text-align:center;line-height:1.5;margin:10px 0 0}
+.welcome .w-btn:hover{background:var(--cv-green-dark)}
+.welcome .w-btn:focus-visible{outline:3px solid var(--cv-gold-bright);outline-offset:2px}
+.welcome .w-btn svg{width:18px;height:18px}
+.welcome .w-note{font-size:10px;color:var(--cv-muted);text-align:center;line-height:1.45;margin:0;padding:9px 16px 14px;flex:none}
+.welcome .w-note b{color:var(--cv-navy)}
+@media (max-height:690px){ .welcome .cv-sub{display:none} .welcome .cv-feat p{display:none} }
+
+/* Splash (shows ~1.6 s on open, then fades into the landing screen) */
+.sf-splash{
+  position:absolute;inset:0;z-index:40;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;
+  background:radial-gradient(circle at 50% 42%,#1d4a85 0%,#0a2046 70%);
+  animation:sfSplashOut .5s ease 1.7s forwards;
+}
+.sf-splash svg{width:84px;height:84px;filter:drop-shadow(0 10px 22px rgba(0,0,0,.35));animation:sfPop .7s cubic-bezier(.2,.9,.3,1.2) both}
+.sf-splash .sw{font-family:'Lora',Georgia,serif;font-weight:700;font-size:31px;color:#fff;animation:sfRise .7s ease .25s both}
+.sf-splash .sw b{color:#d4a826;font-weight:700}
+.sf-splash .st{font-size:12px;color:#b9c6da;letter-spacing:.14em;text-transform:uppercase;animation:sfRise .7s ease .45s both}
+.sf-splash[hidden]{display:none!important}
+@keyframes sfPop{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:scale(1)}}
+@keyframes sfRise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes sfSplashOut{to{opacity:0;visibility:hidden}}
+@media (prefers-reduced-motion:reduce){.sf-splash,.sf-splash *{animation-duration:.01s!important;animation-delay:0s!important}.sf-splash{animation-delay:.6s!important}}
 
 /* live-data extras */
 .ingredient-row.sub{padding-left:14px}
@@ -436,12 +467,15 @@ button{font-family:inherit}
   .device{width:100%;height:100vh;height:100dvh;border-radius:0;padding:0;background:transparent;box-shadow:none}
   .screen{height:100vh;height:100dvh;border-radius:0}
   .notch,.statusbar,.home-indicator,.strip{display:none!important}
-  .welcome{padding-top:32px}
+  .welcome{padding-top:max(env(safe-area-inset-top),26px)}
 }
 </style>
 </head>
 <body>
 
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="sfLogo" viewBox="0 0 100 100"><rect width="100" height="100" rx="22" fill="#0f2a52"/><path d="M48 76C28 74 20 56 22 36c18 0 29 10 26 40z" fill="#d1a02e"/><path d="M52 76c-3-30 8-40 26-40 2 20-6 38-26 40z" fill="#3f9a3d"/><path d="M47 74C44 58 37 48 28 41M53 74c1-16 8-27 19-34" stroke="#0f2a52" stroke-opacity=".35" stroke-width="2" fill="none" stroke-linecap="round"/></symbol>
+</defs></svg>
 <div class="wrap">
 
   <div class="stage">
@@ -453,20 +487,37 @@ button{font-family:inherit}
           <span class="icons">●●●&nbsp;&nbsp;📶&nbsp;&nbsp;🔋</span>
         </div>
 
+        <div class="sf-splash" id="sfSplash" aria-hidden="true">
+          <svg viewBox="0 0 100 100"><use href="#sfLogo"/></svg>
+          <div class="sw">Supple<b>Facts</b></div>
+          <div class="st">Check the evidence</div>
+        </div>
+
         <div class="welcome" id="welcome">
-          <div>
-            <div class="mark-lg">S</div>
-            <h1>Before You Take That Supplement, <span>Check the Evidence.</span></h1>
-            <p class="w-desc">Search thousands of real supplement labels and see exactly what's in the product you're considering. Then explore the evidence behind every ingredient.</p>
-            <div class="w-feat"><div>📋</div><div><b>Real labels:</b> pulled live from the NIH Dietary Supplement Label Database</div></div>
-            <div class="w-feat"><div>📖</div><div><b>Ingredient monographs:</b> plain-language evidence summaries, one tap from any ingredient</div></div>
-            <div class="w-feat"><div>✨</div><div><b>AI ingredient summary:</b> Claude reads the label against the NIH source material</div></div>
-            <div class="w-feat"><div>🔍</div><div><b>Investigate the evidence:</b> send the full label to the website for a deeper AI analysis</div></div>
+          <div class="cv-top">
+            <div class="cv-brand">
+              <svg viewBox="0 0 100 100" role="img" aria-label="SuppleFacts logo"><use href="#sfLogo"/></svg>
+              <div class="cv-name">Supple<b>Facts</b></div>
+            </div>
+            <h1>Before You Take It,<br><span>Check the Evidence.</span></h1>
+            <p class="cv-sub">See what’s really in your supplement — and what the science actually shows.</p>
           </div>
-          <div>
-            <button class="w-btn" id="exploreBtn">Explore Now</button>
-            <p class="w-note">SuppleFacts uses data from the NIH Office of Dietary Supplements. A research tool, not medical advice.</p>
+
+          <div class="cv-hero" role="img" aria-label="A supplement bottle seen through a magnifying glass showing its Supplement Facts label"></div>
+
+          <div class="cv-feats">
+            <div class="cv-feat"><div class="cv-ico" style="background:#dff1e6"><svg viewBox="0 0 24 24" fill="none" stroke="#1b6a4f" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h8l4 4v6"/><path d="M6 3v18h6"/><path d="M9 9h5M9 13h3"/><path d="M14 21c0-3 2-5 6-5 0 3-2 5-6 5z"/></svg></div><h3>What’s<br>in it?</h3><p>Real product labels from the NIH database</p></div>
+            <div class="cv-feat"><div class="cv-ico" style="background:#dcecf8"><svg viewBox="0 0 24 24" fill="none" stroke="#1d5f9a" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="12" width="4" height="8" rx="1"/><rect x="10" y="7" width="4" height="13" rx="1"/><rect x="16.5" y="3" width="4" height="17" rx="1"/></svg></div><h3>Does it<br>work?</h3><p>Clinical trials and systematic reviews</p></div>
+            <div class="cv-feat"><div class="cv-ico" style="background:#fbefc9"><svg viewBox="0 0 24 24" fill="none" stroke="#9a6f12" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="12" height="7" rx="3.5" transform="rotate(-40 9 9.5)"/><circle cx="16.5" cy="16.5" r="4"/><path d="M14.7 16.5h3.6"/></svg></div><h3>Is the dose<br>right?</h3><p>Compare to studied doses</p></div>
+            <div class="cv-feat"><div class="cv-ico" style="background:#fbe0e0"><svg viewBox="0 0 24 24" fill="none" stroke="#c0392b" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.4-3 8.2-7 10-4-1.8-7-5.6-7-10V6l7-3z"/><path d="M8.8 12l2.4 2.4L15.5 10"/></svg></div><h3>Is it<br>safe?</h3><p>Safety risks, drug interactions and warnings</p></div>
           </div>
+
+          <div class="cv-cta">
+            <button class="w-btn" id="exploreBtn" type="button">Check a supplement
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            </button>
+          </div>
+          <p class="w-note">Sourced from <b>NIH</b> databases and focused AI searches.<br>A research tool, not medical advice.</p>
         </div>
 
         <div class="appbar">
@@ -1104,7 +1155,7 @@ button{font-family:inherit}
   render();
   try {
     var dq = new URLSearchParams(location.search).get('q');
-    if (dq && dq.trim()){ welcome.hidden = true; navigate('results', dq.trim()); }
+    if (dq && dq.trim()){ welcome.hidden = true; var sp = document.getElementById('sfSplash'); if (sp) sp.hidden = true; navigate('results', dq.trim()); }
   } catch (e){}
 })();
 </script>
