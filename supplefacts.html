@@ -9,8 +9,8 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="manifest" href="/supplefacts.webmanifest">
-<link rel="icon" type="image/png" sizes="32x32" href="/supplefacts-icons/favicon-32.png">
-<link rel="apple-touch-icon" href="/supplefacts-icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/supplefacts-icons/favicon-32.png?v=2">
+<link rel="apple-touch-icon" href="/supplefacts-icons/apple-touch-icon.png?v=2">
 <title>SuppleFacts — Check the Evidence</title>
 <meta name="description" content="Search real supplement labels from the NIH Dietary Supplement Label Database, then check the evidence behind every ingredient.">
 <style>html{height:100%}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>
@@ -553,6 +553,20 @@ button{font-family:inherit}
 .guide .bd{padding:0 14px 13px 46px;font-size:12px;line-height:1.5;color:var(--fg)}
 .guide .bd p{margin:0 0 7px}.guide .bd ul{margin:0 0 4px;padding-left:16px}.guide .bd li{margin-bottom:3px}
 .guide .warn{background:rgba(201,162,39,.14);border:1px solid rgba(201,162,39,.4);border-radius:12px;padding:11px 13px;font-size:11px;line-height:1.45;color:var(--fg);margin:4px 0 12px}
+
+/* ===== Install prompt (added Oct 2026) ===== */
+.sf-install{position:absolute;left:10px;right:10px;bottom:116px;z-index:55;background:#fff;color:#0f2a52;border-radius:16px;box-shadow:0 10px 34px rgba(8,22,48,.38);padding:12px 12px 14px;display:flex;gap:11px;align-items:flex-start;animation:sfInUp .45s cubic-bezier(.2,.9,.3,1.1) both;font-family:'Inter',system-ui,sans-serif}
+.sf-install[hidden]{display:none!important}
+@keyframes sfInUp{from{transform:translateY(24px);opacity:0}to{transform:none;opacity:1}}
+.sf-install .ic{width:46px;height:46px;border-radius:11px;flex:none}
+.sf-install .tx{flex:1;min-width:0}
+.sf-install .tx b{display:block;font:700 14.5px/1.2 'Lora',Georgia,serif;margin-bottom:3px}
+.sf-install .tx span{display:block;font-size:12.5px;line-height:1.4;color:#33415c}
+.sf-install .shr{display:inline-block;vertical-align:-4px;width:17px;height:17px;margin:0 1px}
+.sf-install .go{all:unset;cursor:pointer;margin-top:8px;background:#1b6a4f;color:#fff;font:700 12.5px 'Inter',sans-serif;padding:7px 14px;border-radius:999px;display:inline-block}
+.sf-install .x{all:unset;cursor:pointer;position:absolute;top:5px;right:8px;font-size:20px;line-height:1;color:#7a879f;padding:4px}
+.sf-install .pt{position:absolute;left:50%;bottom:-9px;width:18px;height:18px;background:#fff;transform:translateX(-50%) rotate(45deg);border-radius:0 0 4px 0}
+@media (prefers-color-scheme:dark){.sf-install{background:#17233a;color:#eaf0fa}.sf-install .tx span{color:#b9c6da}.sf-install .pt{background:#17233a}}
 </style>
 </head>
 <body>
@@ -615,6 +629,14 @@ button{font-family:inherit}
           <button type="button" data-tab="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/></svg>Search</button>
           <button type="button" data-tab="guide"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M12 6.5C10 5 7 4.5 4 5v13c3-.5 6 0 8 1.5 2-1.5 5-2 8-1.5V5c-3-.5-6 0-8 1.5z"/><path d="M12 6.5v13"/></svg>Guide</button>
         </nav>
+        <div class="sf-install" id="sfInstall" role="dialog" aria-label="Install SuppleFacts" hidden>
+          <svg class="ic" viewBox="0 0 100 100" aria-hidden="true"><use href="#sfLogo"/></svg>
+          <div class="tx"><b>Put SuppleFacts on your Home Screen</b>
+            <span id="sfInstallMsg"></span>
+            <button type="button" class="go" id="sfInstallGo" hidden>Install</button></div>
+          <button type="button" class="x" id="sfInstallX" aria-label="Dismiss">×</button>
+          <div class="pt" id="sfInstallPt" hidden></div>
+        </div>
         <div class="disclaimer-bar">
           <span class="lock">ⓘ</span>
           <span>Informational only, not medical advice. Label and monograph data from NIH ODS; AI summaries are Claude-generated from that data.</span>
@@ -1104,6 +1126,7 @@ button{font-family:inherit}
       + item(3, 'The AI Ingredient Summary', '<p>For each label, tap Generate summary to get a plain-language summary of what the main ingredients are, what the research says, and what to watch for.</p><p>It is a starting point written by AI, not a verdict. Check anything important against the studies it points to.</p>')
       + item(4, 'Going deeper with the research prompt', '<p>Tap Investigate the Evidence to send the full label and a ready-made research prompt to the Product Lookup page. There you choose Claude, ChatGPT or Perplexity to:</p><ul><li>check whether the doses match what studies used</li><li>compare the published evidence for each ingredient</li><li>look for interactions and safety concerns</li></ul>')
       + item(5, 'Where the information comes from', '<p>Label data comes live from the NIH Office of Dietary Supplements Dietary Supplement Label Database. Ingredient guides are curated from NIH fact sheets and published research. Brand names are the names recorded on each label.</p>')
+      + item(6, 'Put SuppleFacts on your iPhone', '<p><b>iPhone (Safari):</b> open this page, tap the Share button at the bottom of the screen, scroll down and tap <b>Add to Home Screen</b>, then tap <b>Add</b>. The SuppleFacts icon appears on your Home Screen and opens full-screen, like an app.</p><p><b>Android (Chrome):</b> tap the ⋮ menu, then <b>Install app</b> (or <b>Add to Home screen</b>).</p><p>Tip: if the icon doesn’t appear on iPhone, make sure you are in Safari, not inside another app’s browser.</p>')
       + '<div class="warn"><b>Important:</b> SuppleFacts is for education, not medical advice. Talk with your doctor or pharmacist before starting a supplement, especially if you take prescription medicines, are pregnant, or have a medical condition.</div>'
       + '<div class="investigate-panel"><h3>Full illustrated guide</h3><div class="investigate-text">Step-by-step instructions for both evidence buttons, plus how to use Claude, ChatGPT and Perplexity on your phone.</div>'
       +   '<a class="investigate-btn" href="/supplefacts-guide.pdf" target="_blank" rel="noopener">📄 Open the User’s Guide (PDF)</a></div>'
@@ -1470,6 +1493,42 @@ button{font-family:inherit}
 
 <script>
 /* Makes SuppleFacts installable (Add to Home Screen / Play Store wrapper). The worker does no caching. */
+
+  /* ===== Install to Home Screen helper (added Oct 2026) ===== */
+  (function(){
+    var box = document.getElementById('sfInstall'); if (!box) return;
+    var msg = document.getElementById('sfInstallMsg'), go = document.getElementById('sfInstallGo'), pt = document.getElementById('sfInstallPt');
+    var KEY = 'sf_install_hide', deferred = null, want = false, wel = document.getElementById('welcome');
+    function standalone(){ return (window.navigator.standalone === true) || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches); }
+    function hidden(){ try { var v = +localStorage.getItem(KEY) || 0; return v && (Date.now() - v) < 14 * 864e5; } catch (e){ return false; } }
+    function hide(remember){ box.hidden = true; if (remember){ try { localStorage.setItem(KEY, String(Date.now())); } catch (e){} } }
+    var ua = navigator.userAgent || '';
+    var ios = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+    var small = window.matchMedia && window.matchMedia('(max-width:500px)').matches;
+    var SHARE = '<svg class="shr" viewBox="0 0 24 24" fill="none" stroke="#1d6fe0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3M8 7l4-4 4 4"/><path d="M6 11H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1"/></svg>';
+    function show(){ if (standalone() || hidden()) return; box.hidden = false; }
+    // wait until the person is past the landing screen so the banner never covers the Check-a-supplement button
+    var tries = 0, iv = setInterval(function(){
+      tries++;
+      if (want && wel && wel.hidden){ clearInterval(iv); setTimeout(show, 1200); }
+      else if (tries > 400) clearInterval(iv);
+    }, 600);
+    document.getElementById('sfInstallX').addEventListener('click', function(){ hide(true); });
+    if (ios && !standalone()){
+      msg.innerHTML = 'Tap the Share button ' + SHARE + ' at the bottom of Safari, then choose <b style="display:inline;font:700 12.5px Inter,sans-serif">Add to Home Screen</b>.';
+      want = true;
+    }
+    window.addEventListener('beforeinstallprompt', function(e){
+      e.preventDefault(); deferred = e;
+      msg.textContent = 'Install it like an app — one tap, no App Store.'; go.hidden = false; want = true;
+    });
+    go.addEventListener('click', function(){
+      if (!deferred) return; deferred.prompt();
+      deferred.userChoice.then(function(){ deferred = null; hide(true); });
+    });
+    window.addEventListener('appinstalled', function(){ hide(true); });
+  })();
+
 if ('serviceWorker' in navigator && location.protocol === 'https:') {
   window.addEventListener('load', function () {
     navigator.serviceWorker.register('/supplefacts-sw.js', { scope: '/supplefacts.html' }).catch(function () {});
