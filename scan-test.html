@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>SuppleFacts Barcode Test</title>
+<style>
+:root{--bg:#faf8f3;--card:#fff;--fg:#0f2a52;--mute:#4a5568;--line:#d8e1e9;--green:#1b6a4f;--gold:#9a6f12;--bad:#b3482f}
+@media (prefers-color-scheme:dark){:root{--bg:#0d1620;--card:#16222f;--fg:#eaf0f5;--mute:#9fb0bf;--line:#28394a;--green:#2fa08d;--gold:#d9bb55;--bad:#e08064}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;padding:16px;max-width:560px;margin:0 auto}
+h1{font-size:20px;margin:0 0 4px}
+.dev{background:var(--gold);color:#fff;font-weight:700;font-size:12px;letter-spacing:.05em;text-transform:uppercase;padding:6px 10px;border-radius:8px;display:inline-block;margin-bottom:10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin:12px 0}
+.card h2{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);margin:0 0 8px}
+button{font:inherit;font-weight:700;border:0;border-radius:10px;padding:11px 14px;background:var(--green);color:#fff;cursor:pointer}
+button.alt{background:transparent;color:var(--fg);border:1.5px solid var(--line)}
+input[type=text],input[type=search],input[type=tel]{font:inherit;width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--fg)}
+.row{display:flex;gap:8px}
+video{width:100%;border-radius:12px;background:#000;max-height:300px;object-fit:cover}
+.big{font:700 22px/1.2 ui-monospace,Menlo,Consolas,monospace;word-break:break-all}
+.mute{color:var(--mute);font-size:13px}
+.ok{color:var(--green);font-weight:700}.bad{color:var(--bad);font-weight:700}
+pre{white-space:pre-wrap;word-break:break-word;font:12px/1.5 ui-monospace,Menlo,Consolas,monospace;margin:0;max-height:340px;overflow:auto}
+.hit{border-top:1px solid var(--line);padding:8px 0}
+</style>
+</head>
+<body>
+<div class="dev">Developer test page — not part of the app</div>
+<h1>Barcode scan test</h1>
+<p class="mute">Scan a supplement bottle (or type a number) to see what the camera reads, how it is cleaned up, and whether the NIH label database finds it.</p>
+
+<div class="card">
+  <h2>1 · Scan</h2>
+  <video id="vid" playsinline muted hidden></video>
+  <div class="row" style="margin-top:8px">
+    <button id="startBtn">Scan a barcode</button>
+    <button id="stopBtn" class="alt" hidden>Stop camera</button>
+  </div>
+  <div class="mute" id="camMsg" style="margin-top:6px"></div>
+</div>
+
+<div class="card">
+  <h2>…or type / paste a number</h2>
+  <div class="row"><input id="manual" type="tel" inputmode="numeric" placeholder="e.g. 0 33674 15223 1" autocomplete="off"><button id="goBtn">Look up</button></div>
+</div>
+
+<div class="card">
+  <h2>2 · What was read</h2>
+  <div class="big" id="raw">—</div>
+  <div class="mute" id="fmt"></div>
+</div>
+
+<div class="card">
+  <h2>3 · Cleaned-up versions tried</h2>
+  <pre id="variants">—</pre>
+</div>
+
+<div class="card">
+  <h2>4 · NIH lookup result</h2>
+  <div id="result" class="mute">Nothing yet.</div>
+</div>
+
+<div class="card">
+  <h2>Log (send me a screenshot of this)</h2>
+  <pre id="log"></pre>
+  <div class="row" style="margin-top:8px"><button class="alt" id="copyLog">Copy log</button><button class="alt" id="clearLog">Clear</button></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js"></script>
+<script>
+(function(){
+  'use strict';
+  var API = 'https://api.ods.od.nih.gov/dsld/v9';
+  var $ = function(id){ return document.getElementById(id); };
+  var logEl = $('log'), logLines = [];
+  function log(s){ var t = new Date().toLocaleTimeString() + '  ' + s; logLines.push(t); logEl.textContent = logLines.join('\n'); logEl.scrollTop = logEl.scrollHeight; }
+
+  /* ---------- number cleanup ---------- */
+  function digits(s){ return String(s || '').replace(/\D+/g, ''); }
+  function stripZeros(d){ return d.replace(/^0+/, ''); }
+  // GS1 check digit: last digit must make the weighted sum a multiple of 10
+  function checkOk(d){
+    if (d.length < 8) return false;
+    var sum = 0, body = d.slice(0, -1), n = body.length;
+    for (var i = 0; i < n; i++){ var v = +body.charAt(n - 1 - i); sum += (i % 2 === 0) ? v * 3 : v; }
+    return ((10 - (sum % 10)) % 10) === +d.charAt(d.length - 1);
+  }
+  function pad(d, n){ while (d.length < n) d = '0' + d; return d; }
+  function spaced(d12){ return d12.length === 12 ? d12.charAt(0) + ' ' + d12.slice(1, 6) + ' ' + d12.slice(6, 11) + ' ' + d12.charAt(11) : d12; }
+  // UPC-E (8 digits, from the compressed barcode) expanded to UPC-A
+  function upcEtoA(e){
+    if (e.length !== 8) return null;
+    var ns = e.charAt(0), m = e.slice(1, 7), cd = e.charAt(7), a = '';
+    var last = m.charAt(5);
+    if (last === '0' || last === '1' || last === '2') a = m.slice(0,2) + last + '0000' + m.slice(2,5);
+    else if (last === '3') a = m.slice(0,3) + '00000' + m.slice(3,5);
+    else if (last === '4') a = m.slice(0,4) + '00000' + m.charAt(4);
+    else a = m.slice(0,5) + '0000' + last;
+    return ns + a + cd;
+  }
+  // Every reasonable form of the scanned number, most likely first
+  function variantsOf(raw){
+    var d = digits(raw), out = [], seen = {};
+    function add(label, v){ if (v && !seen[v]){ seen[v] = 1; out.push({ label: label, value: v }); } }
+    if (!d) return out;
+    var core = stripZeros(d);
+    add('as scanned', d);
+    if (d.length === 8){ var a = upcEtoA(d); if (a) add('UPC-E expanded to UPC-A', a); }
+    if (core.length <= 12){ add('12-digit UPC-A', pad(core, 12)); }
+    if (core.length <= 13){ add('13-digit EAN-13', pad(core, 13)); }
+    if (core.length <= 14){ add('14-digit GTIN', pad(core, 14)); }
+    add('no leading zeros', core);
+    if (core.length >= 2){ add('without check digit', core.slice(0, -1)); }
+    var u12 = core.length <= 12 ? pad(core, 12) : (core.length === 13 && core.charAt(0) === '0' ? core.slice(1) : '');
+    if (u12.length === 12) add('NIH-style spacing', spaced(u12));
+    return out;
+  }
+  // Two UPCs "match" when they agree after removing spaces, leading zeros, and optionally the check digit
+  function sameUpc(a, b){
+    var x = stripZeros(digits(a)), y = stripZeros(digits(b));
+    if (!x || !y) return false;
+    if (x === y) return true;
+    if (x.length > 6 && y.length > 6 && (x.slice(0, -1) === y || y.slice(0, -1) === x)) return true;
+    return false;
+  }
+
+  /* ---------- NIH lookup ---------- */
+  function getJSON(url){
+    return fetch(url).then(function(r){
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    });
+  }
+  function hitsOf(j){
+    if (!j) return [];
+    if (j.hits && j.hits.length !== undefined) return j.hits;
+    if (j.hits && j.hits.hits) return j.hits.hits;
+    if (j.length !== undefined) return j;
+    return [];
+  }
+  function srcOf(h){ return h && h._source ? h._source : (h || {}); }
+  function idOf(h){ var s = srcOf(h); return s.id || h._id || s.dsld_id; }
+
+  // Each strategy is a URL builder; the test shows which ones the NIH service actually answers
+  var STRATEGIES = [
+    { name: 'keyword search', url: function(v){ return API + '/browse-products?method=by_keyword&q=' + encodeURIComponent(v) + '&size=10'; } },
+    { name: 'search-filter', url: function(v){ return API + '/search-filter?q=' + encodeURIComponent(v) + '&size=10'; } },
+    { name: 'by_upc', url: function(v){ return API + '/browse-products?method=by_upc&q=' + encodeURIComponent(v) + '&size=10'; } }
+  ];
+
+  var runId = 0;
+  function lookup(raw){
+    var my = ++runId;
+    var d = digits(raw);
+    $('raw').textContent = raw || '—';
+    if (!d){ $('result').innerHTML = '<span class="bad">No digits found.</span>'; return; }
+    $('fmt').textContent = d.length + ' digits · check digit ' + (checkOk(d) ? 'valid' : 'does NOT validate (misread, or a non-UPC code)');
+    var vars = variantsOf(raw);
+    $('variants').textContent = vars.map(function(v){ return (v.label + ':').padEnd(26) + v.value; }).join('\n');
+    log('Scanned "' + raw + '" → ' + d.length + ' digits; check digit ' + (checkOk(d) ? 'ok' : 'FAIL') + '; ' + vars.length + ' variants');
+    $('result').innerHTML = '<span class="mute">Searching NIH…</span>';
+
+    var found = null, tried = 0, work = [];
+    STRATEGIES.forEach(function(st){
+      vars.forEach(function(v){ work.push({ st: st, v: v }); });
+    });
+    // run sequentially; stop at the first confirmed match
+    function next(i){
+      if (my !== runId) return Promise.resolve();
+      if (found || i >= work.length) return Promise.resolve();
+      var w = work[i], url = w.st.url(w.v.value);
+      tried++;
+      return getJSON(url).then(function(j){
+        var hits = hitsOf(j);
+        log(w.st.name + ' · ' + w.v.label + ' (' + w.v.value + ') → ' + hits.length + ' hit(s)');
+        if (!hits.length) return next(i + 1);
+        // does a hit already carry a UPC we can compare?
+        var hitsWithUpc = hits.filter(function(h){ return srcOf(h).upcSku !== undefined; });
+        var m = hitsWithUpc.filter(function(h){ return sameUpc(srcOf(h).upcSku, d); })[0];
+        if (m){ found = { h: m, via: w.st.name + ' / ' + w.v.label, upc: srcOf(m).upcSku }; return; }
+        if (hitsWithUpc.length === hits.length) return next(i + 1);   // all had UPCs and none matched
+        // otherwise open the first few labels and compare their UPCs
+        var ids = hits.slice(0, 5).map(idOf).filter(Boolean);
+        return Promise.all(ids.map(function(id){
+          return getJSON(API + '/label/' + encodeURIComponent(id)).then(function(l){ return { id: id, l: l }; }, function(){ return null; });
+        })).then(function(ls){
+          ls = ls.filter(Boolean);
+          ls.forEach(function(x){ log('   label ' + x.id + ' UPC field: "' + (x.l.upcSku || '') + '"'); });
+          var mm = ls.filter(function(x){ return sameUpc(x.l.upcSku, d); })[0];
+          if (mm){ found = { h: { _source: { id: mm.id, fullName: mm.l.fullName, brandName: mm.l.brandName } }, via: w.st.name + ' / ' + w.v.label, upc: mm.l.upcSku }; return; }
+          return next(i + 1);
+        });
+      }, function(e){
+        log(w.st.name + ' · ' + w.v.label + ' → error: ' + e.message);
+        return next(i + 1);
+      });
+    }
+    next(0).then(function(){
+      if (my !== runId) return;
+      if (found){
+        var s = srcOf(found.h);
+        $('result').innerHTML = '<div class="ok">Found in the NIH database</div>'
+          + '<div class="hit"><b>' + esc(s.brandName || '') + '</b><br>' + esc(s.fullName || s.name || '') + '</div>'
+          + '<div class="mute">NIH label id ' + esc(String(idOf(found.h))) + ' · NIH UPC field "' + esc(found.upc || '') + '"<br>Matched via ' + esc(found.via) + ' · ' + tried + ' attempt(s)</div>';
+        log('MATCH via ' + found.via + ' after ' + tried + ' attempt(s)');
+      } else {
+        $('result').innerHTML = '<div class="bad">No NIH product matched this number.</div><div class="mute">' + tried + ' attempt(s). Not every supplement has a UPC on file at NIH. The log below shows what each attempt returned.</div>';
+        log('NO MATCH after ' + tried + ' attempt(s)');
+      }
+    });
+  }
+  function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]; }); }
+
+  /* ---------- camera ---------- */
+  var stream = null, detTimer = null, zxReader = null, lastSeen = '', lastAt = 0;
+  function stopCam(){
+    if (detTimer){ clearInterval(detTimer); detTimer = null; }
+    if (zxReader){ try { zxReader.reset(); } catch (e) {} zxReader = null; }
+    if (stream){ stream.getTracks().forEach(function(t){ t.stop(); }); stream = null; }
+    $('vid').hidden = true; $('stopBtn').hidden = true; $('startBtn').hidden = false;
+  }
+  function gotCode(text, format){
+    var now = Date.now();
+    if (text === lastSeen && now - lastAt < 3000) return;
+    lastSeen = text; lastAt = now;
+    log('Camera read "' + text + '" (' + (format || '?') + ')');
+    $('manual').value = text;
+    stopCam();
+    lookup(text);
+  }
+  function startCam(){
+    $('camMsg').textContent = 'Starting camera…';
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+      $('camMsg').innerHTML = '<span class="bad">This browser has no camera access here.</span> Type the number instead.'; log('getUserMedia unavailable'); return;
+    }
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false }).then(function(s){
+      stream = s;
+      var v = $('vid'); v.srcObject = s; v.hidden = false; $('stopBtn').hidden = false; $('startBtn').hidden = true;
+      return v.play().catch(function(){});
+    }).then(function(){
+      if (!stream) return;
+      $('camMsg').textContent = 'Point the camera at the barcode and hold steady.';
+      if ('BarcodeDetector' in window){
+        log('Using the built-in BarcodeDetector');
+        var det = new window.BarcodeDetector({ formats: ['upc_a', 'upc_e', 'ean_13', 'ean_8'] });
+        detTimer = setInterval(function(){
+          det.detect($('vid')).then(function(r){ if (r && r.length) gotCode(r[0].rawValue, r[0].format); }, function(){});
+        }, 250);
+      } else if (window.ZXing){
+        log('Using the ZXing scanner library');
+        var hints = new Map();
+        hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [ZXing.BarcodeFormat.UPC_A, ZXing.BarcodeFormat.UPC_E, ZXing.BarcodeFormat.EAN_13, ZXing.BarcodeFormat.EAN_8]);
+        hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
+        zxReader = new ZXing.BrowserMultiFormatReader(hints, 300);
+        zxReader.decodeFromStream(stream, $('vid'), function(res){
+          if (res) gotCode(res.getText(), String(res.getBarcodeFormat()));
+        });
+      } else {
+        $('camMsg').innerHTML = '<span class="bad">The scanner library did not load.</span> Check your connection, or type the number instead.'; log('ZXing not loaded');
+      }
+    }).catch(function(e){
+      log('Camera error: ' + (e && e.name) + ' ' + (e && e.message));
+      $('camMsg').innerHTML = '<span class="bad">Could not open the camera</span> (' + esc((e && e.name) || 'error') + '). Allow camera access for this site in Safari, then try again.';
+      stopCam();
+    });
+  }
+
+  $('startBtn').addEventListener('click', startCam);
+  $('stopBtn').addEventListener('click', function(){ stopCam(); $('camMsg').textContent = ''; });
+  $('goBtn').addEventListener('click', function(){ lookup($('manual').value); });
+  $('manual').addEventListener('keydown', function(e){ if (e.key === 'Enter') lookup($('manual').value); });
+  $('clearLog').addEventListener('click', function(){ logLines = []; logEl.textContent = ''; });
+  $('copyLog').addEventListener('click', function(){
+    var t = logLines.join('\n');
+    if (navigator.clipboard) navigator.clipboard.writeText(t).then(function(){ $('copyLog').textContent = 'Copied'; setTimeout(function(){ $('copyLog').textContent = 'Copy log'; }, 1500); });
+  });
+
+  log('Page ready. Camera: ' + (navigator.mediaDevices ? 'available' : 'unavailable') + ' · BarcodeDetector: ' + ('BarcodeDetector' in window ? 'yes' : 'no') + ' · ZXing: ' + (window.ZXing ? 'loaded' : 'not loaded'));
+  window.__scanTest = { variantsOf: variantsOf, sameUpc: sameUpc, checkOk: checkOk, upcEtoA: upcEtoA, lookup: lookup };
+})();
+</script>
+</body>
+</html>
