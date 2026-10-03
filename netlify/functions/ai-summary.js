@@ -20,7 +20,13 @@ const DEFAULT_ORIGINS = ['https://supplements.brokenpromiseshealthcare.org'];
 const CACHE_STORE = 'ai-summaries';
 const CACHE_TTL_MS = 90 * 24 * 60 * 60 * 1000; // 90 days, then refresh
 // Bump this whenever the prompt/model above changes so old cached text isn't reused.
-const CACHE_VERSION = 'v2';
+const CACHE_VERSION = 'v3';
+
+// Added to the end of a summary when any ingredient had no NIH guide behind it. It is added by the
+// server (not left to the model) so the wording is always friendly and always present.
+const MISSING_POINTER = 'Some ingredients on this label fall outside the NIH sources used for this summary. ' +
+  'That doesn\u2019t mean nothing is known about them. Tap Investigate the Evidence below to search the research ' +
+  'for every ingredient on this label.';
 
 const json = (statusCode, obj) => ({
   statusCode,
@@ -74,20 +80,36 @@ export const handler = async (event) => {
   lines.push('Product label: ' + clip(b.brand, 120) + ' — ' + clip(b.name, 200) +
     ' (' + clip(b.form, 120) + ', serving size ' + clip(b.serving, 80) + ').');
   lines.push('Use ONLY the NIH-sourced material given for each ingredient below. Do not add outside claims or invented statistics.');
+  const hasNotes = (i) => !!(i.notes && typeof i.notes === 'object');
+  const missing = ings.filter((i) => !hasNotes(i));
   ings.forEach((i) => {
     lines.push('\n' + clip(i.name, 160) + (i.amount ? ' (' + clip(i.amount, 60) + ' per serving)' : '') + ':');
-    if (i.notes && typeof i.notes === 'object') {
+    if (hasNotes(i)) {
       lines.push('What it is: ' + clip(i.notes.what, 600));
       lines.push('What the evidence shows: ' + clip(i.notes.evidence, 600));
       lines.push('Safety & interactions: ' + clip(i.notes.safety, 600));
     } else {
-      lines.push('(No NIH monograph on file for this ingredient — note that plainly rather than guessing.)');
+      lines.push('(The NIH source material used by this app has no guide for this ingredient. Do not describe its benefits, risks or doses from your own knowledge.)');
     }
   });
-  lines.push('\nWrite one consumer-friendly summary, ' + (ings.length > 3 ? '180–260' : '120–180') +
-    ' words, covering what this product’s active ingredient(s) are for and what the evidence actually supports. ' +
-    'Stay neutral; do not overstate benefit. End with one short sentence noting this is general information ' +
-    'drawn from NIH source material, not medical advice.');
+  if (missing.length) {
+    lines.push('\nIngredients with no NIH guide in this app: ' +
+      missing.slice(0, 12).map((i) => clip(i.name, 80)).join(', ') + '.');
+    lines.push('For those ingredients, say plainly and calmly that the NIH sources used for this summary do not cover them. ' +
+      'Make clear this is a limit of these sources: it is not evidence that nothing is known, and it is not a sign that the ingredient ' +
+      'is ineffective or unsafe. Never say the information is "unavailable" or "not found", and never suggest the reader is out of options. ' +
+      'Do not write any pointer to an "Investigate the Evidence" search yourself; one is added automatically after your summary.');
+  }
+  if (missing.length && missing.length === ings.length) {
+    // Nothing from the NIH to summarize: stay with what the label itself says, keep it short and kind
+    lines.push('\nWrite one short, friendly summary of 70–110 words. State what the label lists (ingredient names and amounts exactly as given), ' +
+      'explain the limit described above, and end with one short sentence noting this is general information, not medical advice.');
+  } else {
+    lines.push('\nWrite one consumer-friendly summary, ' + (ings.length > 3 ? '180–260' : '120–180') +
+      ' words, covering what this product’s active ingredient(s) are for and what the evidence actually supports. ' +
+      'Stay neutral; do not overstate benefit. End with one short sentence noting this is general information ' +
+      'drawn from NIH source material, not medical advice.');
+  }
 
   const promptText = lines.join('\n');
   const store = await openCache(event);
@@ -123,8 +145,9 @@ export const handler = async (event) => {
       console.error('Anthropic API error', r.status, JSON.stringify(data).slice(0, 500));
       return json(502, { error: 'upstream_error' });
     }
-    const text = plain((data.content || []).filter((c) => c.type === 'text').map((c) => c.text).join(''));
+    let text = plain((data.content || []).filter((c) => c.type === 'text').map((c) => c.text).join(''));
     if (!text) return json(502, { error: 'empty_response' });
+    if (missing.length) text = text + '\n\n' + MISSING_POINTER;
     if (store && ckey) {
       try { await store.setJSON(ckey, { text, savedAt: Date.now() }); }
       catch (e) { console.warn('cache write failed:', e && e.message); }

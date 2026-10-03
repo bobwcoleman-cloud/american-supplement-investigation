@@ -576,6 +576,21 @@ button{font-family:inherit}
 .welcome .w-guide:focus-visible{outline:3px solid var(--cv-navy);outline-offset:2px}
 .welcome .w-guide svg{width:17px;height:17px;flex:none}
 @media (max-height:640px){.welcome .w-guide{padding:8px 14px;margin-top:7px}}
+
+/* In-app ingredient screen (Ask AI) */
+.ing-back{display:flex;align-items:center;gap:8px;width:100%;text-align:left;background:var(--surface);color:var(--fg);border:1.5px solid var(--accent);border-radius:12px;padding:11px 14px;font-size:13.5px;font-weight:700;font-family:inherit;cursor:pointer;margin:0 0 14px}
+.ing-back:hover{background:var(--bg)}
+.ing-back .ing-back-sub{display:block;font-weight:500;font-size:11.5px;color:var(--muted);margin-top:1px}
+.ing-back .ing-back-arrow{font-size:20px;line-height:1;color:var(--accent-ink)}
+.ing-back.bottom{margin:14px 0 4px}
+.ing-hero{margin-bottom:14px}
+.ing-hero .ing-kicker{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.ing-hero h2{font-family:'Lora',Georgia,serif;font-size:21px;margin:3px 0 6px;line-height:1.25}
+.ing-hero .ing-amt{display:inline-block;font-size:13px;font-weight:700;color:var(--accent-ink);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px 11px}
+.ing-note{font-size:13.5px;line-height:1.55;color:var(--fg)}
+.ing-note p{margin:0 0 9px}
+.ing-note p:last-child{margin-bottom:0}
+.ing-other{font-size:12.5px;color:var(--muted);line-height:1.5}
 </style>
 </head>
 <body>
@@ -882,7 +897,7 @@ button{font-family:inherit}
       })
     };
     // Remember summaries this visitor has already seen (30 days) so reopening a product is instant
-    var payload = JSON.stringify(body), lsKey = 'sf_sum_' + sfHash(payload);
+    var payload = JSON.stringify(body), lsKey = 'sf_sum3_' + sfHash(payload);
     try {
       var saved = JSON.parse(localStorage.getItem(lsKey) || 'null');
       if (saved && saved.text && Date.now() - saved.t < 30*24*60*60*1000 && !/^\s*#/.test(saved.text)) return saved.text;
@@ -980,6 +995,74 @@ button{font-family:inherit}
     return url;
   }
 
+
+  /* ---- In-app ingredient screen (reached from "Ask AI ›" on a label row) ---- */
+  function findIngredient(product, name){
+    var hit = null;
+    product.ingredients.forEach(function(i){ if (!hit && i.name === name) hit = i; });
+    return hit;
+  }
+  function splitIngParam(param){
+    var k = String(param || '').indexOf('|');
+    return k < 0 ? { id: '', name: String(param || '') } : { id: param.slice(0, k), name: param.slice(k + 1) };
+  }
+  function buildIngredientInvestigateUrl(product, ing){
+    var others = activeIngredients(product).filter(function(i){ return i !== ing; });
+    var prompt = 'Analyze this dietary supplement ingredient:\n\n';
+    prompt += '=== INGREDIENT ===\n' + ing.name;
+    if (ing.detail) prompt += ' (' + ing.detail + ')';
+    prompt += '\n';
+    if (ing.amount) prompt += 'Amount per serving: ' + ing.amount + (ing.dv ? ', ' + ing.dv : '') + '\n';
+    prompt += '\n=== WHERE IT APPEARS ===\n';
+    prompt += 'Brand: ' + product.brand + '\n';
+    prompt += 'Product: ' + product.name + '\n';
+    if (product.form) prompt += 'Form: ' + product.form + '\n';
+    prompt += 'Serving Size: ' + product.serving + '\n';
+    if (others.length){
+      var names = others.map(function(i){ return i.name + (i.amount ? ' ' + i.amount : ''); }).join('; ');
+      if (names.length > 900) names = names.slice(0, 900) + '…';
+      prompt += 'Other ingredients in this product: ' + names + '\n';
+    }
+    prompt += '\n=== ANALYSIS REQUESTED ===\n';
+    prompt += 'Please provide an evidence-based analysis of this ingredient at the amount shown. Explain:\n';
+    prompt += '1. What it is\n';
+    prompt += '2. What the scientific evidence shows (cite specific studies/evidence where available)\n';
+    prompt += '3. Safety concerns and potential interactions, including with the other ingredients listed\n';
+    prompt += '4. Whether the claimed benefits are supported by evidence, and whether the amount shown is in a studied range\n\n';
+    prompt += 'Be neutral and fact-based. Note when evidence is weak, missing, or contradictory.';
+    return SITE + '/product-lookup?prompt=' + encodeURIComponent(prompt);
+  }
+  function renderIngredient(param){
+    var q = splitIngParam(param);
+    var p = prodById(q.id);
+    if (!p) return '<div class="empty">Label not found. Use the back arrow to return.</div>';
+    var ing = findIngredient(p, q.name);
+    if (!ing) return '<div class="empty">Ingredient not found on this label.</div>';
+    var label = p.brand ? p.brand + ' — ' + p.name : p.name;
+    var backBtn = function(cls){
+      return '<button class="ing-back ' + cls + '" data-ing-back="1"><span class="ing-back-arrow">‹</span>'
+        + '<span>Back to the original label<span class="ing-back-sub">' + esc(label) + '</span></span></button>';
+    };
+    return ''
+      + backBtn('')
+      + '<div class="ing-hero">'
+      +   '<div class="ing-kicker">Ingredient on this label</div>'
+      +   '<h2>' + esc(ing.name) + '</h2>'
+      +   (ing.detail ? '<div class="ing-other" style="margin-bottom:7px">' + esc(ing.detail) + '</div>' : '')
+      +   ((ing.amount || ing.dv) ? '<span class="ing-amt">' + esc(ing.amount) + (ing.amount && ing.dv ? ' · ' : '') + esc(ing.dv) + '</span>' : '')
+      + '</div>'
+      + '<div class="panel"><h3>What this app has on it</h3><div class="ing-note">'
+      +   '<p>This ingredient falls outside the NIH sources built into SuppleFacts, so there is no in-app guide for it.</p>'
+      +   '<p>That doesn’t mean nothing is known about it — only that this app doesn’t carry the research. Use the button below to search the evidence for this one ingredient.</p>'
+      + '</div></div>'
+      + '<div class="investigate-panel">'
+      +   '<h3>Investigate this ingredient</h3>'
+      +   '<div class="investigate-text">Opens the evidence search with ' + esc(ing.name) + ' at the amount on this label, plus the other ingredients for interaction context. Come back here afterwards to continue with your label.</div>'
+      +   '<button class="investigate-btn" data-investigate-ing="1">🔍 Investigate the Evidence</button>'
+      + '</div>'
+      + backBtn('bottom');
+  }
+
   /* ---- Navigation ---- */
   function navigate(screen, param, opts){
     opts = opts || {};
@@ -989,7 +1072,7 @@ button{font-family:inherit}
     else { history.push(entry); }
     render();
   }
-  function goBack(){ if (history.length > 1){ history.pop(); render(); } }
+  function goBack(){ if (history.length > 1){ history.pop(); render(); var top = history[history.length - 1]; if (top && top.scroll){ content.scrollTop = top.scroll; } } }
   backBtn.addEventListener('click', goBack);
 
   function render(){
@@ -1008,6 +1091,7 @@ button{font-family:inherit}
     else if (cur.screen === 'monograph'){ var m = monoById(cur.param); appTitle.textContent = m ? m.name : 'Monograph'; monoLevel='consumer'; content.innerHTML = renderMonograph(cur.param); }
     else if (cur.screen === 'search'){ appTitle.textContent = 'Search'; content.innerHTML = renderSearchTab(); }
     else if (cur.screen === 'guide'){ appTitle.textContent = 'User\u2019s Guide'; content.innerHTML = renderGuide(); }
+    else if (cur.screen === 'ingredient'){ appTitle.textContent = 'Ingredient'; content.innerHTML = renderIngredient(cur.param); }
     else if (cur.screen === 'brand'){ appTitle.textContent = brandLabel(cur.param); content.innerHTML = renderBrand(cur.param); loadBrandProducts(cur.param, false); }
     markTab();
     wireContent();
@@ -1456,7 +1540,19 @@ button{font-family:inherit}
     }
     var askEl = e.target.closest('[data-ask-ai]');
     if (askEl){
-      window.open(SITE + '/product-lookup?q=' + encodeURIComponent(askEl.getAttribute('data-ask-ai')), '_blank');
+      var here = history[history.length - 1];
+      if (here && here.screen === 'product'){
+        here.scroll = content.scrollTop;   // remember where on the label we were
+        navigate('ingredient', here.param + '|' + askEl.getAttribute('data-ask-ai'));
+      } else {
+        window.open(SITE + '/product-lookup?q=' + encodeURIComponent(askEl.getAttribute('data-ask-ai')), '_blank');
+      }
+      return;
+    }
+    if (e.target.closest('[data-ing-back]')){ goBack(); return; }
+    if (e.target.closest('[data-investigate-ing]')){
+      var ic = history[history.length - 1], iq = splitIngParam(ic.param), ip = prodById(iq.id), ii = ip && findIngredient(ip, iq.name);
+      if (ip && ii) window.open(buildIngredientInvestigateUrl(ip, ii), '_blank');
       return;
     }
     var levelEl = e.target.closest('[data-level]');
