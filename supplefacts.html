@@ -568,6 +568,14 @@ button{font-family:inherit}
 .sf-install .x{all:unset;cursor:pointer;position:absolute;top:5px;right:8px;font-size:20px;line-height:1;color:#7a879f;padding:4px}
 .sf-install .pt{position:absolute;left:50%;bottom:-9px;width:18px;height:18px;background:#fff;transform:translateX(-50%) rotate(45deg);border-radius:0 0 4px 0}
 @media (prefers-color-scheme:dark){.sf-install{background:#17233a;color:#eaf0fa}.sf-install .tx span{color:#b9c6da}.sf-install .pt{background:#17233a}}
+
+.welcome .w-guide{all:unset;cursor:pointer;box-sizing:border-box;width:100%;margin-top:9px;display:flex;align-items:center;justify-content:center;gap:8px;
+  background:var(--cv-gold-bright);color:#0f2a52;font:700 12.5px 'Inter',-apple-system,sans-serif;letter-spacing:.06em;text-transform:uppercase;
+  padding:11px 14px;border-radius:14px;box-shadow:0 4px 12px rgba(154,111,18,.28)}
+.welcome .w-guide:hover{filter:brightness(.95)}
+.welcome .w-guide:focus-visible{outline:3px solid var(--cv-navy);outline-offset:2px}
+.welcome .w-guide svg{width:17px;height:17px;flex:none}
+@media (max-height:640px){.welcome .w-guide{padding:8px 14px;margin-top:7px}}
 </style>
 </head>
 <body>
@@ -615,6 +623,10 @@ button{font-family:inherit}
             <button class="w-btn" id="exploreBtn" type="button">Check a supplement
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
             </button>
+            <a class="w-guide" id="guideBtn" href="/supplefacts-guide.pdf" target="_blank" rel="noopener">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 6.5C10 5 7 4.5 4 5v13c3-.5 6 0 8 1.5 2-1.5 5-2 8-1.5V5c-3-.5-6 0-8 1.5z"/><path d="M12 6.5v13"/></svg>
+              User’s Guide
+            </a>
           </div>
           <p class="w-note">Sourced from <b>NIH</b> databases and focused AI searches.<br>A research tool, not medical advice.</p>
         </div>
