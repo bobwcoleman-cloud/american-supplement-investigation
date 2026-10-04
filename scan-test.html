@@ -210,8 +210,8 @@ window.addEventListener('unhandledrejection', function(e){
         });
         $('sources').innerHTML = html;
         var uniq = names.filter(function(n, i){ return names.indexOf(n) === i; });
-        var first = null; x.j.results.forEach(function(r){ if (!first && r.matches && r.matches.length && r.source !== 'dsld'){ var m0 = r.matches[0]; first = ((m0.brand || '') + ' ' + (m0.name || '')).replace(/\s+/g, ' ').trim(); } });
-        if (first) nameSearch(first.slice(0, 120), true);
+        var allNames = []; x.j.results.forEach(function(r){ if (r.source !== 'dsld'){ (r.matches || []).forEach(function(m){ allNames.push({ brand: m.brand || '', name: m.name || '' }); }); } });
+        if (allNames.length) smartNameSearch(d, allNames, true);
         stSrv = uniq.length ? '<span class="ok">Databases that know it: ' + esc(uniq.join(', ')) + '.</span>' : '<span class="bad">No product database knew this number.</span>';
         showStatus(d);
       }, function(e){
@@ -221,35 +221,82 @@ window.addEventListener('unhandledrejection', function(e){
       });
   }
   // name -> NIH label search (this is the step the real app would use after a barcode names the product)
-  function shortQueries(q){
-    var words = q.replace(/[(),;:]/g, ' ').replace(/\s+/g, ' ').trim().split(' ');
-    var out = [q.trim()];
-    [8, 5, 3].forEach(function(n){ if (words.length > n) out.push(words.slice(0, n).join(' ')); });
-    return out.filter(function(v, i){ return v && out.indexOf(v) === i; });
+  /* ---------- name -> NIH label matching ---------- */
+  var STOP = { ct:1, count:1, counts:1, tablet:1, tablets:1, softgel:1, softgels:1, capsule:1, capsules:1, caplet:1, caplets:1, gummies:1, gummy:1, pack:1, of:1, the:1, and:1, with:1, for:1, supplement:1, dietary:1, bottle:1, pk:1, 'x':1 };
+  function normText(t){
+    return String(t || '').toLowerCase().replace(/\b(\d+)\s*(ct|count|counts|tablets?|capsules?|softgels?|caplets?|gummies|pk)\b/g, ' ')
+      .replace(/\bd[\s-]?3\b/g, 'd3').replace(/\bb[\s-]?12\b/g, 'b12').replace(/\bb[\s-]?6\b/g, 'b6').replace(/\bk[\s-]?2\b/g, 'k2')
+      .replace(/[^a-z0-9]+/g, ' ').trim();
   }
-  function nameSearch(q, auto){
-    var tries = shortQueries(q), i = 0;
-    $('nameHits').innerHTML = '<div class="small" style="margin-top:8px">Searching NIH for the name…</div>';
-    function next(){
-      if (i >= tries.length){ $('nameHits').innerHTML = '<div class="bad" style="margin-top:8px">NIH has no labels for that name.</div><div class="small">Tried: ' + esc(tries.join(' | ')) + '</div>'; log('NIH name search found nothing for: ' + tries.join(' | ')); return; }
-      var t = tries[i++];
-      fetch(API + '/browse-products?method=by_keyword&q=' + encodeURIComponent(t) + '&size=6').then(function(r){ return r.json(); }).then(function(j){
-        var hits = (j && j.hits && j.hits.hits ? j.hits.hits : (j && j.hits) || []);
-        log('NIH name search "' + t + '" → ' + hits.length + ' hit(s)');
-        if (!hits.length) return next();
-        $('nameHits').innerHTML = '<div style="margin-top:8px"><b>NIH labels for “' + esc(t) + '”</b>' + (auto ? ' <span class="small">(automatic)</span>' : '') + '</div>' + hits.map(function(h){
-          var s = h._source || h; return '<div class="hit"><b>' + esc(s.brandName || '') + '</b> ' + esc(s.fullName || '') + '<div class="small">label id ' + esc(String(s.id || h._id || '')) + (s.upcSku ? ' · UPC ' + esc(s.upcSku) : '') + '</div></div>';
-        }).join('');
-        hits.forEach(function(h){ var s = h._source || h; log('   NIH label ' + (s.id || h._id) + ': ' + (s.brandName || '') + ' | ' + (s.fullName || '') + ' | UPC ' + (s.upcSku || '')); });
-      }).catch(function(e){ log('NIH name search error: ' + e.message); next(); });
+  function toks(t){ return normText(t).split(' ').filter(function(w){ return w && !STOP[w]; }); }
+  function uniq(a){ return a.filter(function(v, i){ return a.indexOf(v) === i; }); }
+  function hitsList(j){ return (j && j.hits && j.hits.hits ? j.hits.hits : (j && j.hits) || []); }
+  function srcOfHit(h){ var x = h._source !== undefined ? h._source : h; if (typeof x === 'string'){ try { x = JSON.parse(x); } catch (e) {} } return { id: String((x && (x.id || x.dsldId)) || h._id || ''), name: (x && (x.fullName || x.name)) || '', brand: (x && x.brandName) || '', upc: x && x.upcSku }; }
+  function getJ(u){ return fetch(u).then(function(r){ if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); }); }
+
+  // names = [{brand, name}] from the barcode databases; code = the scanned digits
+  function smartNameSearch(code, names, auto){
+    var box = $('nameHits');
+    box.innerHTML = '<div class="small" style="margin-top:8px">Matching the name to NIH labels…</div>';
+    var brand = '', best = null;
+    names.forEach(function(n){ if (!brand && n.brand) brand = n.brand; });
+    // use the richest name (most useful words) as the product description
+    names.forEach(function(n){ var t = toks(n.name); if (!best || t.length > best.t.length) best = { t: t, n: n }; });
+    if (!best){ box.innerHTML = '<div class="bad" style="margin-top:8px">No product name to search with.</div>'; return; }
+    var brandToks = toks(brand);
+    var kw = best.t.filter(function(w){ return brandToks.indexOf(w) < 0; });
+    var textKw = kw.filter(function(w){ return !/^\d+$/.test(w); });          // words (not strength numbers)
+    var q = (textKw.length ? textKw : kw).slice(0, 4).join(' ');
+    log('Name match: brand "' + brand + '", keywords "' + kw.join(' ') + '", query "' + q + '"');
+
+    var plan = [
+      { label: 'search-filter + brand', url: API + '/search-filter?q=' + encodeURIComponent(q) + '&brand=' + encodeURIComponent(brand) + '&status=2&size=25', need: !!brand },
+      { label: 'search-filter (words only)', url: API + '/search-filter?q=' + encodeURIComponent(q) + '&status=2&size=25', need: true },
+      { label: 'brand list', url: API + '/brand-products?q=' + encodeURIComponent(brand) + '&size=1000', need: !!brand }
+    ].filter(function(p){ return p.need && q; });
+    var i = 0;
+    function step(){
+      if (i >= plan.length){ box.innerHTML = '<div class="bad" style="margin-top:8px">NIH has no label that fits “' + esc(best.n.brand + ' ' + best.n.name) + '”.</div>'; log('Name match: nothing found'); return; }
+      var pl = plan[i++];
+      getJ(pl.url).then(function(j){
+        var cands = hitsList(j).map(srcOfHit).filter(function(c){ return c.id; });
+        log('Name match via ' + pl.label + ': ' + cands.length + ' candidate(s)');
+        // keep candidates from the right brand, then score by shared words
+        var bt = brandToks;
+        cands = cands.filter(function(c){ var ct = toks(c.brand + ' ' + c.name); return !bt.length || bt.every(function(w){ return ct.indexOf(w) >= 0; }); });
+        cands.forEach(function(c){
+          var ct = toks(c.name); var hit = 0; kw.forEach(function(w){ if (ct.indexOf(w) >= 0) hit++; });
+          c.score = kw.length ? hit / kw.length : 0;
+        });
+        cands = cands.filter(function(c){ return c.score >= 0.5; }).sort(function(a, b){ return b.score - a.score; }).slice(0, 8);
+        if (!cands.length) return step();
+        return Promise.all(cands.map(function(c){
+          return getJ(API + '/label/' + encodeURIComponent(c.id)).then(function(l){ c.upc = l.upcSku; c.exact = sameUpc(l.upcSku, code); return c; }, function(){ return c; });
+        })).then(function(list){
+          list.sort(function(a, b){ return (b.exact ? 1 : 0) - (a.exact ? 1 : 0) || b.score - a.score; });
+          var exact = list.filter(function(c){ return c.exact; })[0];
+          log(exact ? 'Name match: EXACT UPC match → label ' + exact.id : 'Name match: ' + list.length + ' close label(s), none with the same UPC');
+          list.forEach(function(c){ log('   NIH label ' + c.id + ': ' + c.brand + ' | ' + c.name + ' | UPC ' + (c.upc || '') + ' | fit ' + Math.round(c.score * 100) + '%' + (c.exact ? ' | SAME UPC' : '')); });
+          box.innerHTML = '<div style="margin-top:8px"><b>' + (exact ? 'Exact match in NIH' : 'Closest NIH labels (pack size or UPC differs)') + '</b> <span class="small">via ' + esc(pl.label) + '</span></div>'
+            + list.map(function(c){
+              return '<div class="hit"><b>' + esc(c.brand) + '</b> ' + esc(c.name) + (c.exact ? ' <span class="badge found">same UPC</span>' : '')
+                + '<div class="small">label id ' + esc(c.id) + (c.upc ? ' · NIH UPC ' + esc(c.upc) : '') + ' · name fit ' + Math.round(c.score * 100) + '%</div></div>';
+            }).join('');
+          smartDone = true;
+          stNih = exact ? '<span class="ok">NIH label found: ' + esc(exact.brand + ' — ' + exact.name) + '</span>' : '<span class="ok">Closest NIH labels listed below.</span>';
+          showStatus(code);
+        });
+      }).catch(function(e){ log('Name match error (' + pl.label + '): ' + e.message); step(); });
     }
-    next();
+    step();
   }
+  function nameSearch(q){ smartNameSearch(lastCode, [{ brand: '', name: q }], false); }
+  var lastCode = '', smartDone = false;
   $('sources').addEventListener('click', function(e){ var b = e.target.closest && e.target.closest('[data-name]'); if (b) nameSearch(b.getAttribute('data-name')); });
 
   function lookup(raw){
     var my = ++runId;
-    var d = digits(raw);
+    var d = digits(raw); lastCode = d; smartDone = false;
     $('raw').textContent = raw || '—';
     if (!d){ $('result').innerHTML = '<span class="bad">No digits found.</span>'; return; }
     $('fmt').textContent = d.length + ' digits · check digit ' + (checkOk(d) ? 'valid' : 'does NOT validate (misread, or a non-UPC code)');
@@ -308,7 +355,7 @@ window.addEventListener('unhandledrejection', function(e){
       } else {
         $('result').innerHTML = '<div class="bad">No NIH product matched this number.</div><div class="mute">' + tried + ' attempt(s). Not every supplement has a UPC on file at NIH. The log below shows what each attempt returned.</div>';
         log('NO MATCH after ' + tried + ' attempt(s)');
-        stNih = '<span class="bad">NIH has no match on that number.</span>'; showStatus(d);
+        if (!smartDone){ stNih = '<span class="bad">NIH has no label with that UPC (checking by name…).</span>'; showStatus(d); }
       }
     });
   }
