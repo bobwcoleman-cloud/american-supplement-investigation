@@ -26,6 +26,11 @@ video{width:100%;border-radius:12px;background:#000;max-height:300px;object-fit:
 .mute{color:var(--mute);font-size:13px}
 .ok{color:var(--green);font-weight:700}.bad{color:var(--bad);font-weight:700}
 pre{white-space:pre-wrap;word-break:break-word;font:12px/1.5 ui-monospace,Menlo,Consolas,monospace;margin:0;max-height:340px;overflow:auto}
+.src{border-top:1px solid var(--line);padding:9px 0}
+.badge{display:inline-block;font-size:11px;font-weight:700;border-radius:999px;padding:2px 8px;margin-left:6px;color:#fff;background:var(--mute)}
+.badge.found{background:var(--green)}.badge.error{background:var(--bad)}
+.small{font-size:12px;color:var(--mute)}
+button.mini{padding:6px 10px;font-size:12px;margin-top:6px}
 .hit{border-top:1px solid var(--line);padding:8px 0}
 </style>
 <script>
@@ -79,6 +84,12 @@ window.addEventListener('unhandledrejection', function(e){
 <div class="card">
   <h2>4 · NIH lookup result</h2>
   <div id="result" class="mute">Nothing yet.</div>
+</div>
+
+<div class="card">
+  <h2>5 · Product databases (all sources at once)</h2>
+  <div id="sources" class="mute">Nothing yet.</div>
+  <div id="nameHits"></div>
 </div>
 
 <div class="card">
@@ -169,7 +180,58 @@ window.addEventListener('unhandledrejection', function(e){
     { name: 'by_upc', url: function(v){ return API + '/browse-products?method=by_upc&q=' + encodeURIComponent(v) + '&size=10'; } }
   ];
 
-  var runId = 0;
+  var runId = 0, stNih = '', stSrv = '';
+  function showStatus(d){ $('camMsg').innerHTML = 'Read <b>' + esc(d) + '</b>. ' + stNih + ' ' + stSrv; }
+
+  var BADGE = { found: 'found', none: 'no match', error: 'problem', skipped: 'not set up' };
+  function serverLookup(d, my){
+    $('sources').innerHTML = 'Asking each database… (up to 10 seconds)';
+    $('nameHits').innerHTML = '';
+    fetch('/.netlify/functions/barcode-lookup', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code: d }) })
+      .then(function(r){ return r.text().then(function(t){ var j = null; try { j = JSON.parse(t); } catch (e) {} return { ok: r.ok, status: r.status, j: j, t: t }; }); })
+      .then(function(x){
+        if (my !== runId) return;
+        if (!x.ok || !x.j || !x.j.results){
+          var why = x.status === 404 ? 'The lookup function is not on this page\u2019s site yet (404).' : x.status === 403 ? 'The server refused the request (origin not allowed).' : 'The lookup returned an error (' + x.status + ').';
+          $('sources').innerHTML = '<span class="bad">' + esc(why) + '</span>'; stSrv = '<span class="bad">Databases: no answer.</span>'; showStatus(d); log('barcode-lookup: HTTP ' + x.status + ' ' + (x.t || '').slice(0, 120)); return;
+        }
+        var html = '', names = [];
+        x.j.results.forEach(function(r){
+          log('source ' + r.source + ': ' + r.state + ' (' + r.ms + ' ms) ' + (r.note || ''));
+          html += '<div class="src"><b>' + esc(r.label) + '</b><span class="badge ' + esc(r.state) + '">' + esc(BADGE[r.state] || r.state) + '</span> <span class="small">' + r.ms + ' ms</span>';
+          (r.matches || []).forEach(function(m, i){
+            var q = (m.brand ? m.brand + ' ' : '') + (m.name || '');
+            names.push(r.label);
+            html += '<div style="margin-top:4px"><b>' + esc(m.brand || '') + '</b> ' + esc(m.name || '') + (m.upc ? '<div class="small">UPC ' + esc(m.upc) + '</div>' : '') +
+              '<button class="alt mini" data-name="' + esc(q.replace(/\s+/g, ' ').trim().slice(0, 90)) + '">Find this name in NIH</button></div>';
+          });
+          if (r.note) html += '<div class="small" style="margin-top:3px">' + esc(r.note) + '</div>';
+          html += '</div>';
+        });
+        $('sources').innerHTML = html;
+        var uniq = names.filter(function(n, i){ return names.indexOf(n) === i; });
+        stSrv = uniq.length ? '<span class="ok">Databases that know it: ' + esc(uniq.join(', ')) + '.</span>' : '<span class="bad">No product database knew this number.</span>';
+        showStatus(d);
+      }, function(e){
+        if (my !== runId) return;
+        $('sources').innerHTML = '<span class="bad">Could not reach the lookup (' + esc(e.message) + ').</span> This card works only on the Netlify preview, not from a saved file.';
+        stSrv = '<span class="bad">Databases: no answer.</span>'; showStatus(d); log('barcode-lookup failed: ' + e.message);
+      });
+  }
+  // name -> NIH label search (this is the step the real app would use after a barcode names the product)
+  function nameSearch(q){
+    $('nameHits').innerHTML = '<div class="small" style="margin-top:8px">Searching NIH for “' + esc(q) + '”…</div>';
+    fetch(API + '/browse-products?method=by_keyword&q=' + encodeURIComponent(q) + '&size=6').then(function(r){ return r.json(); }).then(function(j){
+      var hits = (j && j.hits && j.hits.hits ? j.hits.hits : (j && j.hits) || []);
+      log('NIH name search "' + q + '" → ' + hits.length + ' hit(s)');
+      if (!hits.length){ $('nameHits').innerHTML = '<div class="bad" style="margin-top:8px">NIH has no labels for that name.</div>'; return; }
+      $('nameHits').innerHTML = '<div style="margin-top:8px"><b>NIH labels for that name</b></div>' + hits.map(function(h){
+        var s = h._source || h; return '<div class="hit"><b>' + esc(s.brandName || '') + '</b> ' + esc(s.fullName || '') + '<div class="small">label id ' + esc(String(s.id || h._id || '')) + (s.upcSku ? ' · UPC ' + esc(s.upcSku) : '') + '</div></div>';
+      }).join('');
+    }).catch(function(e){ $('nameHits').innerHTML = '<div class="bad" style="margin-top:8px">Name search failed: ' + esc(e.message) + '</div>'; });
+  }
+  $('sources').addEventListener('click', function(e){ var b = e.target.closest && e.target.closest('[data-name]'); if (b) nameSearch(b.getAttribute('data-name')); });
+
   function lookup(raw){
     var my = ++runId;
     var d = digits(raw);
@@ -180,9 +242,10 @@ window.addEventListener('unhandledrejection', function(e){
     $('variants').textContent = vars.map(function(v){ return (v.label + ':').padEnd(26) + v.value; }).join('\n');
     log('Scanned "' + raw + '" → ' + d.length + ' digits; check digit ' + (checkOk(d) ? 'ok' : 'FAIL') + '; ' + vars.length + ' variants');
     $('result').innerHTML = '<span class="mute">Searching NIH…</span>';
-    $('camMsg').innerHTML = 'Read <b>' + esc(d) + '</b>. Searching the NIH database…';
+    stNih = 'Searching the NIH database…'; stSrv = 'Asking the product databases…'; showStatus(d);
     try { $('raw').closest('.card').scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {}
 
+    serverLookup(d, my);
     var found = null, tried = 0, work = [];
     STRATEGIES.forEach(function(st){
       vars.forEach(function(v){ work.push({ st: st, v: v }); });
@@ -226,11 +289,11 @@ window.addEventListener('unhandledrejection', function(e){
           + '<div class="hit"><b>' + esc(s.brandName || '') + '</b><br>' + esc(s.fullName || s.name || '') + '</div>'
           + '<div class="mute">NIH label id ' + esc(String(idOf(found.h))) + ' · NIH UPC field "' + esc(found.upc || '') + '"<br>Matched via ' + esc(found.via) + ' · ' + tried + ' attempt(s)</div>';
         log('MATCH via ' + found.via + ' after ' + tried + ' attempt(s)');
-        $('camMsg').innerHTML = '<span class="ok">Found: ' + esc((s.brandName || '') + ' — ' + (s.fullName || s.name || '')) + '</span>';
+        stNih = '<span class="ok">NIH: ' + esc((s.brandName || '') + ' — ' + (s.fullName || s.name || '')) + '</span>'; showStatus(d);
       } else {
         $('result').innerHTML = '<div class="bad">No NIH product matched this number.</div><div class="mute">' + tried + ' attempt(s). Not every supplement has a UPC on file at NIH. The log below shows what each attempt returned.</div>';
         log('NO MATCH after ' + tried + ' attempt(s)');
-        $('camMsg').innerHTML = '<span class="bad">Read ' + esc(d) + ' but no NIH product matched it.</span> Details below.';
+        stNih = '<span class="bad">NIH has no match on that number.</span>'; showStatus(d);
       }
     });
   }
