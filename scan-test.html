@@ -245,6 +245,22 @@ window.addEventListener('unhandledrejection', function(e){
   function srcOfHit(h){ var x = h._source !== undefined ? h._source : h; if (typeof x === 'string'){ try { x = JSON.parse(x); } catch (e) {} } return { id: String((x && (x.id || x.dsldId)) || h._id || ''), name: (x && (x.fullName || x.name)) || '', brand: (x && x.brandName) || '', upc: x && x.upcSku }; }
   function getJ(u){ return fetch(u).then(function(r){ if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); }); }
 
+  // pull the version facts NIH keeps on each label: market status, entry date, and links to other versions of the same product
+  function labelMeta(c, l){
+    c.upc = l.upcSku; c.off = l.offMarket; c.entry = l.entryDate || '';
+    c.rel = (l.labelRelationships || []).map(function(r){ return String(r.labelId); });
+    var ev = (l.events || []).filter(function(e){ return /off market/i.test(e.type || ''); })[0];
+    c.offDate = ev ? ev.date : '';
+    return c;
+  }
+  function statusText(c){
+    var s = [];
+    if (c.off === 1) s.push('off market' + (c.offDate ? ' since ' + c.offDate : '')); else if (c.off === 0) s.push('on market');
+    if (c.entry) s.push('entered NIH ' + c.entry);
+    return s.join(' · ');
+  }
+  function cmpCand(a, b){ return b.score - a.score || (a.off || 0) - (b.off || 0) || String(b.entry || '').localeCompare(String(a.entry || '')); }
+
   // names = [{brand, name}] from the barcode databases; code = the scanned digits.
   // The barcode databases are sloppy about brand names (UPCitemdb may give the parent company), so the brand is only
   // a ranking hint. What proves a label is the right one is its UPC, so every promising candidate is opened and compared.
@@ -295,10 +311,10 @@ window.addEventListener('unhandledrejection', function(e){
       var all = Object.keys(pool).map(function(k){ return pool[k]; });
       var exact = all.filter(function(c){ return c.exact; })[0];
       var list;
-      if (exact){ list = [exact].concat(all.filter(function(c){ return c !== exact && c.brandOk && c.strOk; }).sort(function(a, b){ return b.score - a.score; }).slice(0, 5)); }
+      if (exact){ list = [exact]; }
       else {
-        list = all.filter(function(c){ return c.brandOk && c.strOk; }).sort(function(a, b){ return b.score - a.score; }).slice(0, 8);
-        if (!list.length) list = all.filter(function(c){ return c.strOk; }).sort(function(a, b){ return b.score - a.score; }).slice(0, 5);
+        list = all.filter(function(c){ return c.brandOk && c.strOk; }).sort(cmpCand).slice(0, 8);
+        if (!list.length) list = all.filter(function(c){ return c.strOk; }).sort(cmpCand).slice(0, 5);
       }
       hiddenStrength = all.filter(function(c){ return !c.strOk && c !== exact; }).length;
       smartDone = true;
@@ -308,15 +324,48 @@ window.addEventListener('unhandledrejection', function(e){
         stNih = '<span class="bad">No NIH label found by name.</span>'; showStatus(code); return;
       }
       log(exact ? 'Name match: EXACT UPC match → label ' + exact.id : 'Name match: ' + list.length + ' close label(s), none with the same UPC' + (hiddenStrength ? '; ' + hiddenStrength + ' other-strength label(s) set aside' : ''));
-      list.forEach(function(c){ log('   NIH label ' + c.id + ': ' + c.brand + ' | ' + c.name + ' | UPC ' + (c.upc || '') + ' | fit ' + Math.round(c.score * 100) + '%' + (c.exact ? ' | SAME UPC' : '') + (c.brandOk ? '' : ' | different brand')); });
+      list.forEach(function(c){ log('   NIH label ' + c.id + ': ' + c.brand + ' | ' + c.name + ' | UPC ' + (c.upc || '') + ' | fit ' + Math.round(c.score * 100) + '%' + (c.exact ? ' | SAME UPC' : '') + (c.brandOk ? '' : ' | different brand') + (statusText(c) ? ' | ' + statusText(c) : '')); });
       box.innerHTML = '<div style="margin-top:8px"><b>' + (exact ? 'Exact match in NIH' : 'Closest NIH labels (pack size or UPC differs)') + '</b> <span class="small">via ' + esc(pl ? pl.label : 'search') + '</span></div>'
         + list.map(function(c){
           return '<div class="hit"><b>' + esc(c.brand) + '</b> ' + esc(c.name) + (c.exact ? ' <span class="badge found">same UPC</span>' : '') + (c.brandOk ? '' : ' <span class="badge none">different brand</span>')
-            + '<div class="small">label id ' + esc(c.id) + (c.upc ? ' · NIH UPC ' + esc(c.upc) : ' · no UPC on file') + ' · name fit ' + Math.round(c.score * 100) + '%</div></div>';
+            + '<div class="small">label id ' + esc(c.id) + (c.upc ? ' · NIH UPC ' + esc(c.upc) : ' · no UPC on file') + ' · name fit ' + Math.round(c.score * 100) + '%</div>' + (statusText(c) ? '<div class="small">' + esc(statusText(c)) + '</div>' : '') + '</div>';
         }).join('')
         + (hiddenStrength ? '<div class="small" style="margin-top:6px">' + hiddenStrength + ' label(s) with a different strength were left out.</div>' : '');
+      if (exact) loadRelated(exact);
       stNih = exact ? '<span class="ok">NIH label found: ' + esc(exact.brand + ' — ' + exact.name) + '</span>' : '<span class="ok">Closest NIH labels listed below.</span>';
       showStatus(code);
+    }
+    // NIH links older and newer printings of the same product ("image difference, same product"); show where they stand
+    function loadRelated(ex){
+      var seen = {}; seen[ex.id] = 1;
+      var queue = (ex.rel || []).slice(), out = [];
+      function show(){
+        out.sort(function(a, b){ return (a.unavailable ? 1 : 0) - (b.unavailable ? 1 : 0) || (a.off || 0) - (b.off || 0) || String(b.entry || '').localeCompare(String(a.entry || '')); });
+        var good = out.filter(function(c){ return !c.unavailable; });
+        var anyOn = (ex.off === 0) || good.some(function(c){ return c.off === 0; });
+        var html = '';
+        if (ex.off === 1 && !anyOn) html += '<div class="bad" style="margin-top:8px">NIH marks every version of this product that it lets us read as off market, so the bottle in your hand may be a newer formulation than any of them. Compare the ingredient list before trusting this match.</div>';
+        else if (ex.off === 1) html += '<div class="small" style="margin-top:8px">The label that matched is off market; a version that is still on market is listed below.</div>';
+        if (out.length){
+          html += '<div style="margin-top:8px"><b>Other NIH labels for the same product</b></div>';
+          out.forEach(function(c){
+            log('   related NIH label ' + c.id + (c.unavailable ? ': not available from NIH' : ': ' + c.brand + ' | ' + c.name + ' | UPC ' + (c.upc || '') + ' | ' + statusText(c)));
+            html += c.unavailable
+              ? '<div class="hit"><span class="small">label id ' + esc(c.id) + ' is linked by NIH but NIH did not return it.</span></div>'
+              : '<div class="hit"><b>' + esc(c.brand) + '</b> ' + esc(c.name) + '<div class="small">label id ' + esc(c.id) + (c.upc ? ' · NIH UPC ' + esc(c.upc) : ' · no UPC on file') + '</div><div class="small">' + esc(statusText(c)) + '</div></div>';
+          });
+        }
+        var rb = document.createElement('div'); rb.innerHTML = html; box.appendChild(rb);
+      }
+      function next(){
+        if (!queue.length || out.length >= 8) return show();
+        var id = queue.shift(); if (seen[id]) return next(); seen[id] = 1;
+        getJ(API + '/label/' + encodeURIComponent(id)).then(function(l){
+          if (l && l.id){ var c = labelMeta({ id: String(l.id), brand: l.brandName || '', name: l.fullName || '', score: 0 }, l); out.push(c); (c.rel || []).forEach(function(r){ if (!seen[r]) queue.push(r); }); }
+          else out.push({ id: id, unavailable: true });
+        }, function(){ out.push({ id: id, unavailable: true }); }).then(next);
+      }
+      next();
     }
     function step(){
       if (i >= plan.length) return finish(null);
@@ -329,7 +378,7 @@ window.addEventListener('unhandledrejection', function(e){
           .sort(function(a, b){ return ((b.brandOk ? 2 : 0) + (b.strOk ? 1 : 0)) - ((a.brandOk ? 2 : 0) + (a.strOk ? 1 : 0)) || b.score - a.score; }).slice(0, 10);
         return Promise.all(todo.map(function(c){
           opened[c.id] = 1;
-          return getJ(API + '/label/' + encodeURIComponent(c.id)).then(function(l){ c.upc = l.upcSku; c.exact = sameUpc(l.upcSku, code); pool[c.id] = c; }, function(){ pool[c.id] = c; });
+          return getJ(API + '/label/' + encodeURIComponent(c.id)).then(function(l){ labelMeta(c, l); c.exact = sameUpc(l.upcSku, code); pool[c.id] = c; }, function(){ pool[c.id] = c; });
         })).then(function(){
           var hasExact = Object.keys(pool).some(function(k){ return pool[k].exact; });
           if (hasExact) finish(pl); else step();
@@ -342,7 +391,11 @@ window.addEventListener('unhandledrejection', function(e){
   var lastCode = '', smartDone = false;
   $('sources').addEventListener('click', function(e){ var b = e.target.closest && e.target.closest('[data-name]'); if (b) nameSearch(b.getAttribute('data-name')); });
 
+  var lastLookupAt = 0;
   function lookup(raw){
+    var dn = digits(raw);
+    if (dn && dn === lastCode && Date.now() - lastLookupAt < 8000){ log('Same barcode read again within 8 seconds; ignoring the duplicate'); return; }
+    lastLookupAt = Date.now();
     var my = ++runId;
     var d = digits(raw); lastCode = d; smartDone = false;
     $('raw').textContent = raw || '—';
@@ -576,6 +629,7 @@ window.addEventListener('unhandledrejection', function(e){
 
   $('photoIn').addEventListener('change', function(e){ var f = e.target.files && e.target.files[0]; log('Photo picker returned ' + (f ? 'a file' : 'nothing')); if (f) decodeImageFile(f); else $('camMsg').textContent = 'No photo came back from the camera. Try again.'; e.target.value = ''; });
   $('startBtn').addEventListener('click', function(){ log('Scan button tapped'); startCam(); });
+  document.querySelector('.photo-btn').addEventListener('click', function(){ stopCam(); });
   $('stopBtn').addEventListener('click', function(){ stopCam(); $('camMsg').textContent = ''; });
   $('goBtn').addEventListener('click', function(){ lookup($('manual').value); });
   $('manual').addEventListener('keydown', function(e){ if (e.key === 'Enter') lookup($('manual').value); });
