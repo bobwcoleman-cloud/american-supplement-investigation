@@ -176,8 +176,7 @@ window.addEventListener('unhandledrejection', function(e){
   // Each strategy is a URL builder; the test shows which ones the NIH service actually answers
   var STRATEGIES = [
     { name: 'keyword search', url: function(v){ return API + '/browse-products?method=by_keyword&q=' + encodeURIComponent(v) + '&size=10'; } },
-    { name: 'search-filter', url: function(v){ return API + '/search-filter?q=' + encodeURIComponent(v) + '&size=10'; } },
-    { name: 'by_upc', url: function(v){ return API + '/browse-products?method=by_upc&q=' + encodeURIComponent(v) + '&size=10'; } }
+    { name: 'search-filter', url: function(v){ return API + '/search-filter?q=' + encodeURIComponent(v) + '&size=10'; } }
   ];
 
   var runId = 0, stNih = '', stSrv = '';
@@ -198,6 +197,7 @@ window.addEventListener('unhandledrejection', function(e){
         var html = '', names = [];
         x.j.results.forEach(function(r){
           log('source ' + r.source + ': ' + r.state + ' (' + r.ms + ' ms) ' + (r.note || ''));
+          (r.matches || []).forEach(function(m){ log('   name from ' + r.source + ': ' + (m.brand || '') + ' | ' + (m.name || '') + ' | UPC ' + (m.upc || '')); });
           html += '<div class="src"><b>' + esc(r.label) + '</b><span class="badge ' + esc(r.state) + '">' + esc(BADGE[r.state] || r.state) + '</span> <span class="small">' + r.ms + ' ms</span>';
           (r.matches || []).forEach(function(m, i){
             var q = (m.brand ? m.brand + ' ' : '') + (m.name || '');
@@ -210,6 +210,8 @@ window.addEventListener('unhandledrejection', function(e){
         });
         $('sources').innerHTML = html;
         var uniq = names.filter(function(n, i){ return names.indexOf(n) === i; });
+        var first = null; x.j.results.forEach(function(r){ if (!first && r.matches && r.matches.length && r.source !== 'dsld'){ var m0 = r.matches[0]; first = ((m0.brand || '') + ' ' + (m0.name || '')).replace(/\s+/g, ' ').trim(); } });
+        if (first) nameSearch(first.slice(0, 120), true);
         stSrv = uniq.length ? '<span class="ok">Databases that know it: ' + esc(uniq.join(', ')) + '.</span>' : '<span class="bad">No product database knew this number.</span>';
         showStatus(d);
       }, function(e){
@@ -219,16 +221,29 @@ window.addEventListener('unhandledrejection', function(e){
       });
   }
   // name -> NIH label search (this is the step the real app would use after a barcode names the product)
-  function nameSearch(q){
-    $('nameHits').innerHTML = '<div class="small" style="margin-top:8px">Searching NIH for “' + esc(q) + '”…</div>';
-    fetch(API + '/browse-products?method=by_keyword&q=' + encodeURIComponent(q) + '&size=6').then(function(r){ return r.json(); }).then(function(j){
-      var hits = (j && j.hits && j.hits.hits ? j.hits.hits : (j && j.hits) || []);
-      log('NIH name search "' + q + '" → ' + hits.length + ' hit(s)');
-      if (!hits.length){ $('nameHits').innerHTML = '<div class="bad" style="margin-top:8px">NIH has no labels for that name.</div>'; return; }
-      $('nameHits').innerHTML = '<div style="margin-top:8px"><b>NIH labels for that name</b></div>' + hits.map(function(h){
-        var s = h._source || h; return '<div class="hit"><b>' + esc(s.brandName || '') + '</b> ' + esc(s.fullName || '') + '<div class="small">label id ' + esc(String(s.id || h._id || '')) + (s.upcSku ? ' · UPC ' + esc(s.upcSku) : '') + '</div></div>';
-      }).join('');
-    }).catch(function(e){ $('nameHits').innerHTML = '<div class="bad" style="margin-top:8px">Name search failed: ' + esc(e.message) + '</div>'; });
+  function shortQueries(q){
+    var words = q.replace(/[(),;:]/g, ' ').replace(/\s+/g, ' ').trim().split(' ');
+    var out = [q.trim()];
+    [8, 5, 3].forEach(function(n){ if (words.length > n) out.push(words.slice(0, n).join(' ')); });
+    return out.filter(function(v, i){ return v && out.indexOf(v) === i; });
+  }
+  function nameSearch(q, auto){
+    var tries = shortQueries(q), i = 0;
+    $('nameHits').innerHTML = '<div class="small" style="margin-top:8px">Searching NIH for the name…</div>';
+    function next(){
+      if (i >= tries.length){ $('nameHits').innerHTML = '<div class="bad" style="margin-top:8px">NIH has no labels for that name.</div><div class="small">Tried: ' + esc(tries.join(' | ')) + '</div>'; log('NIH name search found nothing for: ' + tries.join(' | ')); return; }
+      var t = tries[i++];
+      fetch(API + '/browse-products?method=by_keyword&q=' + encodeURIComponent(t) + '&size=6').then(function(r){ return r.json(); }).then(function(j){
+        var hits = (j && j.hits && j.hits.hits ? j.hits.hits : (j && j.hits) || []);
+        log('NIH name search "' + t + '" → ' + hits.length + ' hit(s)');
+        if (!hits.length) return next();
+        $('nameHits').innerHTML = '<div style="margin-top:8px"><b>NIH labels for “' + esc(t) + '”</b>' + (auto ? ' <span class="small">(automatic)</span>' : '') + '</div>' + hits.map(function(h){
+          var s = h._source || h; return '<div class="hit"><b>' + esc(s.brandName || '') + '</b> ' + esc(s.fullName || '') + '<div class="small">label id ' + esc(String(s.id || h._id || '')) + (s.upcSku ? ' · UPC ' + esc(s.upcSku) : '') + '</div></div>';
+        }).join('');
+        hits.forEach(function(h){ var s = h._source || h; log('   NIH label ' + (s.id || h._id) + ': ' + (s.brandName || '') + ' | ' + (s.fullName || '') + ' | UPC ' + (s.upcSku || '')); });
+      }).catch(function(e){ log('NIH name search error: ' + e.message); next(); });
+    }
+    next();
   }
   $('sources').addEventListener('click', function(e){ var b = e.target.closest && e.target.closest('[data-name]'); if (b) nameSearch(b.getAttribute('data-name')); });
 
