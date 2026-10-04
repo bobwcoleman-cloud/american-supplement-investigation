@@ -19,6 +19,8 @@ button.alt{background:transparent;color:var(--fg);border:1.5px solid var(--line)
 input[type=text],input[type=search],input[type=tel]{font:inherit;width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--fg)}
 .row{display:flex;gap:8px}
 .photo-btn{display:inline-block;font-weight:700;border:1.5px solid var(--green);color:var(--green);border-radius:10px;padding:11px 14px;cursor:pointer}
+.statusbar{position:sticky;top:0;z-index:20;background:var(--card);border:2px solid var(--green);border-radius:12px;padding:10px 12px;margin:8px 0 10px;font-weight:600;font-size:14px}
+.card{scroll-margin-top:70px}
 video{width:100%;border-radius:12px;background:#000;max-height:300px;object-fit:cover}
 .big{font:700 22px/1.2 ui-monospace,Menlo,Consolas,monospace;word-break:break-all}
 .mute{color:var(--mute);font-size:13px}
@@ -26,9 +28,20 @@ video{width:100%;border-radius:12px;background:#000;max-height:300px;object-fit:
 pre{white-space:pre-wrap;word-break:break-word;font:12px/1.5 ui-monospace,Menlo,Consolas,monospace;margin:0;max-height:340px;overflow:auto}
 .hit{border-top:1px solid var(--line);padding:8px 0}
 </style>
+<script>
+window.addEventListener('error', function(e){
+  var m = document.getElementById('camMsg');
+  if (m) m.innerHTML = '<span style="color:#b3482f">Page error: ' + String((e && e.message) || 'unknown').replace(/</g,'&lt;') + ' (line ' + (e && e.lineno) + ')</span>';
+});
+window.addEventListener('unhandledrejection', function(e){
+  var m = document.getElementById('camMsg');
+  if (m) m.innerHTML = '<span style="color:#b3482f">Problem: ' + String((e && e.reason && (e.reason.message || e.reason)) || 'unknown').replace(/</g,'&lt;') + '</span>';
+});
+</script>
 </head>
 <body>
 <div class="dev">Developer test page — not part of the app</div>
+<div id="camMsg" class="statusbar" role="status" aria-live="polite">Ready. Tap Scan a barcode, or take a photo of the barcode.</div>
 <h1>Barcode scan test</h1>
 <p class="mute">Scan a supplement bottle (or type a number) to see what the camera reads, how it is cleaned up, and whether the NIH label database finds it.</p>
 
@@ -39,7 +52,6 @@ pre{white-space:pre-wrap;word-break:break-word;font:12px/1.5 ui-monospace,Menlo,
     <button id="startBtn">Scan a barcode</button>
     <button id="stopBtn" class="alt" hidden>Stop camera</button>
   </div>
-  <div class="mute" id="camMsg" style="margin-top:6px"></div>
   <div style="margin-top:10px">
     <label class="photo-btn" for="photoIn">📷 Take a photo of the barcode instead</label>
     <input id="photoIn" type="file" accept="image/*" capture="environment" hidden>
@@ -168,6 +180,8 @@ pre{white-space:pre-wrap;word-break:break-word;font:12px/1.5 ui-monospace,Menlo,
     $('variants').textContent = vars.map(function(v){ return (v.label + ':').padEnd(26) + v.value; }).join('\n');
     log('Scanned "' + raw + '" → ' + d.length + ' digits; check digit ' + (checkOk(d) ? 'ok' : 'FAIL') + '; ' + vars.length + ' variants');
     $('result').innerHTML = '<span class="mute">Searching NIH…</span>';
+    $('camMsg').innerHTML = 'Read <b>' + esc(d) + '</b>. Searching the NIH database…';
+    try { $('raw').closest('.card').scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {}
 
     var found = null, tried = 0, work = [];
     STRATEGIES.forEach(function(st){
@@ -212,9 +226,11 @@ pre{white-space:pre-wrap;word-break:break-word;font:12px/1.5 ui-monospace,Menlo,
           + '<div class="hit"><b>' + esc(s.brandName || '') + '</b><br>' + esc(s.fullName || s.name || '') + '</div>'
           + '<div class="mute">NIH label id ' + esc(String(idOf(found.h))) + ' · NIH UPC field "' + esc(found.upc || '') + '"<br>Matched via ' + esc(found.via) + ' · ' + tried + ' attempt(s)</div>';
         log('MATCH via ' + found.via + ' after ' + tried + ' attempt(s)');
+        $('camMsg').innerHTML = '<span class="ok">Found: ' + esc((s.brandName || '') + ' — ' + (s.fullName || s.name || '')) + '</span>';
       } else {
         $('result').innerHTML = '<div class="bad">No NIH product matched this number.</div><div class="mute">' + tried + ' attempt(s). Not every supplement has a UPC on file at NIH. The log below shows what each attempt returned.</div>';
         log('NO MATCH after ' + tried + ' attempt(s)');
+        $('camMsg').innerHTML = '<span class="bad">Read ' + esc(d) + ' but no NIH product matched it.</span> Details below.';
       }
     });
   }
@@ -300,10 +316,12 @@ pre{white-space:pre-wrap;word-break:break-word;font:12px/1.5 ui-monospace,Menlo,
         throw e;
       });
     }
-    return attempt();
+    return Promise.race([attempt(), new Promise(function(res, rej){
+      setTimeout(function(){ var e = new Error('The camera did not respond in 10 seconds'); e.name = 'TimeoutError'; rej(e); }, 10000);
+    })]);
   }
   function startCam(){
-    $('camMsg').textContent = 'Starting camera…';
+    $('camMsg').textContent = 'Starting camera… if iPhone asks, tap Allow.';
     if (!window.isSecureContext){ camFail('The camera needs a secure (https) page.', 'not a secure context'); return; }
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
       camFail('This browser does not allow camera access here.', 'getUserMedia unavailable' + (standalone ? ' (Home Screen app mode)' : '')); return;
@@ -339,6 +357,7 @@ pre{white-space:pre-wrap;word-break:break-word;font:12px/1.5 ui-monospace,Menlo,
       var msg = n === 'NotAllowedError' ? 'Camera permission was denied. Allow camera access (iPhone Settings → Safari → Camera, or tap Allow when asked).'
               : n === 'NotFoundError' ? 'No camera was found.'
               : n === 'NotReadableError' ? 'The camera is busy in another app.'
+              : n === 'TimeoutError' ? (standalone ? 'iPhone did not open the live camera in a Home Screen app.' : 'The camera did not respond.')
               : 'The camera view would not start.';
       camFail(msg, n + ' ' + ((e && e.message) || ''));
     });
@@ -346,7 +365,7 @@ pre{white-space:pre-wrap;word-break:break-word;font:12px/1.5 ui-monospace,Menlo,
 
   /* ---------- still photo fallback ---------- */
   function decodeImageFile(file){
-    $('camMsg').textContent = 'Reading the photo…';
+    $('camMsg').textContent = 'Photo received (' + Math.round(file.size / 1024) + ' KB). Reading it…'; log('Photo file: ' + (file.type || 'unknown type') + ' ' + file.size + ' bytes');
     var url = URL.createObjectURL(file);
     var img = new Image();
     img.onload = function(){
@@ -378,12 +397,12 @@ pre{white-space:pre-wrap;word-break:break-word;font:12px/1.5 ui-monospace,Menlo,
         else { log('No barcode found in the photo'); $('camMsg').innerHTML = '<span class="bad">No barcode found in that photo.</span> Retake it closer and sharper with the bars filling the frame, or type the number.'; }
       });
     };
-    img.onerror = function(){ URL.revokeObjectURL(url); camFail('Could not open that photo.', 'image decode error'); };
+    img.onerror = function(){ URL.revokeObjectURL(url); camFail('Could not open that photo (' + (file.type || 'unknown format') + ').', 'image decode error'); };
     img.src = url;
   }
 
-  $('photoIn').addEventListener('change', function(e){ var f = e.target.files && e.target.files[0]; if (f) decodeImageFile(f); e.target.value = ''; });
-  $('startBtn').addEventListener('click', startCam);
+  $('photoIn').addEventListener('change', function(e){ var f = e.target.files && e.target.files[0]; log('Photo picker returned ' + (f ? 'a file' : 'nothing')); if (f) decodeImageFile(f); else $('camMsg').textContent = 'No photo came back from the camera. Try again.'; e.target.value = ''; });
+  $('startBtn').addEventListener('click', function(){ log('Scan button tapped'); startCam(); });
   $('stopBtn').addEventListener('click', function(){ stopCam(); $('camMsg').textContent = ''; });
   $('goBtn').addEventListener('click', function(){ lookup($('manual').value); });
   $('manual').addEventListener('keydown', function(e){ if (e.key === 'Enter') lookup($('manual').value); });
@@ -395,6 +414,7 @@ pre{white-space:pre-wrap;word-break:break-word;font:12px/1.5 ui-monospace,Menlo,
 
   var envTxt = (standalone ? 'Running as a Home Screen app' : 'Running in the browser') + ' · secure page: ' + (window.isSecureContext ? 'yes' : 'NO') + ' · camera API: ' + (navigator.mediaDevices && navigator.mediaDevices.getUserMedia ? 'yes' : 'NO') + ' · built-in detector: ' + ('BarcodeDetector' in window ? 'yes' : 'no') + ' · scanner library: ' + (hasZX() ? 'loaded' : 'NOT loaded');
   $('envLine').textContent = envTxt;
+  $('camMsg').textContent = 'Ready. Tap Scan a barcode, or take a photo of the barcode.';
   log('Page ready. ' + envTxt);
   log('Browser: ' + navigator.userAgent);
   window.__scanTest = { variantsOf: variantsOf, sameUpc: sameUpc, checkOk: checkOk, upcEtoA: upcEtoA, lookup: lookup };
