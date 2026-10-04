@@ -222,69 +222,117 @@ window.addEventListener('unhandledrejection', function(e){
   }
   // name -> NIH label search (this is the step the real app would use after a barcode names the product)
   /* ---------- name -> NIH label matching ---------- */
-  var STOP = { ct:1, count:1, counts:1, tablet:1, tablets:1, softgel:1, softgels:1, capsule:1, capsules:1, caplet:1, caplets:1, gummies:1, gummy:1, pack:1, of:1, the:1, and:1, with:1, for:1, supplement:1, dietary:1, bottle:1, pk:1, 'x':1 };
+  var STOP = { ct:1, count:1, counts:1, tablet:1, tablets:1, softgel:1, softgels:1, capsule:1, capsules:1, caplet:1, caplets:1, gummies:1, gummy:1, pack:1, of:1, the:1, and:1, with:1, for:1, supplement:1, dietary:1, bottle:1, pk:1, 'x':1,
+    more:1, than:1, a:1, an:1, month:1, months:1, supply:1, packaging:1, may:1, vary:1, varies:1, value:1, size:1, bonus:1, new:1, free:1 };
+  var UNITS = { mg:1, mcg:1, ug:1, iu:1, g:1, ml:1, cfu:1 };
+  var CORP = { inc:1, llc:1, ltd:1, corp:1, corporation:1, co:1, company:1, com:1, services:1, service:1, usa:1, us:1, international:1, brands:1, group:1, holdings:1, products:1, enterprises:1, lp:1, plc:1 };
   function normText(t){
-    return String(t || '').toLowerCase().replace(/\b(\d+)\s*(ct|count|counts|tablets?|capsules?|softgels?|caplets?|gummies|pk)\b/g, ' ')
+    return String(t || '').toLowerCase().replace(/µg/g, 'mcg').replace(/\([^)]*\)/g, ' ').replace(/(\d),(\d{3})/g, '$1$2').replace(/\b\d+\s*months?\b/g, ' ')
+      .replace(/\b(\d+)\s*(?:liquid\s+|vegetarian\s+|veggie\s+|chewable\s+)?(ct|count|counts|tablets?|capsules?|softgels?|caplets?|gummies|pk)\b/g, ' ')
       .replace(/\bd[\s-]?3\b/g, 'd3').replace(/\bb[\s-]?12\b/g, 'b12').replace(/\bb[\s-]?6\b/g, 'b6').replace(/\bk[\s-]?2\b/g, 'k2')
       .replace(/[^a-z0-9]+/g, ' ').trim();
   }
   function toks(t){ return normText(t).split(' ').filter(function(w){ return w && !STOP[w]; }); }
   function uniq(a){ return a.filter(function(v, i){ return a.indexOf(v) === i; }); }
+  // strengths such as "400iu" or "1000mcg" (a number followed by a unit); pack counts are not strengths
+  function strengthsOf(t){
+    var s = String(t || '').toLowerCase().replace(/µg/g, 'mcg').replace(/(\d),(\d{3})/g, '$1$2'), out = [], re = /(\d+(?:\.\d+)?)\s*(mg|mcg|ug|iu|g|ml|cfu)\b/g, m;
+    while ((m = re.exec(s))) out.push(m[1] + (m[2] === 'ug' ? 'mcg' : m[2]));
+    return out;
+  }
+  function cleanBrandOf(b){ return toks(b).filter(function(w){ return !CORP[w]; }).join(' '); }
   function hitsList(j){ return (j && j.hits && j.hits.hits ? j.hits.hits : (j && j.hits) || []); }
   function srcOfHit(h){ var x = h._source !== undefined ? h._source : h; if (typeof x === 'string'){ try { x = JSON.parse(x); } catch (e) {} } return { id: String((x && (x.id || x.dsldId)) || h._id || ''), name: (x && (x.fullName || x.name)) || '', brand: (x && x.brandName) || '', upc: x && x.upcSku }; }
   function getJ(u){ return fetch(u).then(function(r){ if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); }); }
 
-  // names = [{brand, name}] from the barcode databases; code = the scanned digits
+  // names = [{brand, name}] from the barcode databases; code = the scanned digits.
+  // The barcode databases are sloppy about brand names (UPCitemdb may give the parent company), so the brand is only
+  // a ranking hint. What proves a label is the right one is its UPC, so every promising candidate is opened and compared.
   function smartNameSearch(code, names, auto){
     var box = $('nameHits');
     box.innerHTML = '<div class="small" style="margin-top:8px">Matching the name to NIH labels…</div>';
-    var brand = '', best = null;
-    names.forEach(function(n){ if (!brand && n.brand) brand = n.brand; });
-    // use the richest name (most useful words) as the product description
-    names.forEach(function(n){ var t = toks(n.name); if (!best || t.length > best.t.length) best = { t: t, n: n }; });
+    var brand = '', best = null, allText = {}, wantStr = [];
+    names.forEach(function(n){
+      if (!brand){ var cb = cleanBrandOf(n.brand); if (cb) brand = cb; }
+      toks(n.brand + ' ' + n.name).forEach(function(w){ allText[w] = 1; });
+      wantStr = wantStr.concat(strengthsOf(n.name));
+      var t = toks(n.name); if (!best || t.length > best.t.length) best = { t: t, n: n };
+    });
+    wantStr = uniq(wantStr);
     if (!best){ box.innerHTML = '<div class="bad" style="margin-top:8px">No product name to search with.</div>'; return; }
     var brandToks = toks(brand);
     var kw = best.t.filter(function(w){ return brandToks.indexOf(w) < 0; });
-    var textKw = kw.filter(function(w){ return !/^\d+$/.test(w); });          // words (not strength numbers)
+    var textKw = kw.filter(function(w){ return !/^\d+$/.test(w) && !UNITS[w]; });
     var q = (textKw.length ? textKw : kw).slice(0, 4).join(' ');
-    log('Name match: brand "' + brand + '", keywords "' + kw.join(' ') + '", query "' + q + '"');
+    var guesses = [];
+    if (brand) guesses.push(brand);
+    var first2 = best.t.slice(0, 2).join(' ');
+    if (brand && first2 && guesses.indexOf(first2) < 0 && brandToks.some(function(w){ return best.t.slice(0, 2).indexOf(w) >= 0; })) guesses.push(first2);
+    log('Name match: brand "' + brand + '"' + (guesses.length > 1 ? ' (also trying "' + guesses.slice(1).join('", "') + '")' : '') + ', keywords "' + kw.join(' ') + '", strengths "' + wantStr.join(' ') + '", query "' + q + '"');
 
-    var plan = [
-      { label: 'search-filter + brand', url: API + '/search-filter?q=' + encodeURIComponent(q) + '&brand=' + encodeURIComponent(brand) + '&status=2&size=25', need: !!brand },
-      { label: 'search-filter (words only)', url: API + '/search-filter?q=' + encodeURIComponent(q) + '&status=2&size=25', need: true },
-      { label: 'brand list', url: API + '/brand-products?q=' + encodeURIComponent(brand) + '&size=1000', need: !!brand }
-    ].filter(function(p){ return p.need && q; });
-    var i = 0;
+    var plan = [];
+    guesses.forEach(function(g){ plan.push({ label: 'search-filter + brand "' + g + '"', url: API + '/search-filter?q=' + encodeURIComponent(q) + '&brand=' + encodeURIComponent(g) + '&status=2&size=25' }); });
+    plan.push({ label: 'search-filter (words only)', url: API + '/search-filter?q=' + encodeURIComponent(q) + '&status=2&size=25' });
+    if (guesses.length) plan.push({ label: 'brand list', url: API + '/brand-products?q=' + encodeURIComponent(guesses[guesses.length - 1]) + '&size=1000' });
+    if (!q) plan = [];
+
+    var pool = {}, opened = {}, hiddenStrength = 0, i = 0;
+    function fitOf(c){
+      var cb = toks(c.brand), need = kw.filter(function(w){ return cb.indexOf(w) < 0; });
+      if (!need.length) return 0;
+      var ct = toks(c.name), hit = 0; need.forEach(function(w){ if (ct.indexOf(w) >= 0) hit++; });
+      return hit / need.length;
+    }
+    function decorate(c){
+      c.score = fitOf(c);
+      var cb = toks(c.brand);
+      c.brandOk = !cb.length || cb.every(function(w){ return allText[w]; });
+      var cs = strengthsOf(c.name);
+      c.strOk = !wantStr.length || !cs.length || cs.some(function(s){ return wantStr.indexOf(s) >= 0; });
+      return c;
+    }
+    function finish(pl){
+      var all = Object.keys(pool).map(function(k){ return pool[k]; });
+      var exact = all.filter(function(c){ return c.exact; })[0];
+      var list;
+      if (exact){ list = [exact].concat(all.filter(function(c){ return c !== exact && c.brandOk && c.strOk; }).sort(function(a, b){ return b.score - a.score; }).slice(0, 5)); }
+      else {
+        list = all.filter(function(c){ return c.brandOk && c.strOk; }).sort(function(a, b){ return b.score - a.score; }).slice(0, 8);
+        if (!list.length) list = all.filter(function(c){ return c.strOk; }).sort(function(a, b){ return b.score - a.score; }).slice(0, 5);
+      }
+      hiddenStrength = all.filter(function(c){ return !c.strOk && c !== exact; }).length;
+      smartDone = true;
+      if (!list.length){
+        box.innerHTML = '<div class="bad" style="margin-top:8px">NIH has no label that fits “' + esc(best.n.brand + ' ' + best.n.name) + '”.</div>';
+        log('Name match: nothing found' + (hiddenStrength ? ' (' + hiddenStrength + ' label(s) with a different strength were set aside)' : ''));
+        stNih = '<span class="bad">No NIH label found by name.</span>'; showStatus(code); return;
+      }
+      log(exact ? 'Name match: EXACT UPC match → label ' + exact.id : 'Name match: ' + list.length + ' close label(s), none with the same UPC' + (hiddenStrength ? '; ' + hiddenStrength + ' other-strength label(s) set aside' : ''));
+      list.forEach(function(c){ log('   NIH label ' + c.id + ': ' + c.brand + ' | ' + c.name + ' | UPC ' + (c.upc || '') + ' | fit ' + Math.round(c.score * 100) + '%' + (c.exact ? ' | SAME UPC' : '') + (c.brandOk ? '' : ' | different brand')); });
+      box.innerHTML = '<div style="margin-top:8px"><b>' + (exact ? 'Exact match in NIH' : 'Closest NIH labels (pack size or UPC differs)') + '</b> <span class="small">via ' + esc(pl ? pl.label : 'search') + '</span></div>'
+        + list.map(function(c){
+          return '<div class="hit"><b>' + esc(c.brand) + '</b> ' + esc(c.name) + (c.exact ? ' <span class="badge found">same UPC</span>' : '') + (c.brandOk ? '' : ' <span class="badge none">different brand</span>')
+            + '<div class="small">label id ' + esc(c.id) + (c.upc ? ' · NIH UPC ' + esc(c.upc) : ' · no UPC on file') + ' · name fit ' + Math.round(c.score * 100) + '%</div></div>';
+        }).join('')
+        + (hiddenStrength ? '<div class="small" style="margin-top:6px">' + hiddenStrength + ' label(s) with a different strength were left out.</div>' : '');
+      stNih = exact ? '<span class="ok">NIH label found: ' + esc(exact.brand + ' — ' + exact.name) + '</span>' : '<span class="ok">Closest NIH labels listed below.</span>';
+      showStatus(code);
+    }
     function step(){
-      if (i >= plan.length){ box.innerHTML = '<div class="bad" style="margin-top:8px">NIH has no label that fits “' + esc(best.n.brand + ' ' + best.n.name) + '”.</div>'; log('Name match: nothing found'); return; }
+      if (i >= plan.length) return finish(null);
       var pl = plan[i++];
       getJ(pl.url).then(function(j){
-        var cands = hitsList(j).map(srcOfHit).filter(function(c){ return c.id; });
+        var cands = hitsList(j).map(srcOfHit).filter(function(c){ return c.id; }).map(decorate);
         log('Name match via ' + pl.label + ': ' + cands.length + ' candidate(s)');
-        // keep candidates from the right brand, then score by shared words
-        var bt = brandToks;
-        cands = cands.filter(function(c){ var ct = toks(c.brand + ' ' + c.name); return !bt.length || bt.every(function(w){ return ct.indexOf(w) >= 0; }); });
-        cands.forEach(function(c){
-          var ct = toks(c.name); var hit = 0; kw.forEach(function(w){ if (ct.indexOf(w) >= 0) hit++; });
-          c.score = kw.length ? hit / kw.length : 0;
-        });
-        cands = cands.filter(function(c){ return c.score >= 0.5; }).sort(function(a, b){ return b.score - a.score; }).slice(0, 8);
-        if (!cands.length) return step();
-        return Promise.all(cands.map(function(c){
-          return getJ(API + '/label/' + encodeURIComponent(c.id)).then(function(l){ c.upc = l.upcSku; c.exact = sameUpc(l.upcSku, code); return c; }, function(){ return c; });
-        })).then(function(list){
-          list.sort(function(a, b){ return (b.exact ? 1 : 0) - (a.exact ? 1 : 0) || b.score - a.score; });
-          var exact = list.filter(function(c){ return c.exact; })[0];
-          log(exact ? 'Name match: EXACT UPC match → label ' + exact.id : 'Name match: ' + list.length + ' close label(s), none with the same UPC');
-          list.forEach(function(c){ log('   NIH label ' + c.id + ': ' + c.brand + ' | ' + c.name + ' | UPC ' + (c.upc || '') + ' | fit ' + Math.round(c.score * 100) + '%' + (c.exact ? ' | SAME UPC' : '')); });
-          box.innerHTML = '<div style="margin-top:8px"><b>' + (exact ? 'Exact match in NIH' : 'Closest NIH labels (pack size or UPC differs)') + '</b> <span class="small">via ' + esc(pl.label) + '</span></div>'
-            + list.map(function(c){
-              return '<div class="hit"><b>' + esc(c.brand) + '</b> ' + esc(c.name) + (c.exact ? ' <span class="badge found">same UPC</span>' : '')
-                + '<div class="small">label id ' + esc(c.id) + (c.upc ? ' · NIH UPC ' + esc(c.upc) : '') + ' · name fit ' + Math.round(c.score * 100) + '%</div></div>';
-            }).join('');
-          smartDone = true;
-          stNih = exact ? '<span class="ok">NIH label found: ' + esc(exact.brand + ' — ' + exact.name) + '</span>' : '<span class="ok">Closest NIH labels listed below.</span>';
-          showStatus(code);
+        // open the most promising ones we have not opened yet (best brand and strength first), then compare UPCs
+        var todo = cands.filter(function(c){ return c.score >= 0.5 && !opened[c.id]; })
+          .sort(function(a, b){ return ((b.brandOk ? 2 : 0) + (b.strOk ? 1 : 0)) - ((a.brandOk ? 2 : 0) + (a.strOk ? 1 : 0)) || b.score - a.score; }).slice(0, 10);
+        return Promise.all(todo.map(function(c){
+          opened[c.id] = 1;
+          return getJ(API + '/label/' + encodeURIComponent(c.id)).then(function(l){ c.upc = l.upcSku; c.exact = sameUpc(l.upcSku, code); pool[c.id] = c; }, function(){ pool[c.id] = c; });
+        })).then(function(){
+          var hasExact = Object.keys(pool).some(function(k){ return pool[k].exact; });
+          if (hasExact) finish(pl); else step();
         });
       }).catch(function(e){ log('Name match error (' + pl.label + '): ' + e.message); step(); });
     }
@@ -394,7 +442,7 @@ window.addEventListener('unhandledrejection', function(e){
   }
   function gotCode(text, format){
     var now = Date.now();
-    if (text === lastSeen && now - lastAt < 3000) return;
+    if (text === lastSeen && now - lastAt < 10000) return;
     lastSeen = text; lastAt = now;
     log('Read "' + text + '" (' + (format || '?') + ')');
     $('manual').value = text;
