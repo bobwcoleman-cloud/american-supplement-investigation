@@ -637,6 +637,13 @@ button{font-family:inherit}
 .sc-type input{flex:1;min-width:0;padding:11px 12px;border:1.5px solid var(--line);border-radius:12px;font:15px 'Inter',-apple-system,sans-serif;background:var(--surface);color:var(--fg)}
 .sc-type button{all:unset;cursor:pointer;padding:0 16px;border-radius:12px;background:var(--accent);color:#fff;font:700 13px 'Inter',-apple-system,sans-serif;display:flex;align-items:center}
 .sc-clear{all:unset;cursor:pointer;font-size:12px;color:var(--accent-ink);font-weight:700;margin-top:4px;display:inline-block}
+.vc-mic{all:unset;box-sizing:border-box;cursor:pointer;flex:none;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--accent-ink)}
+.vc-mic svg{width:19px;height:19px}
+.vc-mic:focus-visible{outline:3px solid var(--gold);outline-offset:1px}
+.vc-mic.on{background:var(--danger);color:#fff;animation:vcPulse 1.2s ease-in-out infinite}
+@keyframes vcPulse{0%,100%{box-shadow:0 0 0 0 rgba(180,40,40,.45)}50%{box-shadow:0 0 0 7px rgba(180,40,40,0)}}
+.vc-msg{display:inline-block;font:600 12px 'Inter',-apple-system,sans-serif;color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:5px 10px;margin:2px 0 8px}
+@media (prefers-reduced-motion:reduce){.vc-mic.on{animation:none}}
 </style>
 </head>
 <body>
@@ -1143,6 +1150,7 @@ button{font-family:inherit}
     backBtn.hidden = history.length <= 1;
     content.scrollTop = 0;
     if (cur.screen !== 'scan') scStopCam();
+    vcStop();
     if (cur.screen === 'home'){ appTitle.textContent = 'SuppleFacts'; content.innerHTML = renderHome(); }
     else if (cur.screen === 'results'){ appTitle.textContent = 'Results'; content.innerHTML = renderResults(cur.param); loadProductResults(cur.param); }
     else if (cur.screen === 'product'){
@@ -1214,7 +1222,7 @@ button{font-family:inherit}
       + '<div class="hero"><h1>Search Any Supplement<br><span>See the Real Evidence.</span></h1>'
       +   '<p>Product labels, ingredient research, safety information, and AI summaries — all in one place.</p>'
       +   '<button class="scan-cta" data-scan="1">' + SCAN_ICON + '<span>Scan a barcode<small>Check a supplement before you buy it</small></span></button>'
-      +   searchRow('').replace('Search a product or an ingredient\u2026', (window.matchMedia && window.matchMedia('(max-width:500px)').matches) ? 'Search product, brand or ingredient' : 'Product, brand or ingredient') + '</div>'
+      +   searchRow('').replace('Search a product or an ingredient\u2026', (window.matchMedia && window.matchMedia('(max-width:500px)').matches) ? 'Product, brand or ingredient' : 'Product, brand or ingredient') + '</div>'
       + '<section class="sec"><div class="sec-h"><div><h2>Quik Search Common Ingredients</h2><small>Tap one to search NIH labels · swipe for more</small></div><button class="seeall" data-grid="ings">See All ›</button></div>'
       +   '<div class="rail start" data-rail="ings"><button class="arrow l" aria-label="Scroll left" data-arrow="-1">‹</button><button class="arrow r" aria-label="Scroll right" data-arrow="1">›</button><div class="track" id="trk-ings">' + ings + '</div></div>'
       +   ''
@@ -1570,6 +1578,7 @@ button{font-family:inherit}
     }
     if (searchGo) searchGo.addEventListener('click', doSearch);
     if (searchInput) searchInput.addEventListener('keydown', function(e){ if (e.key === 'Enter'){ e.preventDefault(); doSearch(); } });
+    vcAttach();
   }
 
   content.addEventListener('click', function(e){
@@ -2152,6 +2161,63 @@ button{font-family:inherit}
   document.getElementById('tabs').addEventListener('click', function(e){
     if (e.target.closest('[data-scan]')) openScan();
   });
+
+  /* ================= Voice search (the two search boxes only) =================
+     A microphone button inside the search box. Uses the browser's own speech recognition; if the browser has none, no button is shown. */
+  var VC_API = window.SpeechRecognition || window.webkitSpeechRecognition;
+  var VC = { rec: null, on: false };
+  var VC_MIC = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5 11a7 7 0 0 0 14 0M12 18v3M9 21h6"></path></svg>';
+  function vcMsg(t){ var m = document.getElementById('vcMsg'); if (!m) return; m.textContent = t || ''; m.hidden = !t; }
+  function vcPaint(on){ var b = document.getElementById('vcMic'); if (!b) return; b.classList.toggle('on', !!on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); }
+  function vcStop(){ if (VC.rec){ var r = VC.rec; VC.rec = null; try { r.onresult = r.onerror = r.onend = null; r.abort(); } catch (e){} } VC.on = false; vcPaint(false); }
+  // spoken text -> a search phrase: drop punctuation and lead-in words, join "vitamin d 3" -> "vitamin d3"
+  function vcClean(t){
+    var s = String(t || '').toLowerCase().replace(/[.,!?;:"]+/g, ' ').replace(/\s+/g, ' ').trim();
+    s = s.replace(/^(please\s+)?(search\s+for|search|look\s+up|look\s+for|find|show\s+me|check)\s+/, '');
+    s = s.replace(/\b([bdk])\s+(\d{1,2})\b/g, '$1$2').replace(/\bco\s?q\s?(10|ten)\b/g, 'coq10').replace(/\bq\s+10\b/g, 'q10');
+    return s.trim();
+  }
+  function vcStart(){
+    var inp = document.getElementById('searchInput'); if (!inp) return;
+    vcStop();
+    var R;
+    try { R = new VC_API(); } catch (e){ vcMsg('Voice input is not available here. Use the microphone on your keyboard instead.'); return; }
+    R.lang = (navigator.language && /^[a-z]{2}(-|$)/i.test(navigator.language)) ? navigator.language : 'en-US';
+    R.interimResults = true; R.continuous = false; R.maxAlternatives = 1;
+    var heard = '', failed = false;
+    R.onresult = function(ev){
+      var txt = ''; for (var i = ev.resultIndex; i < ev.results.length; i++) txt += ev.results[i][0].transcript;
+      if (!txt && ev.results.length) for (var j = 0; j < ev.results.length; j++) txt += ev.results[j][0].transcript;
+      heard = vcClean(txt); if (document.getElementById('searchInput') === inp) inp.value = heard;
+    };
+    R.onerror = function(ev){
+      failed = true; var e = ev && ev.error;
+      vcMsg(e === 'not-allowed' || e === 'service-not-allowed' ? 'The microphone is blocked. Allow it in your phone’s settings, or use the microphone on your keyboard.'
+          : e === 'no-speech' ? 'I did not hear anything. Tap the microphone and try again.'
+          : e === 'audio-capture' ? 'No microphone was found.'
+          : e === 'network' ? 'Voice search needs an internet connection.'
+          : e === 'aborted' ? '' : 'Voice input did not work. Use the microphone on your keyboard instead.');
+    };
+    R.onend = function(){
+      var mine = VC.rec === R; VC.rec = null; VC.on = false; vcPaint(false);
+      if (!mine || document.getElementById('searchInput') !== inp) return;
+      if (heard){ vcMsg(''); var go = document.getElementById('searchGo'); if (go) go.click(); }
+      else if (!failed) vcMsg('I did not catch that. Tap the microphone and try again.');
+    };
+    VC.rec = R; VC.on = true; vcPaint(true); vcMsg('Listening… say a product, brand or ingredient');
+    try { R.start(); } catch (e){ VC.rec = null; VC.on = false; vcPaint(false); vcMsg('Voice input could not start. Use the microphone on your keyboard instead.'); }
+  }
+  function vcAttach(){
+    if (!VC_API) return;
+    var inp = document.getElementById('searchInput'); if (!inp || document.getElementById('vcMic')) return;
+    var box = inp.closest ? inp.closest('.search-box') : null; if (!box) return;
+    var b = document.createElement('button'); b.type = 'button'; b.id = 'vcMic'; b.className = 'vc-mic';
+    b.setAttribute('aria-label', 'Search by voice'); b.setAttribute('aria-pressed', 'false'); b.innerHTML = VC_MIC;
+    box.appendChild(b);
+    var row = box.closest('.search-row');
+    if (row && row.parentNode && !document.getElementById('vcMsg')){ var m = document.createElement('div'); m.id = 'vcMsg'; m.className = 'vc-msg'; m.hidden = true; m.setAttribute('aria-live', 'polite'); row.parentNode.insertBefore(m, row.nextSibling); }
+    b.addEventListener('click', function(e){ e.preventDefault(); if (VC.on && VC.rec){ try { VC.rec.stop(); } catch (x){} } else vcStart(); });
+  }
 
   /* ---- Welcome screen & deep link ---- */
   var welcome = document.getElementById('welcome');
