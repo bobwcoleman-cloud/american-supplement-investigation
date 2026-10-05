@@ -240,16 +240,20 @@ window.addEventListener('unhandledrejection', function(e){
     while ((m = re.exec(s))) out.push(m[1] + (m[2] === 'ug' ? 'mcg' : m[2]));
     return out;
   }
-  // the "core" product name: the words before the first dash, comma, pipe or colon of a long marketing title
-  // ("Synergy K - With Vitamin K1, K2 & D3 - Supports Bones..." -> "synergy k"). Needs at least 2 non-brand words.
-  function coreOf(name, bTok){
-    var segs = String(name || '').replace(/[®™]/g, ' ').split(/\s[-–—]\s|[,;:|*•]/), out = [], n = 0, k, ws;
-    for (k = 0; k < segs.length && n < 2; k++){
-      ws = toks(segs[k]).filter(function(w){ return bTok.indexOf(w) < 0 && !/^\d+$/.test(w) && !UNITS[w]; });
-      out = out.concat(toks(segs[k]).filter(function(w){ return bTok.indexOf(w) < 0; }));
-      n += ws.length;
+  // The product's short name: the words before the first dash / comma / pipe / colon of a long marketing title, brand removed.
+  // "Pure Encapsulations Magnesium (Citrate) | Supplement for Sleep, Heart Health..." -> core ["magnesium"], full ["magnesium","citrate"].
+  // core ignores parentheses (they are often pack or form notes); full keeps the words inside them (often the form: Citrate, Glycinate).
+  var coreGENERIC = { vitamin:1, vitamins:1, mineral:1, minerals:1, supplement:1, herbal:1, natural:1, organic:1, extract:1, complex:1, formula:1, support:1, multi:1 };
+  function coreParts(name, bTok){
+    var segs = String(name || '').replace(/[®™]/g, ' ').split(/\s[-–—]\s|[,;:|*•]/), core = [], full = [], k, c, f, real;
+    for (k = 0; k < segs.length; k++){
+      c = toks(segs[k]).filter(function(w){ return bTok.indexOf(w) < 0; });
+      f = toks(String(segs[k]).replace(/[()]/g, ' ')).filter(function(w){ return bTok.indexOf(w) < 0; });
+      core = core.concat(c); full = full.concat(f);
+      real = core.filter(function(w){ return !/^\d+$/.test(w) && !UNITS[w] && !coreGENERIC[w]; });
+      if (real.length) break;
     }
-    return uniq(out);
+    return { core: uniq(core), full: uniq(full) };
   }
   function cleanBrandOf(b){ return toks(b).filter(function(w){ return !CORP[w]; }).join(' '); }
   function hitsList(j){ return (j && j.hits && j.hits.hits ? j.hits.hits : (j && j.hits) || []); }
@@ -270,7 +274,7 @@ window.addEventListener('unhandledrejection', function(e){
     if (c.entry) s.push('entered NIH ' + c.entry);
     return s.join(' · ');
   }
-  function cmpCand(a, b){ return b.score - a.score || (b.extra || 0) - (a.extra || 0) || (a.off || 0) - (b.off || 0) || String(b.entry || '').localeCompare(String(a.entry || '')); }
+  function cmpCand(a, b){ return b.score - a.score || (b.close || 0) - (a.close || 0) || (b.extra || 0) - (a.extra || 0) || (a.off || 0) - (b.off || 0) || String(b.entry || '').localeCompare(String(a.entry || '')); }
 
   // names = [{brand, name}] from the barcode databases; code = the scanned digits.
   // The barcode databases are sloppy about brand names (UPCitemdb may give the parent company), so the brand is only
@@ -289,22 +293,21 @@ window.addEventListener('unhandledrejection', function(e){
     if (!best){ box.innerHTML = '<div class="bad" style="margin-top:8px">No product name to search with.</div>'; return; }
     var brandToks = toks(brand);
     var kw = best.t.filter(function(w){ return brandToks.indexOf(w) < 0; });
-    var core = coreOf(best.n.name, brandToks); if (!core.length) core = kw;
-    var textKw = core.filter(function(w){ return !/^\d+$/.test(w) && !UNITS[w]; });
-    var q = (textKw.length ? textKw : core).slice(0, 4).join(' ');
-    var textAll = kw.filter(function(w){ return !/^\d+$/.test(w) && !UNITS[w]; });
-    var q2 = textAll.slice(0, 4).join(' ');
+    var parts = coreParts(best.n.name, brandToks), core = parts.core.length ? parts.core : kw, shortFull = parts.full.length ? parts.full : core;
+    var textOf = function(a){ return a.filter(function(w){ return !/^\d+$/.test(w) && !UNITS[w]; }).slice(0, 4).join(' '); };
+    var q = textOf(shortFull) || textOf(core) || core.slice(0, 4).join(' ');
+    var qCore = textOf(core);
     var guesses = [];
     if (brand) guesses.push(brand);
     var first2 = best.t.slice(0, 2).join(' ');
     if (brand && first2 && guesses.indexOf(first2) < 0 && brandToks.some(function(w){ return best.t.slice(0, 2).indexOf(w) >= 0; })) guesses.push(first2);
-    log('Name match: brand "' + brand + '"' + (guesses.length > 1 ? ' (also trying "' + guesses.slice(1).join('", "') + '")' : '') + ', core name "' + core.join(' ') + '", keywords "' + kw.join(' ') + '", strengths "' + wantStr.join(' ') + '", query "' + q + '"');
+    log('Name match: brand "' + brand + '"' + (guesses.length > 1 ? ' (also trying "' + guesses.slice(1).join('", "') + '")' : '') + ', core name "' + core.join(' ') + '", short name "' + shortFull.join(' ') + '", keywords "' + kw.join(' ') + '", strengths "' + wantStr.join(' ') + '", query "' + q + '"');
 
     var plan = [];
     guesses.forEach(function(g){ plan.push({ label: 'search-filter + brand "' + g + '"', url: API + '/search-filter?q=' + encodeURIComponent(q) + '&brand=' + encodeURIComponent(g) + '&status=2&size=25' }); });
+    if (qCore && qCore !== q && guesses.length) plan.push({ label: 'search-filter + brand "' + guesses[0] + '" (core words)', url: API + '/search-filter?q=' + encodeURIComponent(qCore) + '&brand=' + encodeURIComponent(guesses[0]) + '&status=2&size=25' });
     plan.push({ label: 'search-filter (words only)', url: API + '/search-filter?q=' + encodeURIComponent(q) + '&status=2&size=25' });
     if (guesses.length) plan.push({ label: 'brand list', url: API + '/brand-products?q=' + encodeURIComponent(guesses[guesses.length - 1]) + '&size=1000' });
-    if (q2 && q2 !== q) plan.splice(guesses.length + 1, 0, { label: 'search-filter (longer name)', url: API + '/search-filter?q=' + encodeURIComponent(q2) + '&status=2&size=25' });
     if (!q) plan = [];
 
     var pool = {}, opened = {}, hiddenStrength = 0, i = 0;
@@ -314,6 +317,12 @@ window.addEventListener('unhandledrejection', function(e){
       var ct = toks(c.name), hit = 0; need.forEach(function(w){ if (ct.indexOf(w) >= 0) hit++; });
       return hit / need.length;
     }
+    function closeOf(c){
+      var cb = toks(c.brand), cf = toks(String(c.name || '').replace(/[()]/g, ' ')).filter(function(w){ return cb.indexOf(w) < 0; });
+      if (!cf.length || !shortFull.length) return 0;
+      var inter = 0; shortFull.forEach(function(w){ if (cf.indexOf(w) >= 0) inter++; });
+      return inter / (shortFull.length + cf.length - inter);
+    }
     function extraFit(c){
       var cb = toks(c.brand), ex = kw.filter(function(w){ return core.indexOf(w) < 0 && cb.indexOf(w) < 0; });
       if (!ex.length) return 0;
@@ -321,7 +330,7 @@ window.addEventListener('unhandledrejection', function(e){
       return hit / ex.length;
     }
     function decorate(c){
-      c.score = fitOf(c); c.extra = extraFit(c);
+      c.score = fitOf(c); c.extra = extraFit(c); c.close = closeOf(c);
       var cb = toks(c.brand);
       c.brandOk = !cb.length || cb.every(function(w){ return allText[w]; });
       var cs = strengthsOf(c.name);
@@ -396,7 +405,7 @@ window.addEventListener('unhandledrejection', function(e){
         log('Name match via ' + pl.label + ': ' + cands.length + ' candidate(s)');
         // open the most promising ones we have not opened yet (best brand and strength first), then compare UPCs
         var todo = cands.filter(function(c){ return c.score >= 0.5 && !opened[c.id]; })
-          .sort(function(a, b){ return ((b.brandOk ? 2 : 0) + (b.strOk ? 1 : 0)) - ((a.brandOk ? 2 : 0) + (a.strOk ? 1 : 0)) || b.score - a.score || b.extra - a.extra; }).slice(0, 10);
+          .sort(function(a, b){ return ((b.brandOk ? 2 : 0) + (b.strOk ? 1 : 0)) - ((a.brandOk ? 2 : 0) + (a.strOk ? 1 : 0)) || b.score - a.score || b.close - a.close || b.extra - a.extra; }).slice(0, 10);
         // nothing fit the name well: still open the first few labels of the right brand, because the UPC is the real proof
         if (!todo.length && brandToks.length) todo = cands.filter(function(c){ return c.brandOk && c.strOk && !opened[c.id]; }).slice(0, 6);
         return Promise.all(todo.map(function(c){
