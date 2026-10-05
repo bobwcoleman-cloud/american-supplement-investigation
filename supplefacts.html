@@ -1696,6 +1696,17 @@ button{font-family:inherit}
     while ((m = re.exec(s))) out.push(m[1] + (m[2] === 'ug' ? 'mcg' : m[2]));
     return out;
   }
+  // the "core" product name: the words before the first dash, comma, pipe or colon of a long marketing title
+  // ("Synergy K - With Vitamin K1, K2 & D3 - Supports Bones..." -> "synergy k"). Needs at least 2 non-brand words.
+  function scCore(name, bTok){
+    var segs = String(name || '').replace(/[®™]/g, ' ').split(/\s[-–—]\s|[,;:|*•]/), out = [], n = 0, k, ws;
+    for (k = 0; k < segs.length && n < 2; k++){
+      ws = scToks(segs[k]).filter(function(w){ return bTok.indexOf(w) < 0 && !/^\d+$/.test(w) && !SC_UNITS[w]; });
+      out = out.concat(scToks(segs[k]).filter(function(w){ return bTok.indexOf(w) < 0; }));
+      n += ws.length;
+    }
+    return scUniq(out);
+  }
   function scCleanBrand(b){ return scToks(b).filter(function(w){ return !SC_CORP[w]; }).join(' '); }
   function scHits(j){ return (j && j.hits && j.hits.hits ? j.hits.hits : (j && j.hits) || []); }
   function scSrc(h){ var x = h._source !== undefined ? h._source : h; if (typeof x === 'string'){ try { x = JSON.parse(x); } catch (e){} } return { id: String((x && (x.id || x.dsldId)) || h._id || ''), name: (x && (x.fullName || x.name)) || '', brand: (x && x.brandName) || '', upc: x && x.upcSku }; }
@@ -1713,7 +1724,7 @@ button{font-family:inherit}
     if (c.entry) s.push('entered NIH ' + c.entry);
     return s.join(' · ');
   }
-  function scCmp(a, b){ return b.score - a.score || (a.off || 0) - (b.off || 0) || String(b.entry || '').localeCompare(String(a.entry || '')); }
+  function scCmp(a, b){ return b.score - a.score || (b.extra || 0) - (a.extra || 0) || (a.off || 0) - (b.off || 0) || String(b.entry || '').localeCompare(String(a.entry || '')); }
 
   // names = [{brand,name}] from the barcode databases. done({ primary, exact, others, hidden, search }) is called once; onRelated(list) later for an exact match.
   function scMatch(code, names, done, onRelated){
@@ -1728,8 +1739,11 @@ button{font-family:inherit}
     if (!best){ done({ primary: null, search: '' }); return; }
     var bTok = scToks(brand);
     var kw = best.t.filter(function(w){ return bTok.indexOf(w) < 0; });
-    var textKw = kw.filter(function(w){ return !/^\d+$/.test(w) && !SC_UNITS[w]; });
-    var q = (textKw.length ? textKw : kw).slice(0, 4).join(' ');
+    var core = scCore(best.n.name, bTok); if (!core.length) core = kw;
+    var textKw = core.filter(function(w){ return !/^\d+$/.test(w) && !SC_UNITS[w]; });
+    var q = (textKw.length ? textKw : core).slice(0, 4).join(' ');
+    var textAll = kw.filter(function(w){ return !/^\d+$/.test(w) && !SC_UNITS[w]; });
+    var q2 = textAll.slice(0, 4).join(' ');
     var searchText = ((brand ? brand + ' ' : '') + q).trim();
     var guesses = [];
     if (brand) guesses.push(brand);
@@ -1739,17 +1753,24 @@ button{font-family:inherit}
     guesses.forEach(function(g){ plan.push(API + '/search-filter?q=' + encodeURIComponent(q) + '&brand=' + encodeURIComponent(g) + '&status=2&size=25'); });
     plan.push(API + '/search-filter?q=' + encodeURIComponent(q) + '&status=2&size=25');
     if (guesses.length) plan.push(API + '/brand-products?q=' + encodeURIComponent(guesses[guesses.length - 1]) + '&size=1000');
+    if (q2 && q2 !== q) plan.splice(guesses.length + 1, 0, API + '/search-filter?q=' + encodeURIComponent(q2) + '&status=2&size=25');
     if (!q) plan = [];
 
     var pool = {}, opened = {}, i = 0;
     function fit(c){
-      var cb = scToks(c.brand), need = kw.filter(function(w){ return cb.indexOf(w) < 0; });
+      var cb = scToks(c.brand), need = core.filter(function(w){ return cb.indexOf(w) < 0; });
       if (!need.length) return 0;
       var ct = scToks(c.name), hit = 0; need.forEach(function(w){ if (ct.indexOf(w) >= 0) hit++; });
       return hit / need.length;
     }
+    function extraFit(c){
+      var cb = scToks(c.brand), ex = kw.filter(function(w){ return core.indexOf(w) < 0 && cb.indexOf(w) < 0; });
+      if (!ex.length) return 0;
+      var ct = scToks(c.name), hit = 0; ex.forEach(function(w){ if (ct.indexOf(w) >= 0) hit++; });
+      return hit / ex.length;
+    }
     function decorate(c){
-      c.score = fit(c);
+      c.score = fit(c); c.extra = extraFit(c);
       var cb = scToks(c.brand);
       c.brandOk = !cb.length || cb.every(function(w){ return allText[w]; });
       var cs = scStrengths(c.name);
@@ -1773,7 +1794,9 @@ button{font-family:inherit}
       scGet(url).then(function(j){
         var cands = scHits(j).map(scSrc).filter(function(c){ return c.id; }).map(decorate);
         var todo = cands.filter(function(c){ return c.score >= 0.5 && !opened[c.id]; })
-          .sort(function(a, b){ return ((b.brandOk ? 2 : 0) + (b.strOk ? 1 : 0)) - ((a.brandOk ? 2 : 0) + (a.strOk ? 1 : 0)) || b.score - a.score; }).slice(0, 10);
+          .sort(function(a, b){ return ((b.brandOk ? 2 : 0) + (b.strOk ? 1 : 0)) - ((a.brandOk ? 2 : 0) + (a.strOk ? 1 : 0)) || b.score - a.score || b.extra - a.extra; }).slice(0, 10);
+        // nothing fit the name well: still open the first few labels of the right brand, because the UPC is the real proof
+        if (!todo.length && bTok.length) todo = cands.filter(function(c){ return c.brandOk && c.strOk && !opened[c.id]; }).slice(0, 6);
         return Promise.all(todo.map(function(c){
           opened[c.id] = 1;
           return scGet(API + '/label/' + encodeURIComponent(c.id)).then(function(l){ scMeta(c, l); c.exact = scSame(l.upcSku, code); pool[c.id] = c; }, function(){ pool[c.id] = c; });
