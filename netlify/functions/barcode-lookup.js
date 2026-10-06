@@ -9,6 +9,8 @@
 //   UPCITEMDB_KEY    paid UPCitemdb developer key; without it the free trial endpoint is used (100 lookups/day)
 //   ALLOWED_ORIGINS  comma-separated list; defaults to the live site plus this project's branch/deploy previews
 
+import { checkLimit, num } from '../lib/ratelimit.js';
+
 const LIVE = 'https://supplements.brokenpromiseshealthcare.org';
 const PREVIEW_HOST = /^https:\/\/[a-z0-9-]+--american-supplement-investigation\.netlify\.app$|^https:\/\/deploy-preview-\d+--american-supplement-investigation\.netlify\.app$/;
 const DSLD = 'https://api.ods.od.nih.gov/dsld/v9';
@@ -154,6 +156,17 @@ export const handler = async (event) => {
   try { body = JSON.parse(event.body || '{}'); } catch (e) { return json(400, { error: 'bad_json' }); }
   const code = digits(body.code);
   if (code.length < 8 || code.length > 14) return json(400, { error: 'need 8 to 14 digits' });
+
+  // Abuse guard (protects the free UPCitemdb / Open Food Facts limits). Defaults: 60 lookups per visitor per hour,
+  // 1500 per day across everyone. Override in Netlify with RATE_BARCODE_PER_HOUR and RATE_BARCODE_PER_DAY.
+  const lim = await checkLimit(event, {
+    name: 'barcode',
+    perVisitor: num(process.env.RATE_BARCODE_PER_HOUR, 60),
+    perDay: num(process.env.RATE_BARCODE_PER_DAY, 1500)
+  });
+  if (!lim.ok) {
+    return { ...json(429, { error: 'rate_limited' }), headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', 'Retry-After': String(lim.retryAfterSec) } };
+  }
 
   const results = await Promise.all([
     timed('dsld', 'NIH DSLD (by UPC)', () => lookupDsld(code)),

@@ -14,7 +14,10 @@
 // visitor gets the saved copy instantly and for free. If Blobs is unavailable for any reason
 // the cache is skipped and the function works exactly as before (it never blocks a summary).
 
+import { checkLimit, num } from '../lib/ratelimit.js';
+
 const MODEL = 'claude-haiku-4-5';
+const MAX_BODY_BYTES = 30000; // a real label request is a few KB; anything bigger is not from the app
 const MAX_INGREDIENTS = 40;
 const DEFAULT_ORIGINS = ['https://supplements.brokenpromiseshealthcare.org'];
 const CACHE_STORE = 'ai-summaries';
@@ -71,6 +74,7 @@ export const handler = async (event) => {
   const origin = event.headers.origin || event.headers.Origin || '';
   if (!allowed.includes(origin)) return json(403, { error: 'forbidden_origin' });
 
+  if ((event.body || '').length > MAX_BODY_BYTES) return json(413, { error: 'too_large' });
   let b;
   try { b = JSON.parse(event.body || '{}'); } catch (e) { return json(400, { error: 'bad_json' }); }
   const ings = Array.isArray(b.ingredients) ? b.ingredients.slice(0, MAX_INGREDIENTS) : [];
@@ -122,6 +126,18 @@ export const handler = async (event) => {
         return json(200, { text: hit.text, cached: true });
       }
     } catch (e) { console.warn('cache read failed:', e && e.message); }
+  }
+
+  // Abuse guard: only brand-new summaries (cache misses) count, because those are the ones that cost money.
+  // Defaults: 20 new summaries per visitor per hour, 600 per day across everyone. Override in Netlify with
+  // RATE_SUMMARY_PER_HOUR and RATE_SUMMARY_PER_DAY.
+  const lim = await checkLimit(event, {
+    name: 'summary',
+    perVisitor: num(process.env.RATE_SUMMARY_PER_HOUR, 20),
+    perDay: num(process.env.RATE_SUMMARY_PER_DAY, 600)
+  });
+  if (!lim.ok) {
+    return { ...json(429, { error: 'rate_limited' }), headers: { 'Content-Type': 'application/json', 'Retry-After': String(lim.retryAfterSec) } };
   }
 
   try {
