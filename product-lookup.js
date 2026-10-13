@@ -145,7 +145,7 @@
       const methodology =
         'You are acting as a research assistant for an evidence-based supplement investigation. ' +
         'Analyze the specific product and formulation below. Do not give a generic answer about the ingredient category in the abstract — evaluate THIS exact product at THIS exact dose.\n\n' +
-        'Start with your Overall Verdict: a short, direct assessment of this specific product and formulation as a whole — not just its ingredients in isolation. Give the reader your conclusion first, then support it with the detailed analysis below.\n\n' +
+        'Start with a section titled "Bottom Line": a short, direct assessment of this specific product and formulation as a whole — not just its ingredients in isolation. Give the reader your conclusion first, then support it with the detailed analysis below.\n\n' +
         'Then, for each active ingredient in this product, do the following:\n\n' +
         '1. Identify the principal health claims the ingredient is commonly used or marketed for.\n' +
         '2. Prioritize high-quality evidence: systematic reviews and meta-analyses first, then randomized controlled trials, then major evidence-based clinical guidelines where relevant. Prioritize clinically meaningful outcomes over surrogate lab endpoints.\n' +
@@ -167,7 +167,7 @@
       // copies the prompt manually.
       const compactMethodology =
         'Evaluate this exact supplement product and dose — not just the ingredient category in the abstract. ' +
-        'For each ingredient: prioritize systematic reviews and RCTs over observational data or anecdote; compare this product\'s dose to the doses actually used in trials (matches / below / exceeds / not comparable); note key safety risks, drug interactions, and contraindications; rate evidence strength (Strong / Moderate / Limited / No Benefit / Harm) with a brief reason; cite sources with dates; check whether the brand publishes third-party contaminant (heavy-metal) test results and note any recalls or warnings, saying so plainly if none are public. Start with your Overall Verdict on the product as a whole, then support it.\n\n---\n\n';
+        'For each ingredient: prioritize systematic reviews and RCTs over observational data or anecdote; compare this product\'s dose to the doses actually used in trials (matches / below / exceeds / not comparable); note key safety risks, drug interactions, and contraindications; rate evidence strength (Strong / Moderate / Limited / No Benefit / Harm) with a brief reason; cite sources with dates; check whether the brand publishes third-party contaminant (heavy-metal) test results and note any recalls or warnings, saying so plainly if none are public. Start with a section titled "Bottom Line" giving your overall assessment of the product as a whole, then support it.\n\n---\n\n';
       const compactPromptText = compactMethodology + productBlock;
 
       // Providers with a currently-working (though unofficial) one-click prefill.
@@ -218,9 +218,9 @@
         '<h5>Investigate the Evidence</h5>' +
         '<p class="lookup-methodology-note">Compares this exact formulation and dose with published clinical evidence — trial size, dose match, safety, interactions, and published contaminant testing — using an AI research assistant of your choice and your own account. This site pays nothing for your analysis, and you should verify important conclusions using the cited sources.</p>' +
         '<div class="cta-row" style="margin-top:0;">' +
-        '<button type="button" class="btn btn-primary" id="btn-claude">Analyze with Claude</button>' +
-        '<button type="button" class="btn btn-primary" id="btn-chatgpt">Analyze with ChatGPT</button>' +
         '<button type="button" class="btn btn-primary" id="btn-perplexity">Analyze with Perplexity</button>' +
+        '<button type="button" class="btn btn-primary" id="btn-chatgpt">Analyze with ChatGPT</button>' +
+        '<button type="button" class="btn btn-primary" id="btn-claude">Analyze with Claude</button>' +
         '<button type="button" class="btn btn-secondary" id="copy-prompt-btn">Copy Full Research Prompt</button>' +
         '</div>' +
         '<p class="lookup-run-note">Perplexity runs automatically. ChatGPT opens with your prompt ready — press Enter to run it. Claude opens a blank chat — paste with Ctrl+V / Cmd+V, then press Enter.</p>' +
@@ -253,7 +253,7 @@
       copyBtn.addEventListener('click', function(){
         navigator.clipboard.writeText(promptText).then(function(){
           copyBtn.textContent = 'Copied ✓';
-          showToast(copyBtn, 'Copied! Paste it into Claude, ChatGPT, Perplexity, Gemini, or any AI research assistant.');
+          showToast(copyBtn, 'Copied! Paste it into Perplexity, ChatGPT, Claude, Gemini, or any AI research assistant.');
           setTimeout(function(){ copyBtn.textContent = 'Copy Full Research Prompt'; }, 2000);
         }).catch(function(err){
           console.error('Clipboard copy failed:', err);

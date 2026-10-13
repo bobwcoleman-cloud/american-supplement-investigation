@@ -98,9 +98,9 @@
     <p style="color:#666; font-size:14px;">Label data sent from SuppleFacts app — analyze with AI below:</p>
     <textarea id="investigation-prompt" style="width:100%; height:200px; padding:12px; font-family:monospace; font-size:13px; border:1px solid #ccc; border-radius:4px; margin:16px 0;"></textarea>
     <div style="display:flex; gap:12px; flex-wrap:wrap;">
-      <button class="btn btn-primary" onclick="sendToAI('claude')">Analyze with Claude →</button>
-      <button class="btn btn-primary" onclick="sendToAI('chatgpt')">Analyze with ChatGPT →</button>
       <button class="btn btn-primary" onclick="sendToAI('perplexity')">Analyze with Perplexity →</button>
+      <button class="btn btn-primary" onclick="sendToAI('chatgpt')">Analyze with ChatGPT →</button>
+      <button class="btn btn-primary" onclick="sendToAI('claude')">Analyze with Claude →</button>
       <button class="btn btn-secondary" onclick="sendToAI('copy')">Copy Full Research Prompt</button>
     </div>
     <p id="investigation-note" style="display:none; margin-top:14px; font-size:14px; color:#555;"></p>
@@ -183,7 +183,7 @@
       }
       if (engine === 'copy') {
         if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText(text).then(function () { note('Copied! Paste it into Claude, ChatGPT, Perplexity, Gemini, or any AI research assistant.'); })
+          navigator.clipboard.writeText(text).then(function () { note('Copied! Paste it into Perplexity, ChatGPT, Claude, Gemini, or any AI research assistant.'); })
             .catch(function () { promptEl.select(); note('Select the prompt above and copy it (Ctrl+C / Cmd+C).'); });
         } else { promptEl.select(); note('Select the prompt above and copy it (Ctrl+C / Cmd+C).'); }
         return;
