@@ -95,7 +95,7 @@
   <!-- Investigation Section (from SuppleFacts app) -->
   <div id="investigation-section" style="display:none; margin-top:40px; padding-top:40px; border-top:1px solid #e0e0e0;">
     <h2>Supplement Investigation</h2>
-    <p style="color:#666; font-size:14px;">Label data sent from SuppleFacts app — analyze with AI below:</p>
+    <p id="investigation-intro" style="color:#666; font-size:14px;">Label data sent from SuppleFacts app — analyze with AI below:</p>
     <textarea id="investigation-prompt" style="width:100%; height:200px; padding:12px; font-family:monospace; font-size:13px; border:1px solid #ccc; border-radius:4px; margin:16px 0;"></textarea>
     <div style="display:flex; gap:12px; flex-wrap:wrap;">
       <button class="btn btn-primary" onclick="sendToAI('perplexity')">Analyze with Perplexity →</button>
@@ -158,6 +158,11 @@
     }
 
     if (prompt && promptEl && section) {
+      // AI name search from the app (no NIH label): say so, so the page does not claim label data was sent
+      if (params.get('mode') === 'research') {
+        var introEl = document.getElementById('investigation-intro');
+        if (introEl) introEl.textContent = 'AI research request from SuppleFacts (no NIH label was found for this product) — the AI will look it up on the web. Check what it says against the bottle:';
+      }
       promptEl.value = prompt;
       section.style.display = 'block';
       if (!labelUrl) section.scrollIntoView({ behavior: 'smooth' });

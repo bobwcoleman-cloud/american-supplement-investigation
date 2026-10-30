@@ -24,6 +24,9 @@
   let debounceTimer = null;
   let corsConfirmedBroken = false;
 
+  /* ESCAPE-FIX: NIH records and the ?q= address are untrusted text; never put them into HTML unescaped */
+  function esc(s){ return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+
   function setStatus(html){
     statusEl.innerHTML = html;
     statusEl.style.display = 'block';
@@ -67,7 +70,7 @@
         return src;
       });
       if (hits.length === 0) {
-        setStatus('<p>No products found matching "' + query + '." Try a shorter or more general term.</p>');
+        setStatus('<p>No products found matching "' + esc(query) + '." Try a shorter or more general term.</p>');
         return;
       }
 
@@ -91,8 +94,8 @@
         const name = item.fullName || item.name || 'Unknown product';
         const brand = item.brandName || '';
         const id = item.id || item.dsldId || item._fallbackId || '';
-        return '<div class="lookup-result-item" data-id="' + id + '" data-idx="' + idx + '">' +
-          '<div class="info"><h4>' + name + '</h4><span>' + brand + '</span></div>' +
+        return '<div class="lookup-result-item" data-id="' + esc(id) + '" data-idx="' + idx + '">' +
+          '<div class="info"><h4>' + esc(name) + '</h4><span>' + esc(brand) + '</span></div>' +
           '<div class="arrow">View label →</div>' +
         '</div>';
       }).join('');
@@ -200,18 +203,18 @@
 
       const ingredients = (label.ingredientRows || []).map(function(row){
         const amount = (row.quantity && row.quantity[0]) ? (row.quantity[0].quantity + ' ' + (row.quantity[0].unit || '')) : '—';
-        return '<tr><td>' + (row.name || 'Unnamed ingredient') + '</td><td>' + amount + '</td></tr>';
+        return '<tr><td>' + esc(row.name || 'Unnamed ingredient') + '</td><td>' + esc(amount) + '</td></tr>';
       }).join('');
 
       const statements = (label.statements || []).map(function(s){
-        return '<li>' + (s.notes || s.type || '') + '</li>';
+        return '<li>' + esc(s.notes || s.type || '') + '</li>';
       }).join('');
 
       detailEl.innerHTML =
         '<div class="lookup-detail">' +
         '<div class="nih-retrieved">NIH label retrieved ✓</div>' +
-        '<h3>' + (label.fullName || 'Product') + '</h3>' +
-        '<div class="brand-line">' + (label.brandName || '') + (label.upcSku ? ' · UPC ' + label.upcSku : '') + '</div>' +
+        '<h3>' + esc(label.fullName || 'Product') + '</h3>' +
+        '<div class="brand-line">' + esc(label.brandName || '') + (label.upcSku ? ' · UPC ' + esc(label.upcSku) : '') + '</div>' +
         (ingredients ? '<h5>Ingredients (as declared on label)</h5><table class="lookup-ing-table">' + ingredients + '</table>' : '<p>No itemized ingredient data available for this product.</p>') +
         (statements ? '<h5>Label Statements</h5><ul>' + statements + '</ul>' : '') +
         '<p class="lookup-label-note"><strong>Note:</strong> The NIH label lists only what the manufacturer declares. It does not include contaminant testing (such as heavy metals), and it cannot show whether a given bottle matches its label.</p>' +
@@ -264,7 +267,7 @@
       window.scrollTo({top: detailEl.offsetTop - 100, behavior: 'smooth'});
     } catch (e) {
       console.error('loadLabel failed:', e);
-      detailEl.innerHTML = '<div class="lookup-error-box"><p>Couldn\'t load this label\'s full details (' + e.message + '). Check the browser console (F12) for details, or <a href="https://dsld.od.nih.gov/" target="_blank" rel="noopener">search the NIH database directly</a>.</p></div>';
+      detailEl.innerHTML = '<div class="lookup-error-box"><p>Couldn\'t load this label\'s full details (' + esc(e.message) + '). Check the browser console (F12) for details, or <a href="https://dsld.od.nih.gov/" target="_blank" rel="noopener">search the NIH database directly</a>.</p></div>';
     }
   }
 
