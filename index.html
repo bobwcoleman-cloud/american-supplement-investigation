@@ -51,6 +51,76 @@
   ]
 }
 </script>
+<style>
+/* Evidence-first landing (preview) */
+.lp-hero{background:linear-gradient(180deg,#FBF6E9,#fff);}
+.lp-hero .wrap{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center;padding-top:58px;padding-bottom:46px;}
+.lp-eyebrow{font:700 12px Inter,sans-serif;letter-spacing:.16em;text-transform:uppercase;color:var(--teal);}
+.lp-hero h1{font-size:50px;line-height:1.1;margin:12px 0 18px;color:var(--navy);}
+.lp-hero h1 em{font-style:normal;color:var(--teal);}
+.lp-lead{font-size:19px;color:var(--gray-body);margin:0 0 26px;max-width:520px;}
+.lp-cta{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:18px;}
+.lp-btn{display:inline-flex;align-items:center;gap:8px;font:700 15px Inter,sans-serif;padding:14px 20px;border-radius:12px;border:2px solid transparent;text-decoration:none;cursor:pointer;}
+.lp-btn:hover{text-decoration:none;}
+.lp-btn-teal{background:var(--teal);color:#fff;box-shadow:0 8px 20px rgba(31,122,108,.3);}
+.lp-btn-teal:hover{background:var(--teal-dark);color:#fff;}
+.lp-btn-line{border-color:var(--navy);color:var(--navy);background:transparent;}
+.lp-btn-line:hover{background:var(--navy);color:#fff;}
+.lp-btn-gold{background:var(--gold);color:var(--navy-dark);box-shadow:0 8px 22px rgba(201,162,39,.35);font-size:16px;padding:15px 26px;}
+.lp-btn-gold:hover{background:#d8b234;color:var(--navy-dark);}
+.lp-small{font-size:14.5px;margin:6px 0 0;}
+.lp-books{position:relative;height:400px;display:flex;justify-content:center;align-items:center;}
+.lp-books img{position:absolute;width:180px;border-radius:6px;box-shadow:0 22px 40px rgba(27,42,65,.35);}
+.lp-books img:nth-child(1){transform:translateX(-178px) rotate(-8deg);}
+.lp-books img:nth-child(2){transform:translateY(-14px) scale(1.06);z-index:2;}
+.lp-books img:nth-child(3){transform:translateX(178px) rotate(8deg);}
+.lp-appband{background:linear-gradient(120deg,var(--teal-dark),var(--teal) 60%,#2b957f);color:#fff;border-radius:26px;margin:0 auto 20px;overflow:hidden;}
+.lp-appband .in{display:grid;grid-template-columns:1.3fr .7fr;gap:20px;align-items:center;padding:40px 46px 0;}
+.lp-appband .lp-eyebrow{color:#F6EDCB;}
+.lp-appband h2{font-size:34px;line-height:1.15;margin:8px 0 12px;color:#fff;}
+.lp-appband p{color:#dff3ee;margin:0 0 22px;font-size:17px;}
+.lp-qr{background:#fff;border-radius:14px;padding:10px;display:inline-flex;gap:12px;align-items:center;box-shadow:0 10px 26px rgba(0,0,0,.22);margin:0 0 30px;}
+.lp-qr img{width:84px;height:84px;display:block;}
+.lp-qr span{color:var(--navy);font:600 13px/1.35 Inter,sans-serif;max-width:120px;}
+.lp-ph{display:flex;justify-content:center;align-self:end;}
+.lp-phone{width:250px;background:#10151d;border-radius:38px;padding:9px;box-shadow:0 30px 60px rgba(0,0,0,.35),0 0 0 2px #2a3446;position:relative;flex:none;margin-bottom:-90px;transform:rotate(-3deg);}
+.lp-phone:before{content:"";position:absolute;top:15px;left:50%;transform:translateX(-50%);width:70px;height:18px;border-radius:12px;background:#10151d;z-index:2;}
+.lp-scr{border-radius:30px;overflow:hidden;background:#fff;aspect-ratio:1170/2532;}
+.lp-scr img{display:block;width:100%;height:100%;object-fit:cover;object-position:top;}
+.lp-pad{height:90px;}
+.lp-sec{padding:64px 0;}
+.lp-sec h2{font-size:34px;text-align:center;margin-bottom:8px;}
+.lp-sub{text-align:center;color:var(--gray-body);max-width:640px;margin:0 auto 36px;font-size:17px;}
+.lp-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;}
+.lp-step{border-radius:20px;padding:28px 26px;color:#fff;position:relative;overflow:hidden;}
+.lp-step b{font:700 56px Lora,serif;opacity:.28;position:absolute;right:18px;top:6px;line-height:1;}
+.lp-step h3{font-size:22px;margin:6px 0 8px;color:inherit;}
+.lp-step p{margin:0;font-size:15.5px;opacity:.95;}
+.lp-s1{background:linear-gradient(140deg,#1B2A41,#2b4466);}
+.lp-s2{background:linear-gradient(140deg,#175D52,#1F7A6C);}
+.lp-s3{background:linear-gradient(140deg,#a8841a,#C9A227);color:var(--navy-dark);}
+.lp-ico{width:46px;height:46px;border-radius:14px;background:rgba(255,255,255,.18);display:grid;place-items:center;margin-bottom:12px;}
+.lp-ico svg{width:26px;height:26px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;}
+.lp-band{background:var(--bg-pale);}
+.lp-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+.lp-card{background:#fff;border:1px solid #D8E1E9;border-radius:18px;padding:24px;border-top:5px solid var(--teal);}
+.lp-card.g{border-top-color:var(--gold);}.lp-card.n{border-top-color:var(--navy);}
+.lp-card .lp-eyebrow{font-size:11px;}.lp-card.g .lp-eyebrow{color:#9a7a14;}.lp-card.n .lp-eyebrow{color:var(--navy);}
+.lp-card h3{font-size:20px;margin:6px 0;color:var(--navy);}
+.lp-card p{margin:0 0 12px;color:var(--gray-body);font-size:15px;}
+.lp-card a{font-weight:700;}
+.lp-weblookup{padding:56px 0 36px;background:#fff;}
+.lp-weblookup .hero-search-row{max-width:760px;}
+.home-nav-links a.nav-app-pill{background:var(--gold);color:var(--navy-dark);padding:8px 15px;border-radius:999px;font-weight:700;}
+.home-nav-links a.nav-app-pill:hover{background:#d8b234;color:var(--navy-dark);}
+@media(max-width:860px){
+ .lp-hero .wrap,.lp-appband .in,.lp-steps,.lp-cards{grid-template-columns:1fr;}
+ .lp-hero h1{font-size:36px;}
+ .lp-books{height:330px;}.lp-books img{width:140px;}
+ .lp-books img:nth-child(1){transform:translateX(-105px) rotate(-8deg);}.lp-books img:nth-child(3){transform:translateX(105px) rotate(8deg);}
+ .lp-appband .in{padding:30px 22px 0;}.lp-qr{display:none;}.lp-appband h2{font-size:28px;}
+}
+</style>
 </head>
 <body class="home-v2">
 
@@ -65,13 +135,14 @@
       <span class="tag-line">Follow the Money. Follow the Science. Follow the Evidence.</span>
     </a>
     <div class="home-nav-links" id="homeNavLinks">
-      <a href="product-lookup.html" class="current">Product Lookup</a>
+      <a href="annotated-bibliography.html">Evidence Library</a>
       <a href="top-25-supplements.html">Top 25</a>
       <a href="index.html#books">The Books</a>
-      <a href="annotated-bibliography.html">Evidence Library</a>
       <a href="faq.html">FAQ</a>
+      <a href="product-lookup.html">Product Lookup</a>
       <a href="index.html#about">About</a>
       <a href="search.html" class="nav-search-icon" title="Search the whole site" aria-label="Search the whole site">🔎</a>
+      <a href="https://supplefacts.brokenpromiseshealthcare.org" class="nav-app-pill">Get the SuppleFacts App</a>
     </div>
     <button type="button" class="nav-hamburger" id="navHamburger" aria-label="Open menu" aria-expanded="false">
       <span></span><span></span><span></span>
@@ -79,18 +150,64 @@
   </div>
 </nav>
 
-<section class="hero-v2" id="home">
-  <div class="wrap hero-grid-v2">
+<section class="lp-hero" id="home">
+  <div class="wrap">
     <div>
-      <h1>Before You Take That Supplement,<br>Check the <span class="accent">Evidence.</span></h1>
-      <p class="hero-copy">Search thousands of real supplement labels and find out what's actually in the product you're considering. Then explore the clinical evidence, studied doses, safety concerns, and drug interactions — using peer-reviewed research and authoritative government sources, not marketing copy.</p>
+      <div class="lp-eyebrow">A three-book investigation</div>
+      <h1>What does your supplement label <em>really</em> tell you?</h1>
+      <p class="lp-lead">The American Supplement Investigation follows the money, the science, and the evidence behind the supplement aisle, with plain-language research you can check for yourself.</p>
+      <div class="lp-cta">
+        <a class="lp-btn lp-btn-teal" href="index.html#books">Read the investigation &rarr;</a>
+        <a class="lp-btn lp-btn-line" href="annotated-bibliography.html">Explore the evidence library</a>
+      </div>
+      <p class="lp-small"><a href="downloads/how-to-use-the-investigation.pdf" download>&#128196; New here? Download the free Reader's Guide (PDF) &rarr;</a></p>
+    </div>
+    <div class="lp-books" aria-hidden="true">
+      <img src="book-one-cover.jpg?v=2" alt="">
+      <img src="book-two-cover.jpg?v=2" alt="">
+      <img src="book-three-cover.jpg?v=2" alt="">
+    </div>
+  </div>
+</section>
 
+<div class="wrap" style="padding-top:8px;">
+  <div class="lp-appband" id="app">
+    <div class="in">
+      <div>
+        <div class="lp-eyebrow">New &middot; SuppleFacts App</div>
+        <h2>Take the evidence with you.</h2>
+        <p>Scan a bottle in the store aisle, see the real NIH label, and check each ingredient before you buy.</p>
+        <div style="margin:0 0 30px;"><a class="lp-btn lp-btn-gold" href="https://supplefacts.brokenpromiseshealthcare.org">Get the app &rarr;</a></div>
+        <div class="lp-qr"><img src="supplefacts-qr.png" alt="QR code for the SuppleFacts app" width="84" height="84"><span>On a computer? Scan with your phone.</span></div>
+      </div>
+      <div class="lp-ph"><div class="lp-phone"><div class="lp-scr"><img src="supplefacts-phone.jpg" alt="SuppleFacts app home screen: Before You Take It, Check the Evidence"></div></div></div>
+    </div>
+    <div class="lp-pad"></div>
+  </div>
+</div>
+
+<section class="lp-sec">
+  <div class="wrap">
+    <h2>Check a bottle in three steps</h2>
+    <p class="lp-sub">SuppleFacts connects what the label says to what the evidence says. Nothing to download from an app store.</p>
+    <div class="lp-steps">
+      <div class="lp-step lp-s1"><div class="lp-ico"><svg viewBox="0 0 24 24"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3"/><path d="M8 8v8M12 8v8M16 8v8"/></svg></div><b>1</b><h3>Scan or search</h3><p>Point your phone at the barcode, say the name, or type it. No barcode needed.</p></div>
+      <div class="lp-step lp-s2"><div class="lp-ico"><svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></div><b>2</b><h3>See the real label</h3><p>Every ingredient and amount from the NIH Dietary Supplement Label Database.</p></div>
+      <div class="lp-step lp-s3"><div class="lp-ico"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="m20 20-4.2-4.2"/><path d="m8.5 11 1.8 1.8 3.2-3.4"/></svg></div><b>3</b><h3>Check the evidence</h3><p>A plain-language AI summary, then a research prompt for the AI app you choose.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="lp-weblookup" id="web-lookup">
+  <div class="wrap">
+    <div class="lp-eyebrow">On a computer</div>
+    <h2 style="margin:6px 0 10px;font-size:30px;">Look up a supplement on the web</h2>
+    <p class="lp-lead" style="margin-bottom:18px;max-width:640px;">Search thousands of real supplement labels and find out what's actually in the product you're considering, then explore the clinical evidence, studied doses, safety concerns, and drug interactions.</p>
       <div class="hero-search-row">
         <input type="text" id="lookup-input" class="search-hero-input" placeholder="Search by product name or brand (e.g. turmeric, CoQ10, Nutricost, etc.)">
         <button type="button" id="lookup-search-btn" class="btn btn-primary hero-search-btn">Search →</button>
       </div>
       <p class="hero-search-note">Powered by supplement-label data from the NIH Dietary Supplement Label Database. <a href="about-product-lookup.html">How this works →</a></p>
-
       <div class="hero-chip-row">
         <span class="chip-label">Try a search:</span>
         <button type="button" class="quick-chip" data-q="Magnesium">Magnesium</button>
@@ -100,28 +217,6 @@
         <button type="button" class="quick-chip" data-q="5-HTP">5-HTP</button>
         <button type="button" class="quick-chip" data-q="Multivitamin">Multivitamin</button>
       </div>
-
-      <p style="margin:16px 0 0;">
-        <a class="btn btn-text" href="downloads/how-to-use-the-investigation.pdf" download>📄 New here? Download the free Reader's Guide (PDF) — how to use this site →</a>
-      </p>
-      <p style="margin:8px 0 0;">
-        <a class="btn btn-text" href="https://supplefacts.brokenpromiseshealthcare.org">📱 On your phone? Try the SuppleFacts app — scan a barcode, check the evidence →</a>
-      </p>
-    </div>
-
-    <div class="hero-visual" aria-hidden="true">
-      <div class="label-card">
-        <h4>Supplement Facts</h4>
-        <div class="serving">Serving Size 1 Capsule</div>
-        <table>
-          <tr><td>Amount Per Serving</td><td>%DV</td></tr>
-          <tr><td>Turmeric Extract</td><td>500 mg</td></tr>
-          <tr><td>Black Pepper Extract</td><td>5 mg</td></tr>
-        </table>
-        <div class="dv-note">† Daily Value not established.</div>
-        <div class="magnifier">🔍</div>
-      </div>
-    </div>
   </div>
 </section>
 
@@ -133,32 +228,15 @@
   <div id="lookup-detail"></div>
 </div>
 
-<section class="journey-row">
-  <div class="wrap journey-grid">
-    <a class="journey-card" href="product-lookup.html">
-      <div class="thumb c1">🔍</div>
-      <h3>Look Up Your Supplement</h3>
-      <p>Search real products and see their NIH-verified ingredients, doses, and label information.</p>
-      <span class="journey-link">Look Up a Product →</span>
-    </a>
-    <a class="journey-card" href="top-25-supplements.html">
-      <div class="thumb c2">📊</div>
-      <h3>See What the Evidence Shows</h3>
-      <p>Find out what clinical trials and systematic reviews actually show — not just marketing claims.</p>
-      <span class="journey-link">Explore the Top 25 →</span>
-    </a>
-    <a class="journey-card" href="index.html#books">
-      <div class="thumb c3">📖</div>
-      <h3>Read the Investigation</h3>
-      <p>Explore the free illustrated books that examine the science, regulation, marketing, and economics of the supplement industry.</p>
-      <span class="journey-link">View the Books →</span>
-    </a>
-    <a class="journey-card" href="faq.html">
-      <div class="thumb c4">❓</div>
-      <h3>Get Straight Answers</h3>
-      <p>Our FAQ explains what supplement labels mean, what FDA oversight involves, and how to judge claims.</p>
-      <span class="journey-link">Visit the FAQ →</span>
-    </a>
+<section class="lp-sec lp-band">
+  <div class="wrap">
+    <h2>Go deeper</h2>
+    <p class="lp-sub">The investigation, the research library, and the web version of Product Lookup.</p>
+    <div class="lp-cards">
+      <div class="lp-card"><div class="lp-eyebrow">The Investigation</div><h3>Three illustrated books</h3><p>The science, the regulation, and the marketing behind the supplement aisle.</p><a href="index.html#books">Read the books &rarr;</a></div>
+      <div class="lp-card g"><div class="lp-eyebrow">Evidence Library</div><h3>Research guides and the Top 25</h3><p>Sales versus science for America's best-selling supplements.</p><a href="top-25-supplements.html">Explore the Top 25 &rarr;</a></div>
+      <div class="lp-card n"><div class="lp-eyebrow">On the web</div><h3>Product Lookup</h3><p>Search NIH label data from a computer, with the same research hand-off.</p><a href="product-lookup.html">Look up a product &rarr;</a></div>
+    </div>
   </div>
 </section>
 
