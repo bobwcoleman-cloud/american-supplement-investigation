@@ -214,5 +214,18 @@
   </div>
 </footer>
 
+<script>
+document.querySelectorAll('form[name="primer-download"]').forEach(function(f){
+  f.addEventListener('submit',function(e){
+    e.preventDefault();
+    var b=f.querySelector('button'); if(b){b.disabled=true;b.textContent='One moment...';}
+    var go=function(){window.location.href='primer-gift.html';};
+    try{
+      fetch('/',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},
+        body:new URLSearchParams(new FormData(f)).toString()}).then(go,go);
+    }catch(err){go();}
+  });
+});
+</script>
 </body>
 </html>
