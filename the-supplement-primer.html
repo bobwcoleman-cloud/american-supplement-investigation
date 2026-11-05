@@ -12,7 +12,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>The Supplement Primer: Free Plain-English Guide | The American Supplement Investigation</title>
-<meta name="description" content="A free, illustrated 42-page primer on dietary supplements: what the law requires, how to read a label, how to judge a health claim, what the evidence shows, and a five-question checklist. Subscribe free to get the PDF.">
+<meta name="description" content="A free, illustrated 42-page primer on dietary supplements: what the law requires, how to read a label, how to judge a health claim, what the evidence shows, and a five-question checklist. Free PDF download with your email.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -127,12 +127,14 @@
       <h1>The Supplement Primer</h1>
       <p class="pr-tag">What the label doesn't tell you, in plain English</p>
       <p class="lead">A short, illustrated guide for anyone who takes, or is thinking about taking, a dietary supplement. What the law does and doesn't require, how to read a label, how to judge a health claim, what the best evidence shows, and five questions to ask before you buy.</p>
-      <div id="get"><form class="pr-form" action="https://americansupplementinvestigation.substack.com/subscribe" method="get" target="_blank" rel="noopener">
+      <div id="get"><form class="pr-form" name="primer-download" method="POST" action="/primer-gift.html" data-netlify="true" netlify-honeypot="bot-field">
+        <input type="hidden" name="form-name" value="primer-download">
+        <p class="pr-sr"><label>Leave this empty: <input name="bot-field"></label></p>
         <label class="pr-sr" for="pr-email">Email address</label>
         <input id="pr-email" type="email" name="email" placeholder="Your email address" autocomplete="email" required>
         <button class="btn btn-primary" type="submit">Get the free primer</button>
       </form>
-      <p class="pr-fine">Free when you subscribe to <b>The American Supplement Investigation</b> on Substack. Your welcome email includes the download link. Unsubscribe any time.</p></div>
+      <p class="pr-fine">Free. Enter your email and the download opens right away. No subscription required, and we never share your address.</p></div>
       <p class="pr-meta"><b>42 pages</b> &middot; illustrated &middot; PDF &middot; by Robert Coleman, MS Pharm.</p>
     </div>
     <div><img class="pr-cover" src="primer-cover.jpg" width="360" height="514" alt="Cover of The Supplement Primer: an amber pill bottle whose label shows a five-question checklist, on a green background."></div>
@@ -140,9 +142,9 @@
 </section>
 
 <section class="pr-steps"><div class="pr-wrap"><div class="pr-stepgrid">
-  <div class="pr-step"><span>1</span><div><b>Subscribe free</b><p>Enter your email above. It opens a quick confirmation on Substack.</p></div></div>
-  <div class="pr-step"><span>2</span><div><b>Open your welcome email</b><p>It arrives within minutes and includes your primer link.</p></div></div>
-  <div class="pr-step"><span>3</span><div><b>Download and read</b><p>A 42-page illustrated PDF with a clickable contents.</p></div></div>
+  <div class="pr-step"><span>1</span><div><b>Enter your email</b><p>One field, nothing else to fill in.</p></div></div>
+  <div class="pr-step"><span>2</span><div><b>Get the PDF instantly</b><p>The download page opens as soon as you submit.</p></div></div>
+  <div class="pr-step"><span>3</span><div><b>Read it your way</b><p>A 42-page illustrated PDF with a clickable contents.</p></div></div>
 </div></div></section>
 <section class="pr-sec">
   <div class="pr-wrap">
@@ -186,13 +188,15 @@
 
 <section class="pr-band"><div class="pr-wrap">
   <h2>Get the free primer</h2>
-  <p>Subscribe to <b>The American Supplement Investigation</b> and the primer is yours. New investigations arrive in your inbox as they are published.</p>
-  <form class="pr-form light" action="https://americansupplementinvestigation.substack.com/subscribe" method="get" target="_blank" rel="noopener">
-    <label class="pr-sr" for="pr-email2">Email address</label>
-    <input id="pr-email2" type="email" name="email" placeholder="Your email address" autocomplete="email" required>
-    <button class="btn btn-primary" type="submit">Get the free primer</button>
-  </form>
-  <p class="pr-fine">Already subscribed? Check your inbox, and your spam folder, for the welcome email with your link.</p>
+  <p>Enter your email and the 42-page PDF is yours, free. No subscription required.</p>
+  <form class="pr-form light" name="primer-download" method="POST" action="/primer-gift.html" data-netlify="true" netlify-honeypot="bot-field">
+        <input type="hidden" name="form-name" value="primer-download">
+        <p class="pr-sr"><label>Leave this empty: <input name="bot-field"></label></p>
+        <label class="pr-sr" for="pr-email2">Email address</label>
+        <input id="pr-email2" type="email" name="email" placeholder="Your email address" autocomplete="email" required>
+        <button class="btn btn-primary" type="submit">Get the free primer</button>
+      </form>
+  <p class="pr-fine">Subscribers of <b>The American Supplement Investigation</b> also get this link in their welcome email.</p>
 </div></section>
 <section class="pr-sec alt" style="padding:40px 0;">
   <div class="pr-wrap"><p class="pr-note"><strong>General education, not medical advice.</strong> The primer does not tell you what to take or avoid, and it does not suggest doses. Talk to your doctor or pharmacist about your own health, your medicines, and any supplement you are thinking of using.</p></div>
