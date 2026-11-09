@@ -1155,7 +1155,8 @@ footer .links{margin-top:10px;display:flex;justify-content:center;gap:18px;flex-
 .reader-title-block h3{font-size:1rem;font-style:italic;color:var(--gray-body);font-weight:400;margin:0 0 32px;}
 
 .chapter-section{padding-top:24px;margin-bottom:8px;scroll-margin-top:90px;}
-.chapter-section h1{
+.chapter-section h1,
+.chapter-section h2.chapter-title{
   font-size:1.6rem;
   color:var(--navy);
   margin:0 0 22px;
